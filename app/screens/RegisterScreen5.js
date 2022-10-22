@@ -9,6 +9,7 @@ import defaultStyles from "../config/styles";
 import { useUserAuth } from "../context/UserAuthContext";
 import firebase from '@react-native-firebase/app';
 import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 
 const validationSchema = Yup.object().shape({
   phone: Yup.string().required().label("OTP"),
@@ -41,8 +42,30 @@ function RegisterScreen5({ navigation }) {
       console.log(credential);
       let userData = await auth().signInWithCredential(credential);
       console.log(userData);
+
+      const userCreate = firestore().collection('Users').doc(user.phone);
+      userCreate.set({
+        id: user.phone,
+        firstName: user.firstname,
+        lastName: user.lastname,
+        title: user.title,
+        password: user.password,
+        phoneNumber: user.phone,
+        country: user.countryCode,
+        isAdmin: false,
+       })
+    .then(async() => {
+      let phno = user.phone;
+      const userData = await firestore().collection('Users').doc(phno).get();
+      console.log(userData._exists);
+      let currentUser = userData._data;
+      if(userData._exists){
+        let data = {currentUser};
+        setUser(data);
+       }
       navigation.push("HomeScreen");
-    } catch (error) {
+    })
+   } catch (error) {
       if (error.code == 'auth/invalid-verification-code') {
         console.log('Invalid code.');
       } else {
@@ -60,20 +83,8 @@ function RegisterScreen5({ navigation }) {
         initialValues={{ otp: "" }}
         onSubmit={async(values) => {
           console.log(values);
-          const userCreate = await firestore().collection('Users').doc();
-          const dat = await userCreate.add({
-            firstName: user.firstname,
-            lastName: user.lastname,
-            title: user.title,
-            password: user.password,
-            phoneNumber: user.phone,
-            country: user.countryCode,
-            isAdmin: false,
-          });
-
-          console.log(user);
+          confirmCode(values.otp);
           //console.log("code" , code);
-          //confirmCode();
         }}
         //validationSchema={validationSchema}
       >

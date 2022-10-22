@@ -1,9 +1,12 @@
 import { USERS } from "./users";
+import storage from '@react-native-firebase/storage';
 
+//const url = await storage().ref('8def2c6f-8258-41e5-ab9f-be3f81167078.jpeg').getDownloadURL();
+let url = 'https://firebasestorage.googleapis.com/v0/b/oacmedia-app-8464c.appspot.com/o/8def2c6f-8258-41e5-ab9f-be3f81167078.jpeg?alt=media&token=838229c7-91b1-40c0-a3c9-65add90c4d81';
 export const POSTS = [
   {
     imageurl:
-      "https://images.wallpapersden.com/image/download/just-a-tree_a2hqaG6UmZqaraWkpJRpbWWtbWVl.jpg",
+      url,
     user: USERS[0].title + " " + USERS[0].user,
     likes: 7870,
     caption: "Sunset 🐱‍👓 ✌",

@@ -10,7 +10,6 @@ import defaultStyles from "../config/styles";
 import firebase from '@react-native-firebase/app';
 import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-// import {collection, addDoc, where, query, getDocs} from '@react-native-firebase/firestore';
 import { useUserAuth } from "../context/UserAuthContext";
 // const usersCollection = firestore().collection('Users');
 
@@ -60,21 +59,21 @@ function RegisterScreen({ navigation }) {
   
 
   // Handle create account button press
-  async function createAccount() {
-    try {
-      await auth().createUserWithEmailAndPassword('jane.doe@example.com', 'SuperSecretPassword!');
-      console.log('User account created & signed in!');
-    } catch (error) {
-      if (error.code === 'auth/email-already-in-use') {
-        console.log('That email address is already in use!');
-      }
-
-      if (error.code === 'auth/invalid-email') {
-        console.log('That email address is invalid!');
-      }
-      console.error(error);
-    }
-  }
+//  async function createAccount() {
+//    try {
+//      await auth().createUserWithEmailAndPassword('jane.doe@example.com', 'SuperSecretPassword!');
+//      console.log('User account created & signed in!');
+//    } catch (error) {
+//      if (error.code === 'auth/email-already-in-use') {
+//        console.log('That email address is already in use!');
+//      }
+//
+//      if (error.code === 'auth/invalid-email') {
+//        console.log('That email address is invalid!');
+//      }
+//      console.error(error);
+//    }
+//  }
 
   // Handle the verify phone button press
   // async function verifyPhoneNumber(phoneNumber) {
@@ -124,87 +123,19 @@ function RegisterScreen({ navigation }) {
       <Form
         initialValues={{ phone: "" }}
         onSubmit={async(values) => {
-            //const user = await firestore().collection('Users').doc('5VyDBNvGpTl9FOxaD5f4');
-            // const dat = await user.set({
-            //   name: 'Ada Lovelace',
-            //   age: 30,
-            // });
-
-            //console.log(user);
             
-
-              
-
-
-
-
-          //setError('');
-          // console.log((callingCode[0] + values.phone).toString());
-          // console.log("country" , countryCode);
-           
-          // const db = await usersCollection.get();
-
-          // console.log({db});
-
-
-
-          // const confirmation = await signInWithPhoneNumber(callingCode[0] + values.phone);
-          // console.log(confirmation);
-          // const usersCollectionRef = doc(db, 'users' , data.phone)
-          // const colRef = firestore().collection('users')
-          // const usersCollectionRef = firestore().collection('users').query(colRef , firestore().collection('users').where('phone' , '==' , data.phone));
-          // const doc = await firestore().getDocs(usersCollectionRef);
-          // if(doc.docs[0]){
-          //   setError('Phone number already exist.');
-          //   return
-          // }
-          // await firestore().collection('users').add(data);
-          // console.log("user created successfully");
-          // firestore().collection('Users').get()
-          // .then(querySnapshot => {
-          //   console.log('User added!');
-          //   querySnapshot.forEach(record => {
-          //     console.log(record.data());
-          //   })
-          // });
-          //setUser({});
-          // navigation.push("LoginScreen");
-            // const email = 'ukashatariq21@gmail.com';
-            // const password = '123456789';
-            // const user = await auth().createUserWithEmailAndPassword(email,password);
-            // console.log(user);
             const ph_no = ('+' + callingCode[0] + values.phone).toString();
-            const verCode = await signInWPhoneNumber(ph_no);
-            const verCode2 = verCode._verificationId;
-            let data = {...user , phone: '+'+callingCode[0] + values.phone , countryCode, verCode2};
-            setUser(data);
-            // ()=>{
-            //   return (
-            //     <View>
-            //       <Text style={styles.h1}>Enter the OTP you received</Text>
-            //     <Form
-            //       initialValues={{ phone: "" }}
-            //       onSubmit={(values) => {
-            //         console.log(values);
-            //       }}
-            //       validationSchema={validationSchema}
-            //     >
-            //       <FormField
-            //         autoCapitalize="none"
-            //         autoCorrect={false}
-            //         name="OTP"
-            //         placeholder={"OTP"}
-            //         keyboardType="phone-pad"
-            //       />
-            //       <SubmitButton title="Next" />
-            //       </Form>
-            //     </View>
-            //   )
-            // };
-            //console.log(phReg);
-            //verifyPhoneNumber(ph_no);
-          console.log(ph_no);
-          navigation.push("RegisterScreen5");
+            const userData = await firestore().collection('Users').doc(ph_no).get();
+            console.log(userData._exists);
+            if(!userData._exists){
+              const verCode = await signInWPhoneNumber(ph_no);
+              const verCode2 = verCode._verificationId;
+              let data = {...user , phone: '+'+callingCode[0] + values.phone , countryCode, verCode2};
+              setUser(data);
+              navigation.push("RegisterScreen5");    
+            }else if(userData._exists){
+              console.log('Phone Number Already Registered Try a Different One!');
+            }
         }}
         validationSchema={validationSchema}
       >

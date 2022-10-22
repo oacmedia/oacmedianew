@@ -14,12 +14,14 @@ import TouchableIcon from "../TouchableIcon";
 import colors from "../../config/colors";
 import { Form, FormField, SubmitButton } from "../forms";
 import { useEffect } from "react";
+import firestore from '@react-native-firebase/firestore';
 
-const PostHeader = ({ post, DeleteButton }) => (
+const PostHeader = ({ post, DeleteButton, userData }) => {
+  return(
   <View style={styles.head_container}>
     <View style={{ flexDirection: "row", alignItems: "center" }}>
-      <Image source={{ uri: post.profile_picture }} style={styles.head_image} />
-      <AppText style={styles.head_title}>{post.user}</AppText>
+      <Image source={{ uri: post.imageURL }} style={styles.head_image} />
+      <AppText style={styles.head_title}>{userData.title+" "+userData.firstName+" "+userData.lastName}</AppText>
     </View>
     <TouchableOpacity hitSlop={10}>
       {DeleteButton ? (
@@ -30,13 +32,13 @@ const PostHeader = ({ post, DeleteButton }) => (
         </AppText>
       )}
     </TouchableOpacity>
-  </View>
-);
+  </View>)
+};
 
 const PostImage = ({ post }) => (
   <View style={{ width: "100%", height: 450 }}>
     <Image
-      source={{ uri: post.imageurl }}
+      source={{ uri: post.imageURL }}
       style={{ height: "100%", resizeMode: "cover" }}
     />
   </View>
@@ -82,21 +84,23 @@ const PostIconC = ({ name, size, style }) => {
   );
 };
 
+const likes = "3232";
+
 const PostLikes = ({ post }) => (
   <View style={{ flexDirection: "row", marginTop: 5 }}>
     <AppText style={{ fontWeight: "600" }}>
       {Platform.OS === "android"
-        ? post.likes.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-        : post.likes.toLocaleString("en")}
+        ? likes.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        : likes.toLocaleString("en")}
     </AppText>
     <AppText> likes</AppText>
   </View>
 );
 
-const PostCaption = ({ post }) => (
+const PostCaption = ({ post, userData}) => (
   <View style={{ marginTop: 5 }}>
     <AppText>
-      <AppText style={{ fontWeight: "600" }}>{post.user}</AppText>
+      <AppText style={{ fontWeight: "600" }}>{userData.title+" "+userData.firstName+" "+userData.lastName}</AppText>
       <AppText> {post.caption}</AppText>
     </AppText>
   </View>
@@ -106,12 +110,17 @@ const PostCommentsSection = ({ post, CommentSection }) => {
   const [showComments, setShowComments] = useState(0);
   const [commentsArr, setCommentsArr] = useState([]);
   useEffect(() => {
-    setCommentsArr(post.comments);
-    console.log(commentsArr);
+    if(post.comments){
+      setCommentsArr(post.comments);
+    }else{
+      setCommentsArr([]);
+    }
+    
+    //console.log(commentsArr);
   }, []);
   return (
     <View style={{ marginTop: 5 }}>
-      {!!commentsArr.length && (
+      {commentsArr.length != 0 && (
         <View>
           {commentsArr.length > 1 ? (
             <>
@@ -146,7 +155,7 @@ const PostCommentsSection = ({ post, CommentSection }) => {
           })}
           onSubmit={(values, { resetForm }) => {
             setCommentsArr([
-              ...commentsArr,
+              //...commentsArr,
               { comment: values.comment, user: "Anonymous" },
             ]);
             resetForm();
@@ -180,12 +189,28 @@ const PostCommentsSection = ({ post, CommentSection }) => {
   );
 };
 
+function commentChecker(comment){
+  if(comment){
+    return comment.comment;
+  }else{
+    return 'No Comments';
+  }
+}
+function commentUser(comment, user){
+  if(comment){
+    return comment.user;
+  }else{
+    return '';
+  }
+}
+
 const PostComments = ({ post }) => (
   <>
     {post.map((comment, index) => (
       <View key={index} style={{ flexDirection: "row", marginTop: 5 }}>
-        <AppText style={{ fontWeight: "600" }}>{comment.user}</AppText>
-        <AppText> {comment.comment}</AppText>
+        <AppText style={{ fontWeight: "600" }}>{commentUser(comment)}</AppText>
+        <AppText> {commentChecker(comment)}
+        </AppText>
       </View>
     ))}
   </>
@@ -193,8 +218,8 @@ const PostComments = ({ post }) => (
 
 const PostSingleComment = ({ post }) => (
   <View style={{ flexDirection: "row", marginTop: 5 }}>
-    <AppText style={{ fontWeight: "600" }}>{post[0].user}</AppText>
-    <AppText> {post[0].comment}</AppText>
+    <AppText style={{ fontWeight: "600" }}>{commentUser(comment)}</AppText>
+    <AppText> {commentChecker(comment)}</AppText>
   </View>
 );
 
@@ -209,11 +234,20 @@ const Post = ({
   withDeleteButton = false,
   deletePost,
 }) => {
+  const [userData, setUserData] = useState('');
+  useEffect(()=>{
+    firestore().collection('Users').doc(post.userID).get()
+    .then((data)=>{
+      let mainData = data._data;
+      console.log(mainData);
+      setUserData(mainData);
+    })
+  },[])
   return (
     <View style={{ marginBottom: 30 }}>
       <Divider width={1} orientation="vertical" />
       {withHeader && (
-        <PostHeader
+        <PostHeader userData={userData}
           post={post}
           DeleteButton={withDeleteButton}
           deletePost={deletePost}
@@ -223,7 +257,7 @@ const Post = ({
       {withFooter && <PostFooter post={post} />}
       <View style={{ marginHorizontal: 10, marginTop: 5 }}>
         {withLikes && <PostLikes post={post} />}
-        {withComments && <PostCaption post={post} />}
+        {withComments && <PostCaption userData={userData} post={post} />}
         <PostCommentsSection post={post} CommentSection={withCommentSection} />
       </View>
     </View>

@@ -6,9 +6,11 @@ import Screen from "../components/Screen";
 import { Form, FormField, SubmitButton } from "../components/forms";
 import Text from "../components/Text";
 import colors from "../config/colors";
-import {firebase, FirebaseApp} from '@react-native-firebase/app';
+import firebase from '@react-native-firebase/app';
 import auth from '@react-native-firebase/auth';
 import firestore from "@react-native-firebase/firestore";
+import { useUserAuth } from "../context/UserAuthContext";
+import storage from "../components/storage/storage";
 
 //let app = firebase.app();
 //let app = firebase.apps[0].firestore;
@@ -26,16 +28,88 @@ const validationSchema = Yup.object().shape({
 });
 
 function LoginScreen({ navigation }) {
-//  useEffect(() => {
-//      const docRef = firestore().collection("c1").doc();
-//      docRef.set({
-//        ukasha: "begart",
-//        isTrue: "Yes"
-//      }).then(() => {
-//        console.log("Custom Effect")
-//      })
-//    }, [])
-//  console.log('Hello!');
+  const {user, setUser} = useUserAuth();
+  //console.log(user);
+useEffect(() => {
+
+  //storage
+  storage.load({
+
+    key: 'loginState',
+
+      // autoSync (default: true) means if data is not found or has expired,
+      // then invoke the corresponding sync method
+
+      autoSync: true,
+
+        // syncInBackground (default: true) means if data expired,
+
+        // return the outdated data first while invoking the sync method.
+
+        // If syncInBackground is set to false, and there is expired data,
+        // it will wait for the new data and return only after the sync completed.
+        // (This, of course, is slower)
+
+        syncInBackground: true,
+
+
+
+        // you can pass extra params to the sync method
+
+        // see sync example below
+
+        syncParams: {
+
+        extraFetchOptions: {
+
+        // blahblah
+
+        },
+
+        someFlag: true
+
+      }
+    })
+
+    .then(async(ret) => {
+
+      // found data go to then()
+
+       console.log(ret.phoneNumber);
+       const userData = await firestore().collection('Users').doc(ret.phoneNumber).get();
+       let logginedUser = userData._data;
+       if(userData._exists){
+        let data = logginedUser;
+        setUser(data);
+        navigation.push("HomeScreen");
+       }
+      })
+    .catch(err => {
+
+      // any exception including data not found
+      // goes to catch()
+      console.log(err.message);
+        switch (err.name) {
+          case 'NotFoundError':
+
+          // TODO
+
+          break;
+          case 'ExpiredError':
+          // TODO
+          break;
+        }
+    });
+
+
+ // checking if already logged in!
+  // if(user != null){
+  //   if(user.phoneNumber && user.firstName){
+  //     navigation.push("HomeScreen");
+  //   }
+  // }   
+}, []);
+  console.log('Hello!');
   return (
     <Screen style={styles.container}>
       <Text style={styles.logo}>OAC</Text>
@@ -44,28 +118,42 @@ function LoginScreen({ navigation }) {
         initialValues={{ phone: "", password: "" }}
         validationSchema={validationSchema}
         onSubmit={async(values) => {
-        const userData = await firestore().collection('Users').doc('5VyDBNvGpTl9FOxaD5f4').get();
-        console.log(userData);
-          //console.log(firestore.Timestamp.fromDate(new Date()));
-//          collection('posts').add({
-//              userId: '123',
-//              post: 'post',
-//              postTime: this.Timestamp.fromDate(new Date()),
-//              likes: null,
-//              comments: null,
-//        })
-//        .then(() => {
-//          console.log('Post Added!');
-//          Alert.alert(
-//            'Post published!',
-//            'Your post has been published Successfully!',
-//        );
+          let phno = ('+'+values.phone).toString();
+        const userData = await firestore().collection('Users').doc(phno).get();
+        console.log(userData._exists);
+        let currentUser = userData._data;
+        if(userData._exists){
+          if(phno == currentUser.phoneNumber){
+              if(values.password == currentUser.password){
+                console.log('Successful!');
+                console.log(currentUser);
+                let data = currentUser;
+                setUser(data);
+                storage.save({
+                  key: 'loginState', // Note: Do not use underscore("_") in key!
+                  data: {
+                    phoneNumber: currentUser.phoneNumber
+                  },
+                
+                  // if expires not specified, the defaultExpires will be applied instead.
+                  // if set to null, then it will never expire.
+                  expires: null
+                });
+                navigation.push("HomeScreen");    
+              }else{
+                console.log('Wrong Details!');
+              }
+          }else{
+            console.log('Wrong Details!');
+          }
+        }else{
+          console.log('User Does not exists!');
+        }
+
 //        setPost(null);
       }
-      //)
           //navigation.push("HomeScreen");
-        }
-        //}
+    }
       >
         <FormField
           autoCapitalize="none"

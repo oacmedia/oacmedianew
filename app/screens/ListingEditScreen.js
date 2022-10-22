@@ -7,22 +7,42 @@ import Screen from "../components/Screen";
 import FormImagePicker from "../components/forms/FormImagePicker";
 import { POSTS } from "../data/posts";
 
+import firebase from '@react-native-firebase/app';
+import auth from '@react-native-firebase/auth';
+import storage from '@react-native-firebase/storage';
+import firestore from '@react-native-firebase/firestore';
+import { useUserAuth } from "../context/UserAuthContext";
+
+
 const validationSchema = Yup.object().shape({
   description: Yup.string().label("Description"),
   images: Yup.array().min(1, "Please select at least one image."),
 });
 
 function ListingEditScreen({ navigation }) {
-  // const [posts, setPosts] = useState([]);
+  const {user, setUser} = useUserAuth();
 
-  // useEffect(() => {
-  //   setPosts(POSTS);
-  // }, []);
+  const handleSubmit = async(listing, { resetForm }) => {
+    console.log(listing.images[0]);
 
-  const handleSubmit = (listing, { resetForm }) => {
-    console.log(listing);
+    // path to existing file on filesystem
+    const pathToFile = (listing.images[0]).toString();
+    let filename = pathToFile.substring(pathToFile.lastIndexOf('/')+1);
+
+    //console.log(filename);
+
+    const image = await storage().ref(filename).putFile(pathToFile);
+    //console.log(listing.description);
+    const url = await storage().ref(image.metadata.fullPath).getDownloadURL();
+    const postCreate = await firestore().collection('Posts').doc();
+      postCreate.set({
+        imageURL: url,
+        caption: listing.description,
+        userID: user.phoneNumber,
+       })
     resetForm();
     navigation.push("HomeScreen");
+    
   };
   // async (listing, { resetForm }) => {
   //   const result = await listingsApi.addListing({ ...listing });

@@ -7,6 +7,8 @@ import ListItem from "../components/lists/ListItem";
 import ListItemSeparator from "../components/lists/ListItemSeparator";
 import Screen from "../components/Screen";
 import colors from "../config/colors";
+import storage from "../components/storage/storage";
+
 const menuItems = [
   {
     screen: "PostsScreen",
@@ -59,7 +61,13 @@ function AccountScreen({ navigation }) {
       <ListItem
         title="Log Out"
         IconComponent={<AccountIcon name="logout" backgroundColor="grey" />}
-        onPress={() => navigation.push("LoginScreen")}
+        onPress={() => {
+          storage.remove({
+            key: 'loginState'
+          });          
+          
+          navigation.push("LoginScreen")
+        }}
       />
       <BottomTabs navigation={navigation} />
     </Screen>
