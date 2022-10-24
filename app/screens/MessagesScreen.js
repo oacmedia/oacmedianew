@@ -47,7 +47,7 @@ function MessagesScreen({ navigation }) {
             subTitle={item.description}
             image={item.image}
             onPress={() => {
-              navigation.push("ChatScreen");
+              navigation.navigate("ChatScreen");
               console.log("Message selected", item);
             }}
             renderRightActions={() => (

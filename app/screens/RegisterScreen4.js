@@ -132,7 +132,7 @@ function RegisterScreen({ navigation }) {
               const verCode2 = verCode._verificationId;
               let data = {...user , phone: '+'+callingCode[0] + values.phone , countryCode, verCode2};
               setUser(data);
-              navigation.push("RegisterScreen5");    
+              navigation.navigate("RegisterScreen5");    
             }else if(userData._exists){
               console.log('Phone Number Already Registered Try a Different One!');
             }

@@ -46,7 +46,7 @@ function AccountScreen({ navigation }) {
           ItemSeparatorComponent={ListItemSeparator}
           renderItem={({ item }) => (
             <ListItem
-              onPress={() => navigation.push(item.screen)}
+              onPress={() => navigation.navigate(item.screen)}
               title={item.title}
               IconComponent={
                 <AccountIcon
@@ -66,7 +66,7 @@ function AccountScreen({ navigation }) {
             key: 'loginState'
           });          
           
-          navigation.push("LoginScreen")
+          navigation.navigate("LoginScreen")
         }}
       />
       <BottomTabs navigation={navigation} />

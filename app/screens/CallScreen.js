@@ -198,7 +198,7 @@ const CallScreen = ({ navigation }) => {
           name="phone-hangup"
           size={35}
           onPress={() => {
-            navigation.push("ChatScreen");
+            navigation.navigate("ChatScreen");
           }}
         />
       </View>

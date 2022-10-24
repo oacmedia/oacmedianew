@@ -15,12 +15,15 @@ import colors from "../../config/colors";
 import { Form, FormField, SubmitButton } from "../forms";
 import { useEffect } from "react";
 import firestore from '@react-native-firebase/firestore';
+import { useUserAuth } from "../../context/UserAuthContext";
+import { isEmptyArray } from "formik";
+
 
 const PostHeader = ({ post, DeleteButton, userData }) => {
   return(
   <View style={styles.head_container}>
     <View style={{ flexDirection: "row", alignItems: "center" }}>
-      <Image source={{ uri: post.imageURL }} style={styles.head_image} />
+      <Image source={{ uri: userData.profile }} style={styles.head_image} />
       <AppText style={styles.head_title}>{userData.title+" "+userData.firstName+" "+userData.lastName}</AppText>
     </View>
     <TouchableOpacity hitSlop={10}>
@@ -106,105 +109,158 @@ const PostCaption = ({ post, userData}) => (
   </View>
 );
 
-const PostCommentsSection = ({ post, CommentSection }) => {
+const PostCommentsSection = ({ post, postUser, postID, user, CommentSection }) => {
   const [showComments, setShowComments] = useState(0);
   const [commentsArr, setCommentsArr] = useState([]);
   useEffect(() => {
-    if(post.comments){
-      setCommentsArr(post.comments);
-    }else{
-      setCommentsArr([]);
+    let pComments = [];
+    firestore().collection('Comments').where('postID', '==', postID)
+  .get()
+  .then(querySnapshot => {
+    //console.log(querySnapshot);
+    querySnapshot.forEach(documentSnapshot => {
+      //console.log(documentSnapshot._data);
+      if(documentSnapshot._data.postID == postID && documentSnapshot._data.postID){
+        
+        let ds = documentSnapshot._data;
+        pComments.push(ds);
+      }
+    });
+    if(!pComments.length == '0'){
+      setCommentsArr(pComments);
     }
-    
-    //console.log(commentsArr);
+  });
+  // function onResult(QuerySnapshot) {
+  //   QuerySnapshot.forEach(documentSnapshot => {
+  //     //console.log(documentSnapshot._data);
+  //     if(documentSnapshot._data.postID == postID && documentSnapshot._data.postID){
+        
+  //       let ds = documentSnapshot._data;
+  //       pComments.push(ds);
+  //     }
+  //   });
+  //   if(!pComments.length == '0'){
+  //     setCommentsArr(pComments);
+  //   }
+  // }
+  
+  // function onError(error) {
+  //   console.error(error);
+  // }
+  
+  // firestore().collection('Comments').onSnapshot(onResult, onError);
   }, []);
-  return (
-    <View style={{ marginTop: 5 }}>
-      {commentsArr.length != 0 && (
-        <View>
-          {commentsArr.length > 1 ? (
-            <>
-              <TouchableOpacity
-                onPress={() => {
-                  setShowComments(1);
+
+      return (
+        <View style={{ marginTop: 5 }}>
+          {!!commentsArr.length && (
+            <View>
+              {commentsArr.length > 1 ? (
+                <>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowComments(1);
+                    }}
+                  >
+                    <AppText style={{ color: "gray" }}>
+                      View all {commentsArr.length} comments
+                    </AppText>
+                  </TouchableOpacity>
+                  {showComments ? (
+                    <PostComments post={commentsArr} />
+                  ) : (
+                    <PostSingleComment post={commentsArr} />
+                  )}
+                </>
+              ) : (
+                <>
+                  <PostSingleComment  post={commentsArr} />
+                    {/* <AppText style={{ color: "gray" }}>View 1 comment</AppText> */}
+                </>
+              )}
+            </View>
+          )}
+          {CommentSection && (
+            <Form
+              initialValues={{ comment: "" }}
+              validationSchema={Yup.object().shape({
+                comment: Yup.string(),
+              })}
+              onSubmit={(values, { resetForm }) => {
+                //console.log(user);
+                //console.log(postID,postUser);
+                const commentStore = firestore().collection('Comments').doc()
+                commentStore.set({
+                  postID: postID,
+                  user: (user.title+" "+user.firstName).toString(),
+                  comment: values.comment,
+                })
+                .then((sent)=>{
+                  //console.log(sent);
+                })
+                
+                setCommentsArr([
+                  ...commentsArr,
+                  { comment: values.comment, user: (user.title+" "+user.firstName).toString() },
+                ]);
+                resetForm();
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  width: "100%",
                 }}
               >
-                <AppText style={{ color: "gray" }}>
-                  View all {commentsArr.length} comments
-                </AppText>
-              </TouchableOpacity>
-              {showComments ? (
-                <PostComments post={commentsArr} />
-              ) : (
-                <PostSingleComment post={commentsArr} />
-              )}
-            </>
-          ) : (
-            <>
-              <AppText style={{ color: "gray" }}>View 1 comment</AppText>
-              <PostSingleComment post={commentsArr} />
-            </>
+                <FormField
+                  name="comment"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="default"
+                  padding={10}
+                  placeholder="Add a comment..."
+                  width="70%"
+                />
+                <SubmitButton
+                  title="POST"
+                  style={{ width: "25%", backgroundColor: colors.primary }}
+                />
+              </View>
+            </Form>
           )}
         </View>
-      )}
-      {CommentSection && (
-        <Form
-          initialValues={{ comment: "" }}
-          validationSchema={Yup.object().shape({
-            comment: Yup.string(),
-          })}
-          onSubmit={(values, { resetForm }) => {
-            setCommentsArr([
-              //...commentsArr,
-              { comment: values.comment, user: "Anonymous" },
-            ]);
-            resetForm();
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              width: "100%",
-            }}
-          >
-            <FormField
-              name="comment"
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="default"
-              padding={10}
-              placeholder="Add a comment..."
-              width="70%"
-            />
-            <SubmitButton
-              title="POST"
-              style={{ width: "25%", backgroundColor: colors.primary }}
-            />
-          </View>
-        </Form>
-      )}
-    </View>
-  );
+      );
 };
 
 function commentChecker(comment){
   if(comment){
-    return comment.comment;
+    if(comment.comment){
+      return comment.comment;
+    }else{
+      return comment[0].comment;
+    }
   }else{
     return 'No Comments';
   }
 }
-function commentUser(comment, user){
+function commentUser(comment){
   if(comment){
-    return comment.user;
+    if(comment.user){
+      return comment.user;
+    }else{
+      return comment[0].user;
+    }
+    
   }else{
     return '';
   }
 }
 
-const PostComments = ({ post }) => (
+const PostComments = ({ post }) => {
+  //console.log(post, "pOsts data");
+  return(
   <>
     {post.map((comment, index) => (
       <View key={index} style={{ flexDirection: "row", marginTop: 5 }}>
@@ -214,17 +270,26 @@ const PostComments = ({ post }) => (
       </View>
     ))}
   </>
-);
+)};
 
 const PostSingleComment = ({ post }) => (
+  
   <View style={{ flexDirection: "row", marginTop: 5 }}>
-    <AppText style={{ fontWeight: "600" }}>{commentUser(comment)}</AppText>
-    <AppText> {commentChecker(comment)}</AppText>
+    <AppText style={{ fontWeight: "600" }}>{commentUser(post)}</AppText>
+    <AppText> {commentChecker(post)}</AppText>
   </View>
 );
 
+const AddComment = ({commentsArr})=>{
+  return <>
+    {commentsArr}
+  </>;
+}
+
 const Post = ({
   post,
+  postID,
+  postUser,
   withHeader = true,
   withImage = true,
   withFooter = true,
@@ -235,13 +300,24 @@ const Post = ({
   deletePost,
 }) => {
   const [userData, setUserData] = useState('');
+  const {user, setUser} = useUserAuth();
+  
+  //const [userWPostID, setUserWPostID] = useState([]);
   useEffect(()=>{
+    //console.log(post.id);
     firestore().collection('Users').doc(post.userID).get()
     .then((data)=>{
       let mainData = data._data;
       console.log(mainData);
       setUserData(mainData);
     })
+    // firestore().collection('Comments').doc().get()
+    // .then((comments)=>{
+    //   if(comments._data){
+    //     console.log(comments);
+    //   }
+    // })
+
   },[])
   return (
     <View style={{ marginBottom: 30 }}>
@@ -256,9 +332,9 @@ const Post = ({
       {withImage && <PostImage post={post} />}
       {withFooter && <PostFooter post={post} />}
       <View style={{ marginHorizontal: 10, marginTop: 5 }}>
-        {withLikes && <PostLikes post={post} />}
+        {withLikes && <PostLikes post={post} postID={postID} />}
         {withComments && <PostCaption userData={userData} post={post} />}
-        <PostCommentsSection post={post} CommentSection={withCommentSection} />
+        <PostCommentsSection user={user} post={post} postID={postID} postUser={postUser} CommentSection={withCommentSection} />
       </View>
     </View>
   );

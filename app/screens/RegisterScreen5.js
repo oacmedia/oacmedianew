@@ -53,6 +53,7 @@ function RegisterScreen5({ navigation }) {
         phoneNumber: user.phone,
         country: user.countryCode,
         isAdmin: false,
+        profile: 'https://firebasestorage.googleapis.com/v0/b/oacmedia-app-8464c.appspot.com/o/profileImages%2Fuser.png?alt=media&token=d7d1964f-3286-4297-8cf9-b6ecf27176fe',
        })
     .then(async() => {
       let phno = user.phone;
@@ -63,7 +64,7 @@ function RegisterScreen5({ navigation }) {
         let data = {currentUser};
         setUser(data);
        }
-      navigation.push("HomeScreen");
+      navigation.navigate("HomeScreen");
     })
    } catch (error) {
       if (error.code == 'auth/invalid-verification-code') {
@@ -84,7 +85,6 @@ function RegisterScreen5({ navigation }) {
         onSubmit={async(values) => {
           console.log(values);
           confirmCode(values.otp);
-          //console.log("code" , code);
         }}
         //validationSchema={validationSchema}
       >
@@ -95,7 +95,7 @@ function RegisterScreen5({ navigation }) {
           placeholder={"OTP"}
           keyboardType="phone-pad"
         />
-        <SubmitButton title="Next" onTap={()=>{console.log('Ki Hal Ay!')}}/>
+        <SubmitButton title="Next"/>
       </Form>
     </Screen>
   );

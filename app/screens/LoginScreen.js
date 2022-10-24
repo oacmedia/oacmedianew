@@ -81,7 +81,7 @@ useEffect(() => {
        if(userData._exists){
         let data = logginedUser;
         setUser(data);
-        navigation.push("HomeScreen");
+        navigation.navigate("HomeScreen");
        }
       })
     .catch(err => {
@@ -105,7 +105,7 @@ useEffect(() => {
  // checking if already logged in!
   // if(user != null){
   //   if(user.phoneNumber && user.firstName){
-  //     navigation.push("HomeScreen");
+  //     navigation.navigate("HomeScreen");
   //   }
   // }   
 }, []);
@@ -139,7 +139,7 @@ useEffect(() => {
                   // if set to null, then it will never expire.
                   expires: null
                 });
-                navigation.push("HomeScreen");    
+                navigation.navigate("HomeScreen");    
               }else{
                 console.log('Wrong Details!');
               }
@@ -152,7 +152,7 @@ useEffect(() => {
 
 //        setPost(null);
       }
-          //navigation.push("HomeScreen");
+          //navigation.navigate("HomeScreen");
     }
       >
         <FormField
@@ -178,7 +178,7 @@ useEffect(() => {
 
       <View style={styles.signupContainer}>
         <Text>Don't have an account?</Text>
-        <TouchableOpacity onPress={() => navigation.push("RegisterScreen1")}>
+        <TouchableOpacity onPress={() => navigation.navigate("RegisterScreen1")}>
           <Text style={{ color: colors.secondary }}> Sign Up</Text>
         </TouchableOpacity>
       </View>

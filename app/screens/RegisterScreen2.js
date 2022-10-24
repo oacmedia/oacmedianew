@@ -46,7 +46,7 @@ function RegisterScreen({ navigation }) {
         onSubmit={(values) => {
           console.log(values);
           setUser((prev) => ({...prev , firstname: values.firstname , lastname : values.lastname , title:category.label}))
-          navigation.push("RegisterScreen3" , values);
+          navigation.navigate("RegisterScreen3" , values);
         }}
         validationSchema={validationSchema}
       >

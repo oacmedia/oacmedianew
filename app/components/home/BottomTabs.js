@@ -19,7 +19,7 @@ const BottomTabs = ({ navigation }) => {
             size={30}
             onPress={() => {
               setActiveTab(item.name);
-              navigation.push(item.name);
+              navigation.navigate(item.name);
             }}
           />
         ))}

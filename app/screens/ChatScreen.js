@@ -10,7 +10,7 @@ import { POSTS } from "../data/posts";
 
 const ChatScreen = ({ navigation }) => {
   const handleCall = () => {
-    navigation.push("CallScreen");
+    navigation.navigate("CallScreen");
   };
   return (
     <Screen>
@@ -20,7 +20,7 @@ const ChatScreen = ({ navigation }) => {
             name="arrow-left"
             size={25}
             onPress={() => {
-              navigation.push("MessagesScreen");
+              navigation.navigate("MessagesScreen");
             }}
           />
           <View style={{ flexDirection: "row", alignItems: "center" }}>
