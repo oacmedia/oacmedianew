@@ -15,11 +15,11 @@ import colors from "../../config/colors";
 import { Form, FormField, SubmitButton } from "../forms";
 import { useEffect } from "react";
 import firestore from '@react-native-firebase/firestore';
-import { useUserAuth } from "../../context/UserAuthContext";
+//import { useUserAuth } from "../../context/UserAuthContext";
 import { isEmptyArray } from "formik";
 
 
-const PostHeader = ({ post, DeleteButton, userData }) => {
+const PostHeader = ({ post, postUser, postID, DeleteButton, userData }) => {
   return(
   <View style={styles.head_container}>
     <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -28,7 +28,7 @@ const PostHeader = ({ post, DeleteButton, userData }) => {
     </View>
     <TouchableOpacity hitSlop={10}>
       {DeleteButton ? (
-        <TouchableIcon name={"delete"} iconColor={colors.danger} size={25} />
+        <TouchableIcon name={"delete"} iconColor={colors.danger} size={25} onPress={() => (console.log('Press Del Button of Post', postID))} />
       ) : (
         <AppText style={{ fontWeight: "900", color: colors.bottom }}>
           ...
@@ -41,13 +41,13 @@ const PostHeader = ({ post, DeleteButton, userData }) => {
 const PostImage = ({ post }) => (
   <View style={{ width: "100%", height: 450 }}>
     <Image
-      source={{ uri: post.imageURL }}
+      source={{ uri: post.imageURL[1] }}
       style={{ height: "100%", resizeMode: "cover" }}
     />
   </View>
 );
 
-const PostFooter = () => (
+const PostFooter = ({user, post, postID, postAllLikes}) => (
   <View
     style={{
       width: "100%",
@@ -59,20 +59,63 @@ const PostFooter = () => (
       paddingVertical: 10,
     }}
   >
-    <PostIconH name={"cards-heart-outline"} size={30} />
+    <PostIconH name={"cards-heart-outline"} size={30} user={user} postID={postID} postAllLikes={postAllLikes}/>
     <PostIconC name={"comment-outline"} size={30} style={{ marginLeft: 10 }} />
   </View>
 );
 
-const PostIconH = ({ name, size, style }) => {
+const PostIconH = ({ name, user, size, style, postID, postAllLikes }) => {
   const [clicked, setClicked] = useState(false);
+  const [likeID, setLikeID] = useState('');
+  //const [tLikes, setTLikes] = useState(postAllLikes);
+  function setLike(){
+    if(clicked == true){
+       firestore().collection('Likes').doc(likeID).delete()
+       .then((res)=>{
+         console.log("Like Deleted!", res);
+       })
+      setClicked(false);
+    }else if(clicked == false){
+      firestore().collection('Likes').doc().set({
+        userID: user.phoneNumber,
+        postID: postID,
+        })
+      .then((res)=>{
+        console.log("Like Added!",res);
+        firestore().collection('Likes').where('userID', '==', user.phoneNumber).where('postID', '==', postID).get()
+        .then((data)=>{
+          if(!data._docs.length == '0'){
+            let likesData = data._docs[0]._data;
+            if(likesData.postID == postID){
+              setLikeID(data._docs[0]._ref._documentPath._parts[1]);
+              //setClicked(true);
+            }
+          }   
+        })
+      })
+      setClicked(true);
+    }
+  }
+  useEffect(()=>{
+    //console.log(user);
+    firestore().collection('Likes').where('userID', '==', user.phoneNumber).where('postID', '==', postID).get()
+    .then((data)=>{
+      if(!data._docs.length == '0'){
+        let likesData = data._docs[0]._data;
+      if(likesData.postID == postID){
+        setLikeID(data._docs[0]._ref._documentPath._parts[1]);
+        setClicked(true);
+      }
+    }
+    })
+  },[]);
   return (
     <TouchableIcon
       name={clicked ? "cards-heart" : name}
       size={size}
       iconColor={clicked ? colors.danger : colors.background}
       style={style}
-      onPress={() => (clicked ? setClicked(false) : setClicked(true))}
+      onPress={() => (setLike())}
     />
   );
 };
@@ -87,24 +130,30 @@ const PostIconC = ({ name, size, style }) => {
   );
 };
 
-const likes = "3232";
-
-const PostLikes = ({ post }) => (
+const PostLikes = ({ post, postAllLikes }) => {
+  let likes = 0;
+  if(postAllLikes){
+    likes = postAllLikes;
+  }else{
+    likes = postAllLikes;
+  }
+return (
   <View style={{ flexDirection: "row", marginTop: 5 }}>
     <AppText style={{ fontWeight: "600" }}>
       {Platform.OS === "android"
         ? likes.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         : likes.toLocaleString("en")}
     </AppText>
-    <AppText> likes</AppText>
+    <AppText> {likes > 1 ? 'likes' : 'like'}</AppText>
   </View>
 );
+};
 
 const PostCaption = ({ post, userData}) => (
   <View style={{ marginTop: 5 }}>
     <AppText>
       <AppText style={{ fontWeight: "600" }}>{userData.title+" "+userData.firstName+" "+userData.lastName}</AppText>
-      <AppText> {post.caption}</AppText>
+      <AppText> {post.caption[1]}</AppText>
     </AppText>
   </View>
 );
@@ -114,22 +163,45 @@ const PostCommentsSection = ({ post, postUser, postID, user, CommentSection }) =
   const [commentsArr, setCommentsArr] = useState([]);
   useEffect(() => {
     let pComments = [];
-    firestore().collection('Comments').where('postID', '==', postID)
-  .get()
-  .then(querySnapshot => {
-    //console.log(querySnapshot);
-    querySnapshot.forEach(documentSnapshot => {
-      //console.log(documentSnapshot._data);
-      if(documentSnapshot._data.postID == postID && documentSnapshot._data.postID){
+  //   firestore().collection('Comments').where('postID', '==', postID)
+  // .get()
+  // .then(querySnapshot => {
+  //   //console.log(querySnapshot);
+  //   querySnapshot.forEach(documentSnapshot => {
+  //     //console.log(documentSnapshot._data);
+  //     if(documentSnapshot._data.postID == postID && documentSnapshot._data.postID){
         
-        let ds = documentSnapshot._data;
-        pComments.push(ds);
+  //       let ds = documentSnapshot._data;
+  //       pComments.push(ds);
+  //     }
+  //   });
+
+    function onResult(QuerySnapshot) {
+      //console.log('I got called!');
+      if(!QuerySnapshot._changes.length == '0'){
+        QuerySnapshot._changes.map((data, index)=>{
+          pComments.push(data._nativeData.doc.data);
+        })
       }
-    });
-    if(!pComments.length == '0'){
-      setCommentsArr(pComments);
+      if(!pComments.length == '0'){
+        setCommentsArr(pComments);
+      }
+    // if(!QuerySnapshot._changes.length == '0'){
+    //   console.log(QuerySnapshot._changes.length);
+    //       setLikesCount(QuerySnapshot._changes.length);
+    //     }else{
+    //       setLikesCount(QuerySnapshot._changes.length);
+    //     }
     }
-  });
+  
+    function onError(error) {
+      console.error(error);
+    }
+
+    firestore().collection('Comments').where('postID', '==', postID).onSnapshot(onResult, onError);
+
+
+  // });
   // function onResult(QuerySnapshot) {
   //   QuerySnapshot.forEach(documentSnapshot => {
   //     //console.log(documentSnapshot._data);
@@ -199,10 +271,10 @@ const PostCommentsSection = ({ post, postUser, postID, user, CommentSection }) =
                   //console.log(sent);
                 })
                 
-                setCommentsArr([
-                  ...commentsArr,
-                  { comment: values.comment, user: (user.title+" "+user.firstName).toString() },
-                ]);
+                // setCommentsArr([
+                //   ...commentsArr,
+                //   { comment: values.comment, user: (user.title+" "+user.firstName).toString() },
+                // ]);
                 resetForm();
               }}
             >
@@ -237,9 +309,9 @@ const PostCommentsSection = ({ post, postUser, postID, user, CommentSection }) =
 function commentChecker(comment){
   if(comment){
     if(comment.comment){
-      return comment.comment;
+      return comment.comment[1];
     }else{
-      return comment[0].comment;
+      return comment[0].comment[1];
     }
   }else{
     return 'No Comments';
@@ -248,9 +320,9 @@ function commentChecker(comment){
 function commentUser(comment){
   if(comment){
     if(comment.user){
-      return comment.user;
+      return comment.user[1];
     }else{
-      return comment[0].user;
+      return comment[0].user[1];
     }
     
   }else{
@@ -280,15 +352,16 @@ const PostSingleComment = ({ post }) => (
   </View>
 );
 
-const AddComment = ({commentsArr})=>{
-  return <>
-    {commentsArr}
-  </>;
-}
+// const AddComment = ({commentsArr})=>{
+//   return <>
+//     {commentsArr}
+//   </>;
+// }
 
 const Post = ({
   post,
   postID,
+  user,
   postUser,
   withHeader = true,
   withImage = true,
@@ -300,23 +373,53 @@ const Post = ({
   deletePost,
 }) => {
   const [userData, setUserData] = useState('');
-  const {user, setUser} = useUserAuth();
+  const [likesCount, setLikesCount] = useState('');
+  //console.log(post);
+  
+  //const {user, setUser} = useUserAuth();
   
   //const [userWPostID, setUserWPostID] = useState([]);
   useEffect(()=>{
     //console.log(post.id);
-    firestore().collection('Users').doc(post.userID).get()
+    firestore().collection('Users').doc(post.userID[1]).get()
     .then((data)=>{
       let mainData = data._data;
-      console.log(mainData);
+      //console.log(mainData);
       setUserData(mainData);
     })
+
+    // firestore().collection('Likes').where('postID','==',postID).get()
+    // .then((data)=>{
+    //   if(!data._docs.length == '0'){
+    //     setLikesCount(data._changes.length);
+    //   }
+      
+    // })
     // firestore().collection('Comments').doc().get()
     // .then((comments)=>{
     //   if(comments._data){
     //     console.log(comments);
     //   }
     // })
+
+    function onResult(QuerySnapshot) {
+        console.log('I got called!');
+      //console.log(QuerySnapshot._changes.length);
+      if(!QuerySnapshot._changes.length == '0'){
+        console.log(QuerySnapshot._changes.length);
+            setLikesCount(QuerySnapshot._changes.length);
+          }else{
+            setLikesCount(QuerySnapshot._changes.length);
+          }
+    }
+    
+    function onError(error) {
+      console.error(error);
+    }
+    
+    firestore().collection('Likes').where('postID','==',postID).onSnapshot(onResult, onError);
+
+
 
   },[])
   return (
@@ -327,12 +430,13 @@ const Post = ({
           post={post}
           DeleteButton={withDeleteButton}
           deletePost={deletePost}
+          postID={postID} postUser={postUser}
         />
       )}
       {withImage && <PostImage post={post} />}
-      {withFooter && <PostFooter post={post} />}
+      {withFooter && <PostFooter user={user} post={post} postAllLikes={likesCount} postID={postID} />}
       <View style={{ marginHorizontal: 10, marginTop: 5 }}>
-        {withLikes && <PostLikes post={post} postID={postID} />}
+        {withLikes && <PostLikes postAllLikes={likesCount} post={post} />}
         {withComments && <PostCaption userData={userData} post={post} />}
         <PostCommentsSection user={user} post={post} postID={postID} postUser={postUser} CommentSection={withCommentSection} />
       </View>

@@ -23,7 +23,7 @@ function ListingEditScreen({ navigation }) {
   const {user, setUser} = useUserAuth();
 
   const handleSubmit = async(listing, { resetForm }) => {
-    console.log(listing.images[0]);
+    //console.log(listing.images[0]);
 
     // path to existing file on filesystem
     const pathToFile = (listing.images[0]).toString();
@@ -40,9 +40,11 @@ function ListingEditScreen({ navigation }) {
         caption: listing.description,
         userID: user.phoneNumber,
        })
+    // navigation.navigate("HomeScreen", {imageURL: url,
+    //   caption: listing.description,
+    //   userID: user.phoneNumber,});
     resetForm();
-    navigation.navigate("HomeScreen");
-    
+    navigation.push("HomeScreen");
   };
   // async (listing, { resetForm }) => {
   //   const result = await listingsApi.addListing({ ...listing });

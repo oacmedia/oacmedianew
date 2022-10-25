@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import * as Yup from "yup";
 
@@ -11,6 +11,8 @@ import auth from '@react-native-firebase/auth';
 import firestore from "@react-native-firebase/firestore";
 import { useUserAuth } from "../context/UserAuthContext";
 import storage from "../components/storage/storage";
+import CountryPicker from "react-native-country-picker-modal";
+import defaultStyles from "../config/styles";
 
 //let app = firebase.app();
 //let app = firebase.apps[0].firestore;
@@ -29,6 +31,8 @@ const validationSchema = Yup.object().shape({
 
 function LoginScreen({ navigation }) {
   const {user, setUser} = useUserAuth();
+  const [countryCode, setCountryCode] = useState("");
+  const [callingCode, setCallingCode] = useState("");
   //console.log(user);
 useEffect(() => {
 
@@ -75,11 +79,12 @@ useEffect(() => {
 
       // found data go to then()
 
-       console.log(ret.phoneNumber);
+       //console.log(ret.phoneNumber);
        const userData = await firestore().collection('Users').doc(ret.phoneNumber).get();
        let logginedUser = userData._data;
        if(userData._exists){
         let data = logginedUser;
+        //console.log(data);
         setUser(data);
         navigation.navigate("HomeScreen");
        }
@@ -109,16 +114,30 @@ useEffect(() => {
   //   }
   // }   
 }, []);
-  console.log('Hello!');
+  //console.log('Hello!');
   return (
     <Screen style={styles.container}>
       <Text style={styles.logo}>OAC</Text>
-
+      <View style={styles.countryContainer}>
+        <CountryPicker
+          withFilter
+          countryCode={countryCode}
+          withFlag
+          withCallingCode
+          withCountryNameButton
+          onSelect={({ callingCode, cca2 }) => {
+            setCallingCode(callingCode);
+            setCountryCode(cca2);
+          }}
+          containerButtonStyle={styles.countrySelector}
+        />
+      </View>
       <Form
         initialValues={{ phone: "", password: "" }}
         validationSchema={validationSchema}
         onSubmit={async(values) => {
-          let phno = ('+'+values.phone).toString();
+          const phno = ('+' + callingCode[0] + values.phone).toString();
+        //   let phno = ('+'+values.phone).toString();
         const userData = await firestore().collection('Users').doc(phno).get();
         console.log(userData._exists);
         let currentUser = userData._data;
@@ -202,6 +221,19 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "center",
     marginTop: 50,
+  },
+  countryContainer: {
+    backgroundColor: defaultStyles.colors.light,
+    borderRadius: 25,
+    flexDirection: "row",
+    marginVertical: 10,
+    alignItems: "center",
+  },
+  countrySelector: {
+    alignItems: "center",
+    minWidth: "100%",
+    padding: 15,
+    borderRadius: 25,
   },
 });
 
