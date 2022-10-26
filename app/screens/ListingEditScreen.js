@@ -44,7 +44,7 @@ function ListingEditScreen({ navigation }) {
     //   caption: listing.description,
     //   userID: user.phoneNumber,});
     resetForm();
-    navigation.push("HomeScreen");
+    navigation.navigate("HomeScreen", {posted: true});
   };
   // async (listing, { resetForm }) => {
   //   const result = await listingsApi.addListing({ ...listing });

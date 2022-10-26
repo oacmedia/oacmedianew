@@ -41,13 +41,13 @@ const PostHeader = ({ post, postUser, postID, DeleteButton, userData }) => {
 const PostImage = ({ post }) => (
   <View style={{ width: "100%", height: 450 }}>
     <Image
-      source={{ uri: post.imageURL[1] }}
+      source={{ uri: post.imageURL }}
       style={{ height: "100%", resizeMode: "cover" }}
     />
   </View>
 );
 
-const PostFooter = ({user, post, postID, postAllLikes}) => (
+const PostFooter = ({user, post, postID}) => (
   <View
     style={{
       width: "100%",
@@ -59,12 +59,12 @@ const PostFooter = ({user, post, postID, postAllLikes}) => (
       paddingVertical: 10,
     }}
   >
-    <PostIconH name={"cards-heart-outline"} size={30} user={user} postID={postID} postAllLikes={postAllLikes}/>
+    <PostIconH name={"cards-heart-outline"} size={30} user={user} postID={postID}/>
     <PostIconC name={"comment-outline"} size={30} style={{ marginLeft: 10 }} />
   </View>
 );
 
-const PostIconH = ({ name, user, size, style, postID, postAllLikes }) => {
+const PostIconH = ({ name, user, size, style, postID }) => {
   const [clicked, setClicked] = useState(false);
   const [likeID, setLikeID] = useState('');
   //const [tLikes, setTLikes] = useState(postAllLikes);
@@ -130,13 +130,33 @@ const PostIconC = ({ name, size, style }) => {
   );
 };
 
-const PostLikes = ({ post, postAllLikes }) => {
-  let likes = 0;
-  if(postAllLikes){
-    likes = postAllLikes;
-  }else{
-    likes = postAllLikes;
-  }
+const PostLikes = ({ post, postID }) => {
+  // let likes = 0;
+  // if(postAllLikes){
+  //   likes = postAllLikes;
+  // }else{
+  //   likes = postAllLikes;
+  // }
+  const [likes, setLikes] = useState('0');
+  useEffect(()=>{
+    function onResult(QuerySnapshot) {
+      //console.log('Starts From Here!', QuerySnapshot._docs.length);
+    //console.log(QuerySnapshot._changes.length);
+      if(!QuerySnapshot._changes.length == '0'){
+        //console.log(QuerySnapshot._changes.length);
+        setLikes(QuerySnapshot._docs.length);
+      }else{
+        setLikes(QuerySnapshot._docs.length);
+      }
+    }
+  
+    function onError(error) {
+      console.error(error);
+    }
+  
+    firestore().collection('Likes').where('postID','==',postID).onSnapshot(onResult, onError);
+    //let likes = 0;
+  },[]);
 return (
   <View style={{ flexDirection: "row", marginTop: 5 }}>
     <AppText style={{ fontWeight: "600" }}>
@@ -153,7 +173,7 @@ const PostCaption = ({ post, userData}) => (
   <View style={{ marginTop: 5 }}>
     <AppText>
       <AppText style={{ fontWeight: "600" }}>{userData.title+" "+userData.firstName+" "+userData.lastName}</AppText>
-      <AppText> {post.caption[1]}</AppText>
+      <AppText> {post.caption}</AppText>
     </AppText>
   </View>
 );
@@ -309,7 +329,7 @@ const PostCommentsSection = ({ post, postUser, postID, user, CommentSection }) =
 function commentChecker(comment){
   if(comment){
     if(comment.comment){
-      return comment.comment[1];
+      return comment.comment;
     }else{
       return comment[0].comment[1];
     }
@@ -320,7 +340,7 @@ function commentChecker(comment){
 function commentUser(comment){
   if(comment){
     if(comment.user){
-      return comment.user[1];
+      return comment.user;
     }else{
       return comment[0].user[1];
     }
@@ -373,7 +393,6 @@ const Post = ({
   deletePost,
 }) => {
   const [userData, setUserData] = useState('');
-  const [likesCount, setLikesCount] = useState('');
   //console.log(post);
   
   //const {user, setUser} = useUserAuth();
@@ -381,7 +400,7 @@ const Post = ({
   //const [userWPostID, setUserWPostID] = useState([]);
   useEffect(()=>{
     //console.log(post.id);
-    firestore().collection('Users').doc(post.userID[1]).get()
+    firestore().collection('Users').doc(post.userID).get()
     .then((data)=>{
       let mainData = data._data;
       //console.log(mainData);
@@ -401,26 +420,6 @@ const Post = ({
     //     console.log(comments);
     //   }
     // })
-
-    function onResult(QuerySnapshot) {
-        console.log('I got called!');
-      //console.log(QuerySnapshot._changes.length);
-      if(!QuerySnapshot._changes.length == '0'){
-        console.log(QuerySnapshot._changes.length);
-            setLikesCount(QuerySnapshot._changes.length);
-          }else{
-            setLikesCount(QuerySnapshot._changes.length);
-          }
-    }
-    
-    function onError(error) {
-      console.error(error);
-    }
-    
-    firestore().collection('Likes').where('postID','==',postID).onSnapshot(onResult, onError);
-
-
-
   },[])
   return (
     <View style={{ marginBottom: 30 }}>
@@ -434,9 +433,9 @@ const Post = ({
         />
       )}
       {withImage && <PostImage post={post} />}
-      {withFooter && <PostFooter user={user} post={post} postAllLikes={likesCount} postID={postID} />}
+      {withFooter && <PostFooter user={user} post={post} postID={postID} />}
       <View style={{ marginHorizontal: 10, marginTop: 5 }}>
-        {withLikes && <PostLikes postAllLikes={likesCount} post={post} />}
+        {withLikes && <PostLikes post={post} postID={postID} />}
         {withComments && <PostCaption userData={userData} post={post} />}
         <PostCommentsSection user={user} post={post} postID={postID} postUser={postUser} CommentSection={withCommentSection} />
       </View>
