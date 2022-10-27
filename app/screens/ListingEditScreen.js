@@ -34,17 +34,19 @@ function ListingEditScreen({ navigation }) {
     const image = await storage().ref(filename).putFile(pathToFile);
     //console.log(listing.description);
     const url = await storage().ref(image.metadata.fullPath).getDownloadURL();
-    const postCreate = await firestore().collection('Posts').doc();
+    if(url){
+      const postCreate = await firestore().collection('Posts').doc();
       postCreate.set({
         imageURL: url,
         caption: listing.description,
         userID: user.phoneNumber,
        })
-    // navigation.navigate("HomeScreen", {imageURL: url,
-    //   caption: listing.description,
-    //   userID: user.phoneNumber,});
-    resetForm();
-    navigation.navigate("HomeScreen", {posted: true});
+      // navigation.navigate("HomeScreen", {imageURL: url,
+      //   caption: listing.description,
+      //   userID: user.phoneNumber,});
+      resetForm();
+      navigation.navigate("HomeScreen", {posted: true});
+    }
   };
   // async (listing, { resetForm }) => {
   //   const result = await listingsApi.addListing({ ...listing });

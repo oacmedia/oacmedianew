@@ -21,6 +21,7 @@ function RegisterScreen5({ navigation }) {
   //const [code, setCode] = useState('');
   const {user, setUser} = useUserAuth();
   const [loginUser, setLoginUser] = useState('');
+  const [otpError, setOTPError] = useState("");
 
   // Handle user state changes
   function onAuthStateChanged(user) {
@@ -56,19 +57,20 @@ function RegisterScreen5({ navigation }) {
         profile: 'https://firebasestorage.googleapis.com/v0/b/oacmedia-app-8464c.appspot.com/o/profileImages%2Fuser.png?alt=media&token=d7d1964f-3286-4297-8cf9-b6ecf27176fe',
        })
     .then(async() => {
-      let phno = user.phone;
-      const userData = await firestore().collection('Users').doc(phno).get();
-      console.log(userData._exists);
-      let currentUser = userData._data;
-      if(userData._exists){
-        let data = {currentUser};
-        setUser(data);
-       }
-      navigation.navigate("HomeScreen");
+      // let phno = user.phone;
+      // const userData = await firestore().collection('Users').doc(phno).get();
+      // console.log(userData._exists);
+      // let currentUser = userData._data;
+      // if(userData._exists){
+      //   let data = {currentUser};
+      //   setUser(data);
+      // }
+      navigation.navigate("LoginScreen");
     })
    } catch (error) {
       if (error.code == 'auth/invalid-verification-code') {
-        console.log('Invalid code.');
+        //console.log('Invalid code.');
+        setOTPError("Enter a valid Code.");
       } else {
         console.log(error);
       }
@@ -80,9 +82,17 @@ function RegisterScreen5({ navigation }) {
   return (
     <Screen style={styles.container}>
       <Text style={styles.h1}>Enter the OTP you received</Text>
+      {otpError.length > 0 &&
+          <Text style={styles.error}>{otpError}</Text>
+        }
       <Form
         initialValues={{ otp: "" }}
         onSubmit={async(values) => {
+          if((values.otp).length != 6){
+            setOTPError("OTP must contain 6 numbers!");
+            return false;
+          }
+          setOTPError("");
           console.log(values);
           confirmCode(values.otp);
         }}
@@ -105,6 +115,10 @@ const styles = StyleSheet.create({
   container: {
     padding: 10,
     paddingTop: "25%",
+  },
+  error:{
+    alignSelf: "center",
+    color: "red",
   },
   h1: {
     alignSelf: "center",

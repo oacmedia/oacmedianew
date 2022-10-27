@@ -30,6 +30,7 @@ function RegisterScreen({ navigation }) {
   const [countryCode, setCountryCode] = useState("");
   const [callingCode, setCallingCode] = useState("");
   const {user, setUser} = useUserAuth();
+  const [ccError, setCCError] = useState("");
   const [error, setError] = useState();
   //const [confirm, setConfirm] = useState(null);
   //const [code, setCode] = useState('');
@@ -106,6 +107,9 @@ function RegisterScreen({ navigation }) {
       <Text style={styles.text}>
         Enter the mobile number where you can be reached.
       </Text>
+      {ccError.length > 0 &&
+          <Text style={styles.error}>{ccError}</Text>
+        }
       <View style={styles.countryContainer}>
         <CountryPicker
           withFilter
@@ -116,6 +120,7 @@ function RegisterScreen({ navigation }) {
           onSelect={({ callingCode, cca2 }) => {
             setCallingCode(callingCode);
             setCountryCode(cca2);
+            setCCError("");
           }}
           containerButtonStyle={styles.countrySelector}
         />
@@ -123,8 +128,12 @@ function RegisterScreen({ navigation }) {
       <Form
         initialValues={{ phone: "" }}
         onSubmit={async(values) => {
-            
-            const ph_no = ('+' + callingCode[0] + values.phone).toString();
+            if(!callingCode){
+              setCCError("Select Country Code!");
+              return false;
+            }
+            let ph_no = ('+' + callingCode[0] + values.phone).toString();
+            ph_no = ph_no.split(" ").join("");
             const userData = await firestore().collection('Users').doc(ph_no).get();
             console.log(userData._exists);
             if(!userData._exists){
@@ -168,6 +177,10 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     fontSize: 14,
     marginBottom: 40,
+  },
+  error:{
+    alignSelf: "center",
+    color: "red",
   },
   countryContainer: {
     backgroundColor: defaultStyles.colors.light,

@@ -27,14 +27,18 @@ const validationSchema = Yup.object().shape({
 });
 
 function RegisterScreen({ navigation }) {
-  const [category, setCategory] = useState();
+  const [category, setCategory] = useState('');
   const [firstname , setFirstname] = useState('');
   const [lastname , setLastname] = useState('');
   const {setUser} = useUserAuth();
+  const [catError, setCatError] = useState('');
   return (
     <Screen style={styles.container}>
       <Text style={styles.h1}>What's your name?</Text>
       <Text style={styles.text}>Enter the name you use in real life.</Text>
+      {catError.length > 0 &&
+        <Text style={styles.error}>{catError}</Text>
+      }
       <AppPicker
         placeholder={"Title"}
         items={categories}
@@ -44,6 +48,11 @@ function RegisterScreen({ navigation }) {
       <Form
         initialValues={{firstname,lastname}}
         onSubmit={(values) => {
+          if(!category){
+            setCatError("Select Your Favourite Title!");
+            return false;
+          }
+          setCatError('');
           console.log(values);
           setUser((prev) => ({...prev , firstname: values.firstname , lastname : values.lastname , title:category.label}))
           navigation.navigate("RegisterScreen3" , values);
@@ -79,6 +88,10 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     fontWeight: "800",
     marginBottom: 10,
+  },
+  error:{
+    alignSelf: "center",
+    color: "red",
   },
   text: {
     alignSelf: "center",

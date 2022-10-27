@@ -19,7 +19,42 @@ import firestore from '@react-native-firebase/firestore';
 import { isEmptyArray } from "formik";
 
 
-const PostHeader = ({ post, postUser, postID, DeleteButton, userData }) => {
+const PostHeader = ({ post, postUser, postID, DeleteButton, LoginnedUser, userData }) => {
+  
+  function deleteCalled(){
+    firestore().collection('Likes').where("postID", "==", postID).get()
+    .then((snapshot)=>{
+      // console.log(snapshot.docs);
+      let likes = 0;
+      snapshot.docs.map((doc)=>{
+        let id = doc.id;
+        firestore().collection('Likes').doc(id).delete()
+        .then(()=>{
+          likes++;
+          console.log(likes,"Likes Deleted!");
+        })
+      })
+    })
+    firestore().collection('Comments').where("postID", "==", postID).get()
+    .then((snapshot)=>{
+      let comments = 0;
+      // console.log(snapshot.docs);
+      snapshot.docs.map((doc)=>{
+        let id = doc.id;
+        firestore().collection('Comments').doc(id).delete()
+        .then(()=>{
+          comments++;
+          console.log(comments,"Comments Deleted!");
+        })
+      })
+    })
+    firestore().collection('Posts').doc(postID).delete()
+    .then(()=>{
+      console.log("Deleted!");
+    })
+
+    //console.log("Delete Called!", postID);
+  }
   return(
   <View style={styles.head_container}>
     <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -28,10 +63,10 @@ const PostHeader = ({ post, postUser, postID, DeleteButton, userData }) => {
     </View>
     <TouchableOpacity hitSlop={10}>
       {DeleteButton ? (
-        <TouchableIcon name={"delete"} iconColor={colors.danger} size={25} onPress={() => (console.log('Press Del Button of Post', postID))} />
+        <TouchableIcon name={"delete"} iconColor={colors.danger} size={25} onPress={()=>{deleteCalled()}} />
       ) : (
         <AppText style={{ fontWeight: "900", color: colors.bottom }}>
-          ...
+          {/* ... */}
         </AppText>
       )}
     </TouchableOpacity>
@@ -329,7 +364,7 @@ const PostCommentsSection = ({ post, postUser, postID, user, CommentSection }) =
 function commentChecker(comment){
   if(comment){
     if(comment.comment){
-      return comment.comment;
+      return (comment.comment).length > 1 ? comment.comment[1] : comment.comment;
     }else{
       return comment[0].comment[1];
     }
@@ -340,7 +375,7 @@ function commentChecker(comment){
 function commentUser(comment){
   if(comment){
     if(comment.user){
-      return comment.user;
+      return (comment.user).length > 1 ? comment.user[1] : comment.user;
     }else{
       return comment[0].user[1];
     }
@@ -426,6 +461,7 @@ const Post = ({
       <Divider width={1} orientation="vertical" />
       {withHeader && (
         <PostHeader userData={userData}
+          LoginnedUser={user}
           post={post}
           DeleteButton={withDeleteButton}
           deletePost={deletePost}

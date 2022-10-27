@@ -33,6 +33,8 @@ function LoginScreen({ navigation }) {
   const {user, setUser} = useUserAuth();
   const [countryCode, setCountryCode] = useState("");
   const [callingCode, setCallingCode] = useState("");
+  const [ccError, setCCError] = useState("");
+  const [epError, setEPError] = useState("");
   //console.log(user);
 useEffect(() => {
 
@@ -118,6 +120,9 @@ useEffect(() => {
   return (
     <Screen style={styles.container}>
       <Text style={styles.logo}>OAC</Text>
+        {ccError.length > 0 &&
+          <Text style={styles.error}>{ccError}</Text>
+        }
       <View style={styles.countryContainer}>
         <CountryPicker
           withFilter
@@ -128,14 +133,23 @@ useEffect(() => {
           onSelect={({ callingCode, cca2 }) => {
             setCallingCode(callingCode);
             setCountryCode(cca2);
+            setCCError("");
           }}
           containerButtonStyle={styles.countrySelector}
         />
       </View>
+      {epError.length > 0 &&
+          <Text style={styles.error}>{epError}</Text>
+        }
       <Form
         initialValues={{ phone: "", password: "" }}
         validationSchema={validationSchema}
         onSubmit={async(values) => {
+          if(!callingCode){
+            setCCError("Select Country Code!");
+            return false;
+          }
+          setEPError("");
           const phno = ('+' + callingCode[0] + values.phone).toString();
         //   let phno = ('+'+values.phone).toString();
         const userData = await firestore().collection('Users').doc(phno).get();
@@ -160,13 +174,14 @@ useEffect(() => {
                 });
                 navigation.navigate("HomeScreen");    
               }else{
-                console.log('Wrong Details!');
+                setEPError("Wrong Details!");
               }
           }else{
-            console.log('Wrong Details!');
+            setEPError("Wrong Details!");
           }
         }else{
-          console.log('User Does not exists!');
+          //console.log('User Does not exists!');
+          setEPError("Wrong Details!");
         }
 
 //        setPost(null);
@@ -215,6 +230,10 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginTop: 80,
     marginBottom: 50,
+  },
+  error:{
+    alignSelf: "center",
+    color: "red",
   },
   signupContainer: {
     flexDirection: "row",
