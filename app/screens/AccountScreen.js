@@ -8,6 +8,7 @@ import ListItemSeparator from "../components/lists/ListItemSeparator";
 import Screen from "../components/Screen";
 import colors from "../config/colors";
 import storage from "../components/storage/storage";
+import { useUserAuth } from "../context/UserAuthContext";
 
 const menuItems = [
   {
@@ -28,14 +29,15 @@ const menuItems = [
   },
 ];
 function AccountScreen({ navigation }) {
+  const {user, setUser} = useUserAuth();
   return (
     <Screen style={styles.screen}>
       <View style={styles.container}>
         <ListItem
-          title="Ukasha Tariq Javed"
-          subTitle="ukashatariq1@gmail.com"
+          title={user.title+" "+user.firstName+" "+user.lastName}
+          subTitle={user.phoneNumber}
           image={
-            "https://www.unigreet.com/wp-content/uploads/2020/04/Smiley-816x1024.jpg"
+            user.profile
           }
         />
       </View>

@@ -17,6 +17,8 @@ import { useEffect } from "react";
 import firestore from '@react-native-firebase/firestore';
 //import { useUserAuth } from "../../context/UserAuthContext";
 import { isEmptyArray } from "formik";
+import { FlatList } from "react-native-gesture-handler";
+import Video from "react-native-video";
 
 
 const PostHeader = ({ post, postUser, postID, DeleteButton, LoginnedUser, userData }) => {
@@ -73,14 +75,53 @@ const PostHeader = ({ post, postUser, postID, DeleteButton, LoginnedUser, userDa
   </View>)
 };
 
-const PostImage = ({ post }) => (
+const PostImage = ({ post }) => {
+
+  const [video, setVideo] = useState(false);
+  const [videoURL, setVideoURL] = useState('');
+  useEffect(()=>{
+    if(post.contents){
+      post.contents.map((content)=>{
+        if(content.type == "video/mp4"){
+          setVideo(true);
+          setVideoURL(content.url);
+        }
+      })
+    }
+  },[]);
+  
+  return (
   <View style={{ width: "100%", height: 450 }}>
-    <Image
-      source={{ uri: post.imageURL }}
+    {/* <FlatList
+      data={{post}}
+      style={{ flex: 1 }}
+      renderItem={(item) => {
+        const {item: post} = item
+        return <Image
+        source={{ uri: post.imageURL ? post.imageURL : post.contents[0].url }}
+        style={{ height: "100%", resizeMode: "cover" }}
+      />;
+      }} 
+      // pagingEnabled
+      // horizontal
+      // showsHorizontalScrollIndicator={false}
+    /> */}
+    {video && <Video source={{uri: videoURL}}   // Can be a URL or a local file.
+        ref={(ref) => {
+          Video.player = ref
+        }}    
+        resizeMode={"cover"}
+        repeat                                // Store reference
+       onBuffer={Video.onBuffer}                // Callback when remote video is buffering
+       onError={Video.videoError}               // Callback when video cannot be loaded
+       style={styles.backgroundVideo}
+       />}
+    {!video && <Image
+      source={{ uri: post.imageURL ? post.imageURL : post.contents[0].url }}
       style={{ height: "100%", resizeMode: "cover" }}
-    />
+    />}
   </View>
-);
+)};
 
 const PostFooter = ({user, post, postID}) => (
   <View
@@ -488,6 +529,15 @@ const styles = StyleSheet.create({
     padding: 10,
     alignItems: "center",
     backgroundColor: colors.light,
+  },
+  backgroundVideo: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+    height: "100%",
+    backgroundColor: "white",
   },
   head_image: {
     width: 35,

@@ -21,33 +21,53 @@ const validationSchema = Yup.object().shape({
 
 function ListingEditScreen({ navigation }) {
   const {user, setUser} = useUserAuth();
+  let count = 0;
+  function processImage(listing, { resetForm }){
+    let array = [];
+    array = listing.images.map((content)=>{
+      let pathToFile = content.toString();
+      let filename = pathToFile.substring(pathToFile.lastIndexOf('/')+1);
+      
+      let image = storage().ref(filename).putFile(pathToFile)
+      image.on('state_changed',taskSnapshot => {
+        console.log(`${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`);
+      });
+      image.then(async(data) => {
+        count++;
+        let url = await storage().ref(data.metadata.fullPath).getDownloadURL();
+        console.log('File: '+data.metadata.name+' uploaded to the bucket!');
+        array.push({path: data.metadata.fullPath,type: data.metadata.contentType,url: url});
+        
+        if(data.state == "success" && listing.images.length == count){
+          count = 0;
+          array.splice(0,listing.images.length);
+          if(array.length > 0){
+              const postCreate = await firestore().collection('Posts').doc();
+              postCreate.set({
+                contents: array,
+                caption: listing.description,
+                userID: user.phoneNumber,
+               });
+              resetForm();
+              navigation.navigate("HomeScreen");
+            }else{
+              return false;
+            }
+          //console.log(array);
+        }
+      });
+
+    });
+  }
+  useEffect(()=>{
+    
+  },[])
 
   const handleSubmit = async(listing, { resetForm }) => {
     //console.log(listing.images[0]);
+    processImage(listing, { resetForm });
 
-    // path to existing file on filesystem
-    const pathToFile = (listing.images[0]).toString();
-    let filename = pathToFile.substring(pathToFile.lastIndexOf('/')+1);
-
-    //console.log(filename);
-
-    const image = await storage().ref(filename).putFile(pathToFile);
-    //console.log(listing.description);
-    const url = await storage().ref(image.metadata.fullPath).getDownloadURL();
-    if(url){
-      const postCreate = await firestore().collection('Posts').doc();
-      postCreate.set({
-        imageURL: url,
-        caption: listing.description,
-        userID: user.phoneNumber,
-       })
-      // navigation.navigate("HomeScreen", {imageURL: url,
-      //   caption: listing.description,
-      //   userID: user.phoneNumber,});
-      resetForm();
-      navigation.navigate("HomeScreen", {posted: true});
     }
-  };
   // async (listing, { resetForm }) => {
   //   const result = await listingsApi.addListing({ ...listing });
 

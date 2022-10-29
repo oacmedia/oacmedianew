@@ -70,7 +70,7 @@ const HomeScreen = ({ routes, navigation }) => {
           }
           console.log(change, "change")
           let postData = change.doc.data();
-          let post = {caption: postData.caption,imageURL: postData.imageURL,userID: postData.userID};
+          let post = {caption: postData.caption,imageURL: postData.imageURL ? postData.imageURL : postData.contents[0].url,userID: postData.userID};
           if(_postIndex !== -1) {
             newPosts.splice(_postIndex, 1, [post,id,post.userID]);
           } else {
