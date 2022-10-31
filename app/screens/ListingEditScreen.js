@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, ActivityIndicator, Dimensions, Keyboard, TouchableWithoutFeedback } from "react-native";
 import * as Yup from "yup";
 
 import { Form, FormField, SubmitButton } from "../components/forms";
@@ -21,6 +21,9 @@ const validationSchema = Yup.object().shape({
 
 function ListingEditScreen({ navigation }) {
   const {user, setUser} = useUserAuth();
+  const [processInd, setProcessInd] = useState(false);
+  const fullWidth = Dimensions.get('window').width;
+  const fullHeight = Dimensions.get('window').height;
   let count = 0;
   function processImage(listing, { resetForm }){
     let array = [];
@@ -64,6 +67,8 @@ function ListingEditScreen({ navigation }) {
   },[])
 
   const handleSubmit = async(listing, { resetForm }) => {
+    Keyboard.dismiss();
+    setProcessInd(true);
     //console.log(listing.images[0]);
     processImage(listing, { resetForm });
 
@@ -79,6 +84,7 @@ function ListingEditScreen({ navigation }) {
 
   return (
     <Screen style={styles.container}>
+      {processInd && <ActivityIndicator style={{alignSelf:"center",height: fullHeight, width: fullWidth, justifyContent: "center"}} size={100} color="white"/>}
       <Form
         initialValues={{
           description: "",
@@ -94,6 +100,7 @@ function ListingEditScreen({ navigation }) {
           name="description"
           numberOfLines={3}
           placeholder="Description"
+          
         />
         <SubmitButton title="Post" />
       </Form>

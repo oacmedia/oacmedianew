@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
   Text,
+  ActivityIndicator,
 } from "react-native";
 import { Dimensions } from "react-native";
 import { Divider } from "@rneui/themed";
@@ -21,7 +22,7 @@ import firestore from '@react-native-firebase/firestore';
 import { isEmptyArray } from "formik";
 import { FlatList } from "react-native-gesture-handler";
 import Video from "react-native-video";
-
+import storage from "@react-native-firebase/storage";
 
 const PostHeader = ({ post, postUser, postID, DeleteButton, LoginnedUser, userData }) => {
   
@@ -52,6 +53,26 @@ const PostHeader = ({ post, postUser, postID, DeleteButton, LoginnedUser, userDa
         })
       })
     })
+    firestore().collection('Posts').doc(postID).get()
+    .then((data)=>{
+      let files = [];
+      let post = data.data();
+      // console.log(snapshot.docs);
+      if(post.contents){
+        post.contents.map((content)=>{
+          let file = content.path;
+          files.push(file);
+        })
+      }
+      if(files){
+        files.map((file)=>{
+          storage().ref(file).delete()
+          .then(()=>{
+            console.log("deleted something");
+          });
+        })
+      }
+    })
     firestore().collection('Posts').doc(postID).delete()
     .then(()=>{
       console.log("Deleted!");
@@ -77,10 +98,11 @@ const PostHeader = ({ post, postUser, postID, DeleteButton, LoginnedUser, userDa
   </View>)
 };
 
-const PostVideo = ({ imageUrl }) => {
+const PostVideo = ({ imageUrl, index, length }) => {
   const fullWidth = Dimensions.get('window').width;
 return (
   <View style={{ marginTop: 0, width: fullWidth }}>
+    <ActivityIndicator style={{alignSelf:"center",height: "100%", width: fullWidth, justifyContent: "center"}} size={100} color="white"/>
     <Video source={{uri: imageUrl}}   // Can be a URL or a local file.
         ref={(ref) => {
           Video.player = ref
@@ -91,49 +113,34 @@ return (
         onError={Video.videoError}               // Callback when video cannot be loaded
         style={styles.backgroundVideo}
     />
-    {/* <Text>Video Component Checking</Text> */}
+    <Text style={styles.page}>{(index+1)+"/"+length}</Text>
   </View>
 )};
-const PostImage = ({ imageUrl }) => {
+const PostImage = ({ imageUrl, index, length }) => {
   const fullWidth = Dimensions.get('window').width;
   return (
     <View style={{ marginTop: 0 }}>
-      {/* <Image
-        source={{ uri: imageUrl[0], width: 400, height: 400 }}
-        style={{ height: "100%", resizeMode: "cover" }}
-      /> */}
-      {/* <Text>Image Component</Text> */}
       <Image source={{ uri: imageUrl, width: fullWidth }}
         style={{ height: "100%", resizeMode: "cover" }}></Image>
+      <Text style={styles.page}>{(index+1)+"/"+length}</Text>
     </View>
   )};
 
 const PostContent = ({ post }) => {
 
   //const [video, setVideo] = useState(true);
-  //const [videoURL, setVideoURL] = useState('');
+  const [postsLength, setPostsLength] = useState(0);
   useEffect(()=>{
-    // if(post.contents){
-    //   post.contents.map((content)=>{
-    //     if(content.type == "video/mp4"){
-    //       setVideo(true);
-    //       setVideoURL(content.url);
-    //     }
-    //   })
-    // }
+    if(post.contents){
+      setPostsLength(post.contents.length);
+    }else if(post.imageURL){
+      setPostsLength(1);
+    }
   },[]);
 
   const imageUrls = useMemo(() => {
     if(post.hasOwnProperty("imageUrl")) return [post.imageUrl];
     if(post.hasOwnProperty("contents")) return post.contents.map((content) => content
-    // {
-    //   //console.log(content.url);
-    //   // if(content.type == "video/mp4"){
-    //   //   setVideo(true);
-    //   // }
-    //     //setVideo(false);
-    //   return content.url;
-    // }
     )
     return [];
   }, [post])
@@ -145,38 +152,26 @@ const PostContent = ({ post }) => {
       post.hasOwnProperty("imageURL") ? <Image
         source={{ uri: post.imageURL}}
         style={{ height: "100%", resizeMode: "cover" }}
-      /> :
+      />
+      :
       <FlatList
         data={imageUrls}
         style={{ flex: 1 }}
         renderItem={(item) => {
           //const {item: post} = item
           let imageUrl = item.item;
+          let index = item.index;
           //console.log(imageUrl[0]);
           return imageUrl.type == "video/mp4" ?
-            <PostVideo imageUrl={imageUrl.url} />
+            <PostVideo imageUrl={imageUrl.url} index={index} length={postsLength} />
             :
-            <PostImage imageUrl={imageUrl.url} />
+            <PostImage imageUrl={imageUrl.url} index={index} length={postsLength}/>
         }} 
         pagingEnabled
         horizontal
         showsHorizontalScrollIndicator={false}
       />
     }
-    {/* {video && <Video source={{uri: videoURL}}   // Can be a URL or a local file.
-        ref={(ref) => {
-          Video.player = ref
-        }}    
-        resizeMode={"cover"}
-        repeat                                // Store reference
-       onBuffer={Video.onBuffer}                // Callback when remote video is buffering
-       onError={Video.videoError}               // Callback when video cannot be loaded
-       style={styles.backgroundVideo}
-       />}
-    {!video && <Image
-      source={{ uri: post.imageURL ? post.imageURL : post.contents[0].url }}
-      style={{ height: "100%", resizeMode: "cover" }}
-    />} */}
   </View>
 )};
 
@@ -595,7 +590,19 @@ const styles = StyleSheet.create({
     right: 0,
     height: "100%",
     width: "100%",
-    backgroundColor: "white",
+    backgroundColor: "transparent",
+  },
+  page:{
+    position: "absolute",
+    zIndex: 1,
+    backgroundColor: "black",
+    color: "white",
+    fontWeight: "900",
+    fontSize: 15,
+    padding: 10,
+    alignSelf: "flex-end",
+    borderRadius: 100,
+    margin: 10,
   },
   head_image: {
     width: 35,
