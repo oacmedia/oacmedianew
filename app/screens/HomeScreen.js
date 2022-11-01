@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet } from "react-native";
+import { ScrollView, StyleSheet, FlatList } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
 
 import BottomTabs from "../components/home/BottomTabs";
@@ -9,7 +9,7 @@ import Post from "../components/home/Post";
 import { useUserAuth } from "../context/UserAuthContext";
 import firestore from '@react-native-firebase/firestore';
 import storage from "@react-native-firebase/storage";
-import { FlatList } from "react-native-gesture-handler";
+//import { FlatList } from "react-native-gesture-handler";
 
 const HomeScreen = ({ routes, navigation }) => {
   const {user, setUser} = useUserAuth();

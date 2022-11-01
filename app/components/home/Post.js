@@ -7,6 +7,7 @@ import {
   View,
   Text,
   ActivityIndicator,
+  FlatList,
 } from "react-native";
 import { Dimensions } from "react-native";
 import { Divider } from "@rneui/themed";
@@ -20,7 +21,7 @@ import { useEffect } from "react";
 import firestore from '@react-native-firebase/firestore';
 //import { useUserAuth } from "../../context/UserAuthContext";
 import { isEmptyArray } from "formik";
-import { FlatList } from "react-native-gesture-handler";
+//import { FlatList } from "react-native-gesture-handler";
 import Video from "react-native-video";
 import storage from "@react-native-firebase/storage";
 
@@ -59,10 +60,12 @@ const PostHeader = ({ post, postUser, postID, DeleteButton, LoginnedUser, userDa
       let post = data.data();
       // console.log(snapshot.docs);
       if(post.contents){
-        post.contents.map((content)=>{
-          let file = content.path;
-          files.push(file);
-        })
+        if(post.contents[0].type != "text"){
+          post.contents.map((content)=>{
+            let file = content.path;
+            files.push(file);
+          })
+        }
       }
       if(files){
         files.map((file)=>{
@@ -147,30 +150,36 @@ const PostContent = ({ post }) => {
   
 
   return (
-  <View style={{ width: "100%", height: 450 }}>
+    
+  <View style={{ width: "100%",
+  height: imageUrls[0].type == "text" ? "auto" : 450,
+  backgroundColor: imageUrls[0].type == "text" ? colors.light : "transparent",
+  padding: imageUrls[0].type == "text" ? 20 : 0,
+  
+  }}>
     {
-      post.hasOwnProperty("imageURL") ? <Image
-        source={{ uri: post.imageURL}}
-        style={{ height: "100%", resizeMode: "cover" }}
-      />
-      :
-      <FlatList
-        data={imageUrls}
-        style={{ flex: 1 }}
-        renderItem={(item) => {
-          //const {item: post} = item
-          let imageUrl = item.item;
-          let index = item.index;
-          //console.log(imageUrl[0]);
-          return imageUrl.type == "video/mp4" ?
-            <PostVideo imageUrl={imageUrl.url} index={index} length={postsLength} />
-            :
-            <PostImage imageUrl={imageUrl.url} index={index} length={postsLength}/>
-        }} 
-        pagingEnabled
-        horizontal
-        showsHorizontalScrollIndicator={false}
-      />
+      imageUrls[0].type == "text" ? <Text style={styles.textPost}>{imageUrls[0].text}</Text> : post.hasOwnProperty("imageURL") ? <Image
+      source={{ uri: post.imageURL}}
+      style={{ height: "100%", resizeMode: "cover" }}
+    />
+    :
+    <FlatList
+      data={imageUrls}
+      style={{ flex: 1 }}
+      renderItem={(item) => {
+        //const {item: post} = item
+        let imageUrl = item.item;
+        let index = item.index;
+        //console.log(imageUrl[0]);
+        return imageUrl.type == "video/mp4" ?
+          <PostVideo imageUrl={imageUrl.url} index={index} length={postsLength} />
+          :
+          <PostImage imageUrl={imageUrl.url} index={index} length={postsLength}/>
+      }} 
+      pagingEnabled
+      horizontal
+      showsHorizontalScrollIndicator={false}
+    />
     }
   </View>
 )};
@@ -603,6 +612,9 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
     borderRadius: 100,
     margin: 10,
+  },
+  textPost:{
+    fontWeight: "500",
   },
   head_image: {
     width: 35,

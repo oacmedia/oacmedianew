@@ -16,7 +16,7 @@ import { useUserAuth } from "../context/UserAuthContext";
 
 const validationSchema = Yup.object().shape({
   description: Yup.string().label("Description"),
-  images: Yup.array().min(1, "Please select at least one image."),
+  //images: Yup.array().min(1, "Please select at least one image."),
 });
 
 function ListingEditScreen({ navigation }) {
@@ -27,40 +27,56 @@ function ListingEditScreen({ navigation }) {
   let count = 0;
   function processImage(listing, { resetForm }){
     let array = [];
-    array = listing.images.map((content)=>{
-      let pathToFile = content.toString();
-      let filename = pathToFile.substring(pathToFile.lastIndexOf('/')+1);
-      
-      let image = storage().ref(filename).putFile(pathToFile)
-      image.on('state_changed',taskSnapshot => {
-        console.log(`${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`);
-      });
-      image.then(async(data) => {
-        count++;
-        let url = await storage().ref(data.metadata.fullPath).getDownloadURL();
-        console.log('File: '+data.metadata.name+' uploaded to the bucket!');
-        array.push({path: data.metadata.fullPath,type: data.metadata.contentType,url: url});
+    if(listing.images.length != 0){
+      // listing.images.map((content)=>{
+      //   console.log(content);
+      // })
+      array = listing.images.map((content)=>{
+        let pathToFile = content.toString();
+        let filename = pathToFile.substring(pathToFile.lastIndexOf('/')+1);
         
-        if(data.state == "success" && listing.images.length == count){
-          count = 0;
-          array.splice(0,listing.images.length);
-          if(array.length > 0){
-              const postCreate = await firestore().collection('Posts').doc();
-              postCreate.set({
-                contents: array,
-                caption: listing.description,
-                userID: user.phoneNumber,
-               });
-              resetForm();
-              navigation.navigate("HomeScreen");
-            }else{
-              return false;
-            }
-          //console.log(array);
-        }
+        let image = storage().ref(filename).putFile(pathToFile)
+        image.on('state_changed',taskSnapshot => {
+          console.log(`${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`);
+        });
+        image.then(async(data) => {
+          count++;
+          let url = await storage().ref(data.metadata.fullPath).getDownloadURL();
+          console.log('File: '+data.metadata.name+' uploaded to the bucket!');
+          array.push({path: data.metadata.fullPath,type: data.metadata.contentType,url: url});
+          
+          if(data.state == "success" && listing.images.length == count){
+            count = 0;
+            array.splice(0,listing.images.length);
+            if(array.length > 0){
+                const postCreate = await firestore().collection('Posts').doc();
+                postCreate.set({
+                  contents: array,
+                  caption: (listing.description).toString(),
+                  userID: user.phoneNumber,
+                });
+                resetForm();
+                navigation.navigate("HomeScreen");
+              }else{
+                return false;
+              }
+            //console.log(array);
+          }
+        });
       });
-
-    });
+    }else{
+      const postCreate = firestore().collection('Posts').doc()
+                postCreate.set({
+                  contents: [{type: 'text', text: (listing.description).toString()}],
+                  caption: " ",
+                  userID: user.phoneNumber,
+                })
+                .then(()=>{
+                  console.log("Post Created!");
+                  resetForm();
+                  navigation.navigate("HomeScreen");
+                });
+    }
   }
   useEffect(()=>{
     

@@ -1,5 +1,5 @@
 import React, { useCallback,useEffect, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View, FlatList } from "react-native";
 import Post from "../components/home/Post";
 
 import Screen from "../components/Screen";
@@ -9,7 +9,7 @@ import { useUserAuth } from "../context/UserAuthContext";
 import firestore from '@react-native-firebase/firestore';
 import storage from "@react-native-firebase/storage";
 import BottomTabs from "../components/home/BottomTabs";
-import { FlatList } from "react-native-gesture-handler";
+//import { FlatList } from "react-native-gesture-handler";
 
 function PostsScreen({ navigation }) {
   const {user, setUser} = useUserAuth();
