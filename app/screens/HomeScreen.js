@@ -11,6 +11,7 @@ import firestore from '@react-native-firebase/firestore';
 import storage from "@react-native-firebase/storage";
 //import { FlatList } from "react-native-gesture-handler";
 
+
 const HomeScreen = ({ routes, navigation }) => {
   const {user, setUser} = useUserAuth();
   const [posts, setPosts] = useState([]);
@@ -84,6 +85,13 @@ const HomeScreen = ({ routes, navigation }) => {
       unsubscribe();
     }
   }, []);
+  // useEffect(() =>
+  //       navigation.addListener('beforeRemove', (e) => {
+  //           e.preventDefault();
+  //           return
+  //       }),
+  //       [navigation]
+  //   );
 
   return (
     <Screen>

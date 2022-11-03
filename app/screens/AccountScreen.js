@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import { FlatList, StyleSheet, View } from "react-native";
 
 import AccountIcon from "../components/AccountIcon";
@@ -9,6 +9,8 @@ import Screen from "../components/Screen";
 import colors from "../config/colors";
 import storage from "../components/storage/storage";
 import { useUserAuth } from "../context/UserAuthContext";
+import auth from '@react-native-firebase/auth';
+import firebase from '@react-native-firebase/app';
 
 const menuItems = [
   {
@@ -64,12 +66,28 @@ function AccountScreen({ navigation }) {
         title="Log Out"
         IconComponent={<AccountIcon name="logout" backgroundColor="grey" />}
         onPress={() => {
-          storage.remove({
-            key: 'loginState'
-          });          
-          
-          navigation.navigate("LoginScreen")
-        }}
+          firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+              auth()
+              .signOut()
+              .then(() => {
+                console.log("i m here!");
+                storage.remove({
+                  key: 'loginState'
+                });
+                navigation.navigate("LoginScreen");
+              }).catch((error)=>{
+                console.log(error);
+              });
+            } else {
+              storage.remove({
+                key: 'loginState'
+              });
+              navigation.navigate("LoginScreen");
+            }
+                
+        })
+      }}
       />
       <BottomTabs navigation={navigation} />
     </Screen>

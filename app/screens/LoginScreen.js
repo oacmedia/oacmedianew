@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View, ActivityIndicator, Dimensions, Keyboard } from "react-native";
 import * as Yup from "yup";
 
 import Screen from "../components/Screen";
@@ -35,7 +35,18 @@ function LoginScreen({ navigation }) {
   const [callingCode, setCallingCode] = useState("");
   const [ccError, setCCError] = useState("");
   const [epError, setEPError] = useState("");
+  const [processInd, setProcessInd] = useState(false);
+  const fullWidth = Dimensions.get('window').width;
+  const fullHeight = Dimensions.get('window').height;
   //console.log(user);
+  async function signInWPhoneNumber(phoneNumber) {
+    const confirmation = await auth().signInWithPhoneNumber(phoneNumber);
+    //setConfirm(confirmation);
+    return confirmation;
+    //console.log(confirmation);
+  }
+
+
 useEffect(() => {
 
   //storage
@@ -78,18 +89,32 @@ useEffect(() => {
     })
 
     .then(async(ret) => {
+      setProcessInd(true);
+      firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+          firestore().collection('Users').doc(ret.phoneNumber).get()
+          .then((userData)=>{
+            let logginedUser = userData._data;
+            if(userData._exists){
+              let data = logginedUser;
+              //console.log(data);
+              setUser(data);
+              setProcessInd(false);
+              navigation.navigate("HomeScreen");
+            }
+          })
+        } else {
+          storage.remove({
+            key: 'loginState'
+          });
+          setProcessInd(false);
+        }
+      });
 
       // found data go to then()
 
        //console.log(ret.phoneNumber);
-       const userData = await firestore().collection('Users').doc(ret.phoneNumber).get();
-       let logginedUser = userData._data;
-       if(userData._exists){
-        let data = logginedUser;
-        //console.log(data);
-        setUser(data);
-        navigation.navigate("HomeScreen");
-       }
+       
       })
     .catch(err => {
 
@@ -106,115 +131,113 @@ useEffect(() => {
           // TODO
           break;
         }
-    });
-
-
- // checking if already logged in!
-  // if(user != null){
-  //   if(user.phoneNumber && user.firstName){
-  //     navigation.navigate("HomeScreen");
-  //   }
-  // }   
+    });   
 }, []);
   //console.log('Hello!');
   return (
-    <Screen style={styles.container}>
-      <Text style={styles.logo}>OAC</Text>
-        {ccError.length > 0 &&
-          <Text style={styles.error}>{ccError}</Text>
-        }
-      <View style={styles.countryContainer}>
-        <CountryPicker
-          withFilter
-          countryCode={countryCode}
-          withFlag
-          withCallingCode
-          withCountryNameButton
-          onSelect={({ callingCode, cca2 }) => {
-            setCallingCode(callingCode);
-            setCountryCode(cca2);
-            setCCError("");
-          }}
-          containerButtonStyle={styles.countrySelector}
-        />
-      </View>
-      {epError.length > 0 &&
-          <Text style={styles.error}>{epError}</Text>
-        }
-      <Form
-        initialValues={{ phone: "", password: "" }}
-        validationSchema={validationSchema}
-        onSubmit={async(values) => {
-          if(!callingCode){
-            setCCError("Select Country Code!");
-            return false;
+    <Screen>
+      {processInd && <ActivityIndicator style={{alignSelf:"center",height: fullHeight, width: fullWidth, justifyContent: "center"}} size={100} color="white"/>}
+      <View style={styles.container}>
+        <Text style={styles.logo}>OAC</Text>
+          {ccError.length > 0 &&
+            <Text style={styles.error}>{ccError}</Text>
           }
-          setEPError("");
-          const phno = ('+' + callingCode[0] + values.phone).toString();
-        //   let phno = ('+'+values.phone).toString();
-        const userData = await firestore().collection('Users').doc(phno).get();
-        console.log(userData._exists);
-        let currentUser = userData._data;
-        if(userData._exists){
-          if(phno == currentUser.phoneNumber){
-              if(values.password == currentUser.password){
-                console.log('Successful!');
-                console.log(currentUser);
-                let data = currentUser;
-                setUser(data);
-                storage.save({
-                  key: 'loginState', // Note: Do not use underscore("_") in key!
-                  data: {
-                    phoneNumber: currentUser.phoneNumber
-                  },
-                
-                  // if expires not specified, the defaultExpires will be applied instead.
-                  // if set to null, then it will never expire.
-                  expires: null
-                });
-                navigation.navigate("HomeScreen");    
-              }else{
-                setEPError("Wrong Details!");
-              }
+        <View style={styles.countryContainer}>
+          <CountryPicker
+            withFilter
+            countryCode={countryCode}
+            withFlag
+            withCallingCode
+            withCountryNameButton
+            onSelect={({ callingCode, cca2 }) => {
+              setCallingCode(callingCode);
+              setCountryCode(cca2);
+              setCCError("");
+            }}
+            containerButtonStyle={styles.countrySelector}
+          />
+        </View>
+        {epError.length > 0 &&
+            <Text style={styles.error}>{epError}</Text>
+          }
+        <Form
+          initialValues={{ phone: "", password: "" }}
+          validationSchema={validationSchema}
+          onSubmit={async(values) => {
+            Keyboard.dismiss();
+            setProcessInd(true);
+            if(!callingCode){
+              setCCError("Select Country Code!");
+              setProcessInd(false);
+              return false;
+            }
+            setEPError("");
+            let phno = ('+' + callingCode[0] + values.phone).toString();
+            phno = phno.split(" ").join("");
+          //   let phno = ('+'+values.phone).toString();
+          const userData = await firestore().collection('Users').doc(phno).get();
+          console.log(userData._exists);
+          let currentUser = userData._data;
+          if(userData._exists){
+            if(phno == currentUser.phoneNumber){
+                if(values.password == currentUser.password){
+                  console.log('Successful!');
+                  console.log(currentUser);
+                  // let data = currentUser;
+                  await signInWPhoneNumber(phno).then((verCode)=>{
+                    //console.log(verCode._verificationId);
+                    setUser([currentUser, {verCode: verCode._verificationId}]);
+                    setProcessInd(false);
+                    navigation.navigate("LoginOTP");
+                  })
+                  .catch((e)=>{
+                    setProcessInd(false);
+                    console.log(e);
+                  })
+                  
+                }else{
+                  setProcessInd(false);
+                  setEPError("Wrong Details!");
+                }
+            }else{
+              setProcessInd(false);
+              setEPError("Wrong Details!");
+            }
           }else{
+            setProcessInd(false);
+            //console.log('User Does not exists!');
             setEPError("Wrong Details!");
           }
-        }else{
-          //console.log('User Does not exists!');
-          setEPError("Wrong Details!");
         }
-
-//        setPost(null);
       }
-          //navigation.navigate("HomeScreen");
-    }
-      >
-        <FormField
-          autoCapitalize="none"
-          autoCorrect={false}
-          icon="phone"
-          keyboardType="phone-pad"
-          name="phone"
-          placeholder="Phone Number"
-          textContentType="telephoneNumber"
-        />
-        <FormField
-          autoCapitalize="none"
-          autoCorrect={false}
-          icon="lock"
-          name="password"
-          placeholder="Password"
-          secureTextEntry
-          textContentType="password"
-        />
-        <SubmitButton title="Login" />
-      </Form>
+        >
+          <FormField
+            autoCapitalize="none"
+            autoCorrect={false}
+            icon="phone"
+            keyboardType="phone-pad"
+            name="phone"
+            placeholder="Phone Number"
+            textContentType="telephoneNumber"
+          />
+          <FormField
+            autoCapitalize="none"
+            autoCorrect={false}
+            icon="lock"
+            name="password"
+            placeholder="Password"
+            secureTextEntry
+            textContentType="password"
+          />
+          <SubmitButton title="Login" />
+        </Form>
 
-      <View style={styles.signupContainer}>
-        <Text>Don't have an account?</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("RegisterScreen1")}>
-          <Text style={{ color: colors.secondary }}> Sign Up</Text>
-        </TouchableOpacity>
+        <View style={styles.signupContainer}>
+          <Text>Don't have an account?</Text>
+          <TouchableOpacity onPress={() => navigation.navigate("RegisterScreen1")}>
+            <Text style={{ color: colors.secondary }}> Sign Up</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </Screen>
   );

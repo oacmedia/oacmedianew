@@ -70,6 +70,7 @@ import CallScreen from "./app/screens/CallScreen";
 import FriendsScreen from "./app/screens/FriendsScreen";
 import PostsScreen from "./app/screens/PostsScreen";
 import {UserAuthContextProvider} from './app/context/UserAuthContext';
+import LoginOTP from "./app/screens/LoginOTP";
 
 const Stack = createStackNavigator();
 
@@ -85,6 +86,7 @@ const SignedInStack = () => (
       screenOptions={screenOptions}
     >
       <Stack.Screen name="LoginScreen" component={LoginScreen} />
+      <Stack.Screen name="LoginOTP" component={LoginOTP} />
       <Stack.Screen name="RegisterScreen1" component={RegisterScreen1} />
       <Stack.Screen name="RegisterScreen2" component={RegisterScreen2} />
       <Stack.Screen name="RegisterScreen3" component={RegisterScreen3} />

@@ -25,6 +25,7 @@ import { isEmptyArray } from "formik";
 import Video from "react-native-video";
 import storage from "@react-native-firebase/storage";
 
+
 const PostHeader = ({ post, postUser, postID, DeleteButton, LoginnedUser, userData }) => {
   
   function deleteCalled(){
@@ -530,6 +531,7 @@ const Post = ({
   deletePost,
 }) => {
   const [userData, setUserData] = useState('');
+  let btnAccess = withDeleteButton ? withDeleteButton : user.isAdmin;
   //console.log(post);
   
   //const {user, setUser} = useUserAuth();
@@ -565,7 +567,7 @@ const Post = ({
         <PostHeader userData={userData}
           LoginnedUser={user}
           post={post}
-          DeleteButton={withDeleteButton}
+          DeleteButton={btnAccess}
           deletePost={deletePost}
           postID={postID} postUser={postUser}
         />
