@@ -63,7 +63,7 @@ const HomeScreen = ({ routes, navigation }) => {
           return prevPosts;
         let newPosts = [...prevPosts];
         snapshot.docChanges().forEach((change)=> {
-          id = change.doc.id;
+          let id = change.doc.id;
           let _postIndex = newPosts.findIndex((_post) => _post[1] === id);
           if(change.type === "removed") {
             newPosts.splice(_postIndex, 1);

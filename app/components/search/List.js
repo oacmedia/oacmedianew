@@ -1,14 +1,55 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { TouchableHighlight } from "react-native";
-import { StyleSheet, View, FlatList, SafeAreaView, Image } from "react-native";
+import { StyleSheet, View, FlatList, SafeAreaView, Image, Alert } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import colors from "../../config/colors";
 import TouchableIcon from "../TouchableIcon";
 import Text from "../Text";
+import { useUserAuth } from "../../context/UserAuthContext";
+//import { FirebaseStorageTypes } from "@react-native-firebase/storage";
+import firestore from "@react-native-firebase/firestore";
 
 // definition of the Item, which will be rendered in the FlatList
-const Item = ({ name, image }) => (
+const Item = ({ name, image, id, user }) => {
+  const [requestStatus, setReqStatus] = useState(false);
+  function addFriend(id, user){
+    console.log("Friend Req Sent To User ",id," By User ",user.id);
+    firestore().collection('Requests').where('sender','==',user.id).where('receiver','==',id).get().then((snapshot)=>{
+    //  console.log();
+      if(snapshot._docs.length > 0){
+        console.log("Already Sent Req");
+      }
+      else{
+        firestore().collection('Requests').where('sender','==',id).where('receiver','==',user.id).get().then((snapshot)=>{
+          if(snapshot._docs.length > 0){
+            Alert.alert("Friend Request Failed!","User Already Sent You A Friend Req!");
+          }else{
+            firestore().collection('Requests').doc()
+            .set({
+              sender: user.id,
+              receiver: id,
+            })
+            setReqStatus(true);
+          }
+        })
+        }
+      })
+    }
+  
+
+  useEffect(()=>{
+    firestore().collection('Requests').where('sender','==',user.id).where('receiver','==',id).get().then((snapshot)=>{
+      //  console.log();
+        if(snapshot._docs.length > 0){
+          setReqStatus(true);
+        }
+        else{
+          setReqStatus(false);
+          }
+      })  
+  },[])
+return(
   <View style={styles.container}>
     {image && <Image style={styles.image} source={{ uri: image }} />}
     <View style={styles.detailsContainer}>
@@ -16,12 +57,13 @@ const Item = ({ name, image }) => (
         {name}
       </Text>
     </View>
-    <TouchableIcon name={"account-plus"} iconColor={colors.black} />
+    <TouchableIcon name={requestStatus?"account-check":"account-plus"} iconColor={colors.black} onPress={()=>{addFriend(id, user)}}/>
   </View>
-);
+)};
 
 // the filter
 const List = ({ searchPhrase, data }) => {
+  const {user, setUser} = useUserAuth();
   const renderItem = ({ item }) => {
     // when no input, show none
     if (searchPhrase === "") {
@@ -29,11 +71,11 @@ const List = ({ searchPhrase, data }) => {
     }
     // filter of the Name
     if (
-      item.name
+      item.firstName
         .toUpperCase()
         .includes(searchPhrase.toUpperCase().trim().replace(/\s/g, ""))
     ) {
-      return <Item key={item.id} name={item.name} image={item.image} />;
+      return <Item id={item.id} name={item.firstName+" "+item.lastName} image={item.profile} user={user}/>;
     }
   };
 

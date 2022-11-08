@@ -11,6 +11,7 @@ import storage from "../components/storage/storage";
 import { useUserAuth } from "../context/UserAuthContext";
 import auth from '@react-native-firebase/auth';
 import firebase from '@react-native-firebase/app';
+import RNRestart from 'react-native-restart';
 
 const menuItems = [
   {
@@ -19,6 +20,14 @@ const menuItems = [
     icon: {
       name: "post",
       backgroundColor: colors.primary,
+    },
+  },
+  {
+    screen: "RequestsScreen",
+    title: "Friend Requests",
+    icon: {
+      name: "account-clock",
+      backgroundColor: colors.secondary,
     },
   },
   {
@@ -71,19 +80,22 @@ function AccountScreen({ navigation }) {
               auth()
               .signOut()
               .then(() => {
-                console.log("i m here!");
+                setUser([]);
                 storage.remove({
                   key: 'loginState'
                 });
-                navigation.navigate("LoginScreen");
+                //navigation.navigate("LoginScreen");
+                RNRestart.Restart();
               }).catch((error)=>{
                 console.log(error);
               });
             } else {
+              setUser([]);
               storage.remove({
                 key: 'loginState'
               });
-              navigation.navigate("LoginScreen");
+              //navigation.navigate("LoginScreen");
+              RNRestart.Restart();
             }
                 
         })

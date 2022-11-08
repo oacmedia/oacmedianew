@@ -4,12 +4,12 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import colors from "../../config/colors";
 
-function ListItemDeleteAction({ onPress, cross }) {
+function ListItemAcceptAction({ onPress }) {
   return (
     <TouchableWithoutFeedback onPress={onPress}>
-      <View style={[styles.container,{height: cross ? "50%" : "100%",}]}>
+      <View style={styles.container}>
         <MaterialCommunityIcons
-          name={cross ? cross : "trash-can"}
+          name="check-bold"
           size={35}
           color={colors.white}
         />
@@ -20,11 +20,12 @@ function ListItemDeleteAction({ onPress, cross }) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.danger,
+    height: "50%",
+    backgroundColor: "green",
     width: 70,
     justifyContent: "center",
     alignItems: "center",
   },
 });
 
-export default ListItemDeleteAction;
+export default ListItemAcceptAction;

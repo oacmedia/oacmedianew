@@ -71,6 +71,7 @@ import FriendsScreen from "./app/screens/FriendsScreen";
 import PostsScreen from "./app/screens/PostsScreen";
 import {UserAuthContextProvider} from './app/context/UserAuthContext';
 import LoginOTP from "./app/screens/LoginOTP";
+import RequestsScreen from "./app/screens/RequestsScreen";
 
 const Stack = createStackNavigator();
 
@@ -101,6 +102,7 @@ const SignedInStack = () => (
       <Stack.Screen name="ReelsScreen" component={ReelsScreen} />
       <Stack.Screen name="ChatScreen" component={ChatScreen} />
       <Stack.Screen name="CallScreen" component={CallScreen} />
+      <Stack.Screen name="RequestsScreen" component={RequestsScreen} />
       <Stack.Screen name="FriendsScreen" component={FriendsScreen} />
     </Stack.Navigator>
   </NavigationContainer>

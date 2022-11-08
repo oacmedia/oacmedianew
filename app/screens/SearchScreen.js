@@ -5,35 +5,44 @@ import List from "../components/search/List";
 import SearchBar from "../components/search/SearchBar";
 import colors from "../config/colors";
 import BottomTabs from "../components/home/BottomTabs";
+import { useUserAuth } from "../context/UserAuthContext";
+import firestore from '@react-native-firebase/firestore';
 
-const users = [
-  {
-    id: 1,
-    name: "Waleed",
-    image:
-      "https://www.unigreet.com/wp-content/uploads/2020/04/Smiley-816x1024.jpg",
-  },
-  {
-    id: 2,
-    name: "Ukasha",
-    image:
-      "https://www.unigreet.com/wp-content/uploads/2020/04/Smiley-816x1024.jpg",
-  },
-  {
-    id: 3,
-    name: "Babar",
-    image:
-      "https://www.unigreet.com/wp-content/uploads/2020/04/Smiley-816x1024.jpg",
-  },
-];
+// const users = [
+//   {
+//     id: 1,
+//     name: "Waleed",
+//     image:
+//       "https://www.unigreet.com/wp-content/uploads/2020/04/Smiley-816x1024.jpg",
+//   },
+//   {
+//     id: 2,
+//     name: "Ukasha",
+//     image:
+//       "https://www.unigreet.com/wp-content/uploads/2020/04/Smiley-816x1024.jpg",
+//   },
+//   {
+//     id: 3,
+//     name: "Babar",
+//     image:
+//       "https://www.unigreet.com/wp-content/uploads/2020/04/Smiley-816x1024.jpg",
+//   },
+// ];
 
 const SearchScreen = ({ navigation }) => {
   const [searchPhrase, setSearchPhrase] = useState("");
   const [clicked, setClicked] = useState(false);
-  const [fakeData, setFakeData] = useState();
-
+  const {user, setUser} = useUserAuth();
+  const [usersList, setUsersList] = useState([]);
+  const array = [];
   useEffect(() => {
-    setFakeData(users);
+    firestore().collection('Users').where("id","!=",user.id).get().then((snapshot)=>{
+      snapshot.docs.map((user)=>{
+        let data = user.data();
+        array.push(data);
+      })
+      setUsersList(array);
+    })
   }, []);
 
   return (
@@ -48,7 +57,7 @@ const SearchScreen = ({ navigation }) => {
 
       <List
         searchPhrase={searchPhrase}
-        data={fakeData}
+        data={usersList}
         setClicked={setClicked}
       />
       <BottomTabs navigation={navigation} />
