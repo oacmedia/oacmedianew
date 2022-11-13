@@ -8,26 +8,6 @@ import BottomTabs from "../components/home/BottomTabs";
 import { useUserAuth } from "../context/UserAuthContext";
 import firestore from '@react-native-firebase/firestore';
 
-// const users = [
-//   {
-//     id: 1,
-//     name: "Waleed",
-//     image:
-//       "https://www.unigreet.com/wp-content/uploads/2020/04/Smiley-816x1024.jpg",
-//   },
-//   {
-//     id: 2,
-//     name: "Ukasha",
-//     image:
-//       "https://www.unigreet.com/wp-content/uploads/2020/04/Smiley-816x1024.jpg",
-//   },
-//   {
-//     id: 3,
-//     name: "Babar",
-//     image:
-//       "https://www.unigreet.com/wp-content/uploads/2020/04/Smiley-816x1024.jpg",
-//   },
-// ];
 
 const SearchScreen = ({ navigation }) => {
   const [searchPhrase, setSearchPhrase] = useState("");

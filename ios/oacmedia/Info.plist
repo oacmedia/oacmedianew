@@ -46,6 +46,10 @@
         </dict>
       </dict>
     </dict>
+    <key>NSCameraUsageDescription</key>
+    <string>Allow $(PRODUCT_NAME) to open the camera</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>custom photos permission</string>
     <key>UILaunchStoryboardName</key>
     <string>SplashScreen</string>
     <key>UIRequiredDeviceCapabilities</key>

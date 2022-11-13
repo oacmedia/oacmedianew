@@ -33,19 +33,15 @@ function RequestsScreen({ navigation }) {
     }
     query = query.limit(pageSize)
     query.get()
-      .then((snapshot) => {
-        let newRequests = snapshot.docs.map((request)=>{
-            let id = request.id;
-            let data = request.data();
-            firestore().collection('Users').doc(data.sender).get()
-            .then((user)=>{
-                 let rdata = user.data();   
-                 let obj = {id: id,title: rdata.title,firstName: rdata.firstName,lastName: rdata.lastName,profile: rdata.profile};
-                 setMessages((prevRequests) => {
-                    return [...prevRequests, obj]
-                });
-            })
-        });
+      .then(async (snapshot) => {
+        let post = [];
+        for( let chat of snapshot.docs ){
+            let data = chat.data();
+            let id = chat.id;
+            let userData = await firestore().collection('Users').doc(data.sender).get();
+            let rdata = userData.data();
+            post.push({id: id,title: rdata.title,firstName: rdata.firstName,lastName: rdata.lastName,profile: rdata.profile, phoneNumber: rdata.phoneNumber});
+        }
         if(snapshot.docs.length < pageSize) {
           setIsFinished(true);
         }
@@ -53,6 +49,12 @@ function RequestsScreen({ navigation }) {
           setLastDocRef(snapshot.docs[snapshot.docs.length-1]);
         }
         setIsLoading(false);
+        setMessages((prevPosts) => {
+          let objs = post.map((obj)=>{
+            return obj;
+          });
+          return [...prevPosts, ...objs];
+        });
       });
   }, [setIsLoading, setIsFinished, setMessages, lastDocRef, setLastDocRef])
 
@@ -65,39 +67,110 @@ function RequestsScreen({ navigation }) {
     loadPosts();
     let query = firestore().collection('Requests').where('receiver','==',user.id);
     let unsubscribe = query.onSnapshot((snapshot) => {
-        setMessages((prevRequests) => {
+      setMessages((prevPosts) => {
         // don't load posts on reload
-        if(prevRequests.length === 0)
-          return prevRequests;
-        let newRequests = [...prevRequests];
+        if(prevPosts.length === 0)
+          return prevPosts;
+        let newPosts = [...prevPosts];
         snapshot.docChanges().forEach(async(change)=> {
-            let postData = change.doc.data();
-            let id = change.doc.id;
-            let userInfo = await firestore().collection('Users').doc(postData.sender).get()
-            
-            let rdata = userInfo.data();   
-            let userData = {id: id,title: rdata.title,firstName: rdata.firstName,lastName: rdata.lastName,profile: rdata.profile};
-            
-          let _postIndex = newRequests.findIndex((_post) => _post.id === id);
+          let data = change.doc.data();
+          let id = change.doc.id;
+          let userInfo = await firestore().collection('Users').doc(data.sender).get();
+          let userData = userInfo.data();
+
+          let _postIndex = newPosts.findIndex((_post) => _post.id === id);
           if(change.type === "removed") {
-            newRequests.splice(_postIndex, 1);
+            newPosts.splice(_postIndex, 1);
             return;
           }
+          let post = {id: id,title: userData.title,firstName: userData.firstName,lastName: userData.lastName,profile: userData.profile, phoneNumber: userData.phoneNumber};
           if(_postIndex !== -1) {
-            newRequests.splice(_postIndex, 1, userData);
+            newPosts.splice(_postIndex, 1, ...post);
           } else {
-            newRequests.unshift(
-                userData
-            );
+            newPosts.unshift(...post);
           }
         })
-        return newRequests;
+        return newPosts;
       })
     })
     return () => {
       unsubscribe();
     }
   }, []);
+
+//   const loadPosts = useCallback(() => {
+//     setIsLoading(true);
+//     let query = firestore().collection('Requests').where('receiver','==',user.id);
+//     if(lastDocRef) {
+//       query = query.startAfter(lastDocRef)
+//     }
+//     query = query.limit(pageSize)
+//     query.get()
+//       .then((snapshot) => {
+//         let newRequests = snapshot.docs.map((request)=>{
+//             let id = request.id;
+//             let data = request.data();
+//             firestore().collection('Users').doc(data.sender).get()
+//             .then((user)=>{
+//                  let rdata = user.data();   
+//                  let obj = {id: id,title: rdata.title,firstName: rdata.firstName,lastName: rdata.lastName,profile: rdata.profile};
+//                  setMessages((prevRequests) => {
+//                     return [...prevRequests, obj]
+//                 });
+//             })
+//         });
+//         if(snapshot.docs.length < pageSize) {
+//           setIsFinished(true);
+//         }
+//         if(snapshot.docs.length) {
+//           setLastDocRef(snapshot.docs[snapshot.docs.length-1]);
+//         }
+//         setIsLoading(false);
+//       });
+//   }, [setIsLoading, setIsFinished, setMessages, lastDocRef, setLastDocRef])
+
+//   const fetchMoreData = useCallback(() => {
+//     if(isLoading || isFinished) return;
+//     loadPosts();
+//   }, [isFinished, isLoading])
+
+//   useEffect(() => {
+//     loadPosts();
+//     let query = firestore().collection('Requests').where('receiver','==',user.id);
+//     let unsubscribe = query.onSnapshot((snapshot) => {
+//         setMessages((prevRequests) => {
+//         // don't load posts on reload
+//         if(prevRequests.length === 0)
+//           return prevRequests;
+//         let newRequests = [...prevRequests];
+//         snapshot.docChanges().forEach(async(change)=> {
+//             let postData = change.doc.data();
+//             let id = change.doc.id;
+//             let userInfo = await firestore().collection('Users').doc(postData.sender).get()
+            
+//             let rdata = userInfo.data();   
+//             let userData = {id: id,title: rdata.title,firstName: rdata.firstName,lastName: rdata.lastName,profile: rdata.profile};
+            
+//           let _postIndex = newRequests.findIndex((_post) => _post.id === id);
+//           if(change.type === "removed") {
+//             newRequests.splice(_postIndex, 1);
+//             return;
+//           }
+//           if(_postIndex !== -1) {
+//             newRequests.splice(_postIndex, 1, [userData]);
+//           } else {
+//             newRequests.unshift(
+//                 [userData]
+//             );
+//           }
+//         })
+//         return newRequests;
+//       })
+//     })
+//     return () => {
+//       unsubscribe();
+//     }
+//   }, []);
 
 
   const handleDelete = (request) => {
@@ -157,7 +230,7 @@ function RequestsScreen({ navigation }) {
                         count = 0;
                         firestore().collection('Requests').doc(request).delete().then(()=>{
                             console.log('request removed!');
-                            navigation.navigate("FriendsScreen");
+                            //navigation.navigate("FriendsScreen");
                         })
                     }
                 })

@@ -13,54 +13,32 @@ import {
 import AppText from "../components/Text";
 import { useUserAuth } from "../context/UserAuthContext";
 
-const initialMessages = [
-  {
-    id: 1,
-    title: "Jay Parker",
-    description: "Hey! Is this item still available?",
-    image:
-      "https://www.unigreet.com/wp-content/uploads/2020/04/Smiley-816x1024.jpg",
-  },
-  {
-    id: 2,
-    title: "Natalia",
-    description:
-      "I'm interested in this item. When will you be able to post it?",
-    image:
-      "https://www.unigreet.com/wp-content/uploads/2020/04/Smiley-816x1024.jpg",
-  },
-];
 
 function FriendsScreen({ navigation }) {
   const [messages, setMessages] = useState([]);
   const {user, setUser} = useUserAuth();
   const [loading, setLoading] = useState(true);
-
   let id = 0;
-
   const loadPosts = useCallback(() => {
     if(loading){
       let query = firestore().collection('Friends').doc(user.id)
-    
       query.get()
-        .then((snapshot) => {
+        .then(async(snapshot) => {
           let data = snapshot.data();
-          data.friends.map((friend)=>{
-              let user = friend.user;
-              firestore().collection('Users').doc(user).get()
-              .then((user)=>{
-                  let rdata = user.data();   
-                  let obj = {id: id,title: rdata.title,firstName: rdata.firstName,lastName: rdata.lastName,profile: rdata.profile, phoneNumber: rdata.phoneNumber};
-                  setMessages((prevRequests) => {
-                      return [...prevRequests, obj]
-                  });
-                  if(data.friends.length != id+1){
-                    id++;
-                  }else{
-                    setLoading(false)
-                    id = 0;
-                  }
-              })
+          let post = [];
+          for( let user of data.friends ){
+            id++;
+            let currentUser = user.user;
+            let userData = await firestore().collection('Users').doc(currentUser).get();
+            let rdata = userData.data();
+            post.push({id: id,title: rdata.title,firstName: rdata.firstName,lastName: rdata.lastName,profile: rdata.profile, phoneNumber: rdata.phoneNumber});
+            if(data.friends.length == id){
+              setLoading(false);
+              id = 0;
+            }
+          }
+          setMessages((prevRequests) => {
+              return [...prevRequests, ...post]
           });
         });
     }
@@ -86,9 +64,6 @@ function FriendsScreen({ navigation }) {
       setLoading(true);
       loadPosts();
     })
-    // .delete().then(()=>{
-    //     console.log('request removed!');
-    // })
   };
 
   return (
