@@ -12,6 +12,7 @@ import AppText from "../components/Text";
 import { POSTS } from "../data/posts";
 import { useDataSharing } from "../context/DataSharingContext";
 import { useUserAuth } from "../context/UserAuthContext";
+import { Ionicons } from "@expo/vector-icons";
 import {
   Actions,
   Bubble,
@@ -19,363 +20,343 @@ import {
   InputToolbar,
 } from "react-native-gifted-chat";
 import ImageView from "react-native-image-viewing";
+import * as ImagePicker from "expo-image-picker";
+import storage from '@react-native-firebase/storage';
+
+export async function pickImage() {
+  let result = ImagePicker.launchCameraAsync();
+  return result;
+}
+export async function pickGalleryImage() {
+  let result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    quality: 0.5,
+  });
+  return result;
+}
+
+export async function askForPermission() {
+  const { status } = await ImagePicker.requestCameraPermissionsAsync();
+  return status;
+}
 
 const ChatScreen = ({ navigation }) => {
   const [messages, setMessages] = useState([]);
   const {sharedData, setSharedData} = useDataSharing();
   const {user, setUser} = useUserAuth();
+  const [secondUser, setSecondUser] = useState([]);
   const [userData, setUserData] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImageView, setSeletedImageView] = useState("");
 
-  // const [isLoading, setIsLoading] = useState(true)
-  // const [isFinished, setIsFinished] = useState(false)
-  // const [lastDocRef, setLastDocRef] = useState(null)
-  // let pageSize = 20;
-
-  // const loadPosts = useCallback(() => {
-  //   setIsLoading(true);
-  //   let query = firestore().collection('ChatRoom/'+sharedData.chatid)
-  //   if(lastDocRef) {
-  //     query = query.startAfter(lastDocRef)
-  //   }
-  //   query = query.limit(pageSize)
-  //   query.get()
-  //     .then(async (snapshot) => {
-  //       let post = [];
-  //       for( let chat of snapshot.docs ){
-  //           let data = chat.data();
-  //           let id = chat.id;
-  //           let userData = await firestore().collection('Users').doc(data.sender).get();
-  //           let rdata = userData.data();
-  //           post.push({id: id,title: rdata.title,firstName: rdata.firstName,lastName: rdata.lastName,profile: rdata.profile, phoneNumber: rdata.phoneNumber});
-  //       }
-  //       if(snapshot.docs.length < pageSize) {
-  //         setIsFinished(true);
-  //       }
-  //       if(snapshot.docs.length) {
-  //         setLastDocRef(snapshot.docs[snapshot.docs.length-1]);
-  //       }
-  //       setIsLoading(false);
-  //       setMessages((prevPosts) => {
-  //         let objs = post.map((obj)=>{
-  //           return obj;
-  //         });
-  //         return [...prevPosts, ...objs];
-  //       });
-  //     });
-  // }, [setIsLoading, setIsFinished, setMessages, lastDocRef, setLastDocRef])
-
-  // const fetchMoreData = useCallback(() => {
-  //   if(isLoading || isFinished) return;
-  //   loadPosts();
-  // }, [isFinished, isLoading])
-
-  useEffect(() => {
-    if(sharedData){
-      let chatid = sharedData.chatid;
-      firestore().collection('Chats').where('chatid','==',chatid).where('user','==',user.id).get().then((snapshot)=>{
-        snapshot.docs.map((result)=>{
-          let data = result.data();
-          firestore().collection('Users').doc(data.friend).get().then((snapshot)=>{
-            //console.log(snapshot.data());
-              let data = snapshot.data();
-              setUserData(data);
-          })
+     const getAllMessages = async ()=>{
+        const docid  = sharedData.chatid;
+        const querySnap = await firestore().collection('Chatrooms')
+        .doc(docid)
+        .collection('messages')
+        .orderBy('createdAt',"desc")
+        .get()
+       const allmsg = querySnap.docs.map(docSnap=>{
+            return {
+                ...docSnap.data(),
+                createdAt:docSnap.data().createdAt.toDate()
+            }
         })
+        setMessages(allmsg)
+     }
+     const getSecondUser = async()=>{
+      const snapshot = await firestore().collection('Chats').where('chatid','==',sharedData.chatid).where('user','==',user.id).get()
+      let su;
+      snapshot.docs.map((result)=>{
+        let data = result.data();
+        su = data.friend;
       })
+      const friendSnapshot = await firestore().collection('Users').doc(su).get()
+      let data = friendSnapshot.data();
+      setSecondUser({secondUser: data.id, profile: data.profile});
+     }
+     const handleCall = () => {
+      navigation.navigate("CallScreen");
+    };
+
+    async function handlePhotoPicker() {
+      const result = await pickImage();
+      if (!result.cancelled) {
+        await sendImage(result.uri);
+      }
+    }
+    async function handleGalleryPhotoPicker() {
+      const result = await pickGalleryImage();
+      if (!result.cancelled) {
+        await sendImage(result.uri);
+      }
     }
 
+    useEffect(() => {
+      if(sharedData){
+        let chatid = sharedData.chatid;
+        firestore().collection('Chats').where('chatid','==',chatid).where('user','==',user.id).get().then((snapshot)=>{
+          snapshot.docs.map((result)=>{
+            let data = result.data();
+            firestore().collection('Users').doc(data.friend).get().then((snapshot)=>{
+                let data = snapshot.data();
+                setUserData(data);
+            })
+          })
+        })
+      }
 
-  //   loadPosts();
+      getSecondUser();
+      getAllMessages();
+
+      const docid  = sharedData.chatid;
+        const messageRef = firestore().collection('Chatrooms')
+        .doc(docid)
+        .collection('messages')
+        .orderBy('createdAt',"desc")
+
+      const unSubscribe =  messageRef.onSnapshot((querySnap)=>{
+            const allmsg =   querySnap.docs.map(docSnap=>{
+             const data = docSnap.data()
+             if(data.createdAt){
+                 return {
+                    ...docSnap.data(),
+                    createdAt:docSnap.data().createdAt.toDate()
+                }
+             }else {
+                return {
+                    ...docSnap.data(),
+                    createdAt:new Date()
+                }
+             }
+                
+            })
+            setMessages(allmsg)
+        })
 
 
+        return ()=>{
+          unSubscribe()
+        }
 
-  //   let query = firestore().collection('ChatRoom/'+sharedData.chatid)
-  //   let unsubscribe = query.onSnapshot((snapshot) => {
-  //     setMessages((prevPosts) => {
-  //       // don't load posts on reload
-  //       if(prevPosts.length === 0)
-  //         return prevPosts;
-  //       let newPosts = [...prevPosts];
-  //       snapshot.docChanges().forEach(async(change)=> {
-  //         let data = change.doc.data();
-  //         let id = change.doc.id;
-  //         let userInfo = await firestore().collection('Users').doc(data.sender).get();
-  //         let userData = userInfo.data();
+        
+      }, [])
 
-  //         let _postIndex = newPosts.findIndex((_post) => _post.id === id);
-  //         if(change.type === "removed") {
-  //           newPosts.splice(_postIndex, 1);
-  //           return;
-  //         }
-  //         let post = {id: id,title: userData.title,firstName: userData.firstName,lastName: userData.lastName,profile: userData.profile, phoneNumber: userData.phoneNumber};
-  //         if(_postIndex !== -1) {
-  //           newPosts.splice(_postIndex, 1, ...post);
-  //         } else {
-  //           newPosts.unshift(...post);
-  //         }
-  //       })
-  //       return newPosts;
-  //     })
-  //   })
-  //   return () => {
-  //     unsubscribe();
-  //   }
-  }, []);
+      async function sendImage(uri){
+        let url;
+        let pathToFile = uri.toString();
+        let filename = pathToFile.substring(pathToFile.lastIndexOf('/')+1);
+        
+        let image = storage().ref(filename).putFile(pathToFile)
+        image.on('state_changed',taskSnapshot => {
+          console.log(`${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`);
+        });
+        image.then(async(data) => {
+          url = await storage().ref(data.metadata.fullPath).getDownloadURL();
+          
+          if(data.state == "success"){
+            const message = {
+              _id: filename,
+              text: "",
+              createdAt: firestore.FieldValue.serverTimestamp(),
+              user: {_id: user.id},
+              sentBy:user.id,
+              sentTo:secondUser.secondUser,
+              image: url,
+            };
+            const lastMessage = { ...message, text: "Image" };    
+            setMessages(previousMessages => GiftedChat.append(previousMessages,lastMessage))
+            const docid  = sharedData.chatid;
+      
+            await firestore().collection('Chatrooms')
+            .doc(docid)
+            .collection('messages')
+            .add({...lastMessage,createdAt:firestore.FieldValue.serverTimestamp()})
 
-  const handleCall = () => {
-    navigation.navigate("CallScreen");
-  };
-  return (
-    <Screen>
-      <View style={styles.container}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <TouchableIcon
-            name="arrow-left"
-            size={25}
-            onPress={() => {
-              setSharedData({});
-              setUserData([]);
-              navigation.navigate("MessagesScreen");
-            }}
-          />
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Image
-              source={{ uri: userData && userData.profile }}
-              style={styles.head_image}
-            />
-            <AppText style={[styles.head_title, {}]}>{userData && userData.title+" "+userData.firstName+" "+userData.lastName}</AppText>
-          </View>
-        </View>
-        <TouchableIcon name="phone" size={25} onPress={handleCall} />
-      </View>
-      <View style={styles.body}>
-        {/* Incoming */}
+          }
+        })
+        .catch((e)=>{
+            console.log(e)
+        })
+      }
 
-        <View style={{ alignItems: "baseline" }}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Image
-              source={{ uri: POSTS[0].profile_picture }}
-              style={styles.msg_image}
-            />
-            <View style={styles.incoming}>
-              <AppText>HELLO</AppText>
+      const onSend =(messageArray) => {
+        const msg = messageArray[0]
+        const mymsg = {
+            ...msg,
+            sentBy:user.id,
+            sentTo:secondUser.secondUser,
+            createdAt:new Date()
+        }
+       setMessages(previousMessages => GiftedChat.append(previousMessages,mymsg))
+       const docid  = sharedData.chatid;
+ 
+       firestore().collection('Chatrooms')
+       .doc(docid)
+       .collection('messages')
+       .add({...mymsg,createdAt:firestore.FieldValue.serverTimestamp()})
+
+
+      }
+    return (
+        <Screen>
+          <View style={styles.container}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <TouchableIcon
+                name="arrow-left"
+                size={25}
+                onPress={() => {
+                  setSharedData({});
+                  setUserData([]);
+                  navigation.navigate("MessagesScreen");
+                }}
+              />
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Image
+                  source={{ uri: userData && userData.profile }}
+                  style={styles.head_image}
+                />
+                <AppText style={[styles.head_title, {}]}>{userData && userData.title+" "+userData.firstName+" "+userData.lastName}</AppText>
+              </View>
             </View>
+            <TouchableIcon name="phone" size={25} onPress={handleCall} />
           </View>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Image
-              source={{ uri: POSTS[0].profile_picture }}
-              style={styles.msg_image}
-            />
-            <View style={styles.incoming}>
-              <AppText>Thererer er e r e</AppText>
-            </View>
+          <View style={styles.body}>
+              <GiftedChat
+                messages={messages}
+                onSend={text => onSend(text)}
+                user={{
+                    _id: user.id,
+                }}
+
+                renderAvatar={null}
+                renderActions={(props) => (
+                  <>
+                    <Actions
+                      {...props}
+                      containerStyle={{
+                        position: "absolute",
+                        left: -45,
+                        bottom: 5,
+                        zIndex: 9999,
+                      }}
+                      onPressActionButton={handlePhotoPicker}
+                      icon={() => (
+                        <Ionicons name="camera" size={30} color={colors.white} />
+                      )}
+                    />
+                    <Actions
+                      {...props}
+                      containerStyle={{
+                        position: "absolute",
+                        left: -80,
+                        bottom: 5,
+                        zIndex: 9999,
+                      }}
+                      onPressActionButton={handleGalleryPhotoPicker}
+                      icon={() => (
+                        <Ionicons name="image" size={30} color={colors.white} />
+                      )}
+                    />
+                  </>
+                )}                        
+
+                timeTextStyle={{ right: { color: colors.darkGrey } }}
+
+                renderBubble={(props)=>{
+                    return <Bubble
+                    {...props}
+                    wrapperStyle={{
+                      right: {
+                        backgroundColor:colors.darkGreen,
+
+                      }
+                      
+                    }}
+                  />
+                }}
+
+                renderInputToolbar={(props)=>{
+                    return <InputToolbar {...props}
+                     containerStyle={{
+                      //borderTopWidth: 1.5, borderTopColor: colors.darkGreen
+                        marginLeft: 80,
+                        marginRight: 10,
+                        marginBottom: 0,
+                        borderRadius: 50,
+                    }} 
+                     textInputStyle={{ color: "black", }}
+                     />
+                }}
+                
+                renderMessageImage={(props) => {
+                  return (
+                    <View style={{ borderRadius: 15, padding: 2 }}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setModalVisible(true);
+                          setSeletedImageView(props.currentMessage.image);
+                        }}
+                      >
+                        <Image
+                          resizeMode="contain"
+                          style={{
+                            width: 200,
+                            height: 200,
+                            padding: 6,
+                            borderRadius: 15,
+                            resizeMode: "cover",
+                          }}
+                          source={{ uri: props.currentMessage.image }}
+                        />
+                        {selectedImageView ? (
+                          <ImageView
+                            imageIndex={0}
+                            visible={modalVisible}
+                            onRequestClose={() => setModalVisible(false)}
+                            images={[{ uri: selectedImageView }]}
+                          />
+                        ) : null}
+                      </TouchableOpacity>
+                    </View>
+                  );
+                }}
+
+                renderSend={(props) => {
+                  const { text, messageIdGenerator, user, onSend } = props;
+                  return (
+                    <TouchableOpacity
+                      style={{
+                        height: 40,
+                        width: 40,
+                        borderRadius: 40,
+                        backgroundColor: colors.darkGreen,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginVertical: 5,
+                        marginRight: 5,
+                      }}
+                      onPress={() => {
+                        if (text && onSend) {
+                          onSend(
+                            {
+                              text: text.trim(),
+                              user,
+                              _id: messageIdGenerator(),
+                            },
+                            true
+                          );
+                        }
+                      }}
+                    >
+                      <Ionicons name="send" size={20} color={colors.white} />
+                    </TouchableOpacity>
+                  );
+                }}
+              />
           </View>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Image
-              source={{ uri: POSTS[0].profile_picture }}
-              style={styles.msg_image}
-            />
-            <View style={styles.incoming}>
-              <AppText>HELLO</AppText>
-            </View>
-          </View>
-        </View>
-
-        {/* Outgoing */}
-
-        <View style={{ alignItems: "flex-end" }}>
-          <View style={styles.outgoing}>
-            <AppText>HELLO</AppText>
-          </View>
-          <View style={styles.outgoing}>
-            <AppText>Thererer er e r e</AppText>
-          </View>
-          <View style={styles.outgoing}>
-            <AppText>HELLO</AppText>
-          </View>
-        </View>
-      </View>
-      <View
-        style={[
-          styles.container,
-          {
-            backgroundColor: colors.black,
-            borderTopWidth: 2,
-            borderTopColor: colors.darkGrey,
-          },
-        ]}
-      >
-        <TouchableIcon name="camera" size={25} />
-        <TouchableIcon name="image-multiple" size={25} />
-        <TouchableIcon name="microphone" size={25} />
-        <TextInput placeholder="Message" padding={8} width={"60%"} />
-        <TouchableIcon name="send" size={25} />
-      </View>
-    </Screen>
-  );
-
-  // const appendMessages = useCallback(
-  //   (messages) => {
-  //     setMessages((previousMessages) =>
-  //       GiftedChat.append(previousMessages, messages)
-  //     );
-  //   },
-  //   [messages]
-  // );
-
-  // async function onSend(messages = []) {
-  //   const writes = messages.map((m) => addDoc(roomMessagesRef, m));
-  //   const lastMessage = messages[messages.length - 1];
-  //   writes.push(updateDoc(roomRef, { lastMessage }));
-  //   await Promise.all(writes);
-  // }
-
-  // async function sendImage(uri, roomPath) {
-  //   const { url, fileName } = await uploadImage(
-  //     uri,
-  //     `images/rooms/${roomPath || roomHash}`
-  //   );
-  //   const message = {
-  //     _id: fileName,
-  //     text: "",
-  //     createdAt: new Date(),
-  //     user: senderUser,
-  //     image: url,
-  //   };
-  //   const lastMessage = { ...message, text: "Image" };
-  //   await Promise.all([
-  //     addDoc(roomMessagesRef, message),
-  //     updateDoc(roomRef, { lastMessage }),
-  //   ]);
-  // }
-
-  // async function handlePhotoPicker() {
-  //   const result = await pickImage();
-  //   if (!result.cancelled) {
-  //     await sendImage(result.uri);
-  //   }
-  // }
-
-  // return (
-  //   <ImageBackground
-  //     resizeMode="cover"
-  //     source={require("../assets/chatbg.png")}
-  //     style={{ flex: 1 }}
-  //   >
-  //     <GiftedChat
-  //       onSend={onSend}
-  //       messages={messages}
-  //       user={senderUser}
-  //       renderAvatar={null}
-  //       renderActions={(props) => (
-  //         <Actions
-  //           {...props}
-  //           containerStyle={{
-  //             position: "absolute",
-  //             right: 50,
-  //             bottom: 5,
-  //             zIndex: 9999,
-  //           }}
-  //           onPressActionButton={handlePhotoPicker}
-  //           icon={() => (
-  //             <Ionicons name="camera" size={30} color={colors.iconGray} />
-  //           )}
-  //         />
-  //       )}
-  //       timeTextStyle={{ right: { color: colors.iconGray } }}
-  //       renderSend={(props) => {
-  //         const { text, messageIdGenerator, user, onSend } = props;
-  //         return (
-  //           <TouchableOpacity
-  //             style={{
-  //               height: 40,
-  //               width: 40,
-  //               borderRadius: 40,
-  //               backgroundColor: colors.primary,
-  //               alignItems: "center",
-  //               justifyContent: "center",
-  //               marginBottom: 5,
-  //             }}
-  //             onPress={() => {
-  //               if (text && onSend) {
-  //                 onSend(
-  //                   {
-  //                     text: text.trim(),
-  //                     user,
-  //                     _id: messageIdGenerator(),
-  //                   },
-  //                   true
-  //                 );
-  //               }
-  //             }}
-  //           >
-  //             <Ionicons name="send" size={20} color={colors.white} />
-  //           </TouchableOpacity>
-  //         );
-  //       }}
-  //       renderInputToolbar={(props) => (
-  //         <InputToolbar
-  //           {...props}
-  //           containerStyle={{
-  //             marginLeft: 10,
-  //             marginRight: 10,
-  //             marginBottom: 2,
-  //             borderRadius: 20,
-  //             paddingTop: 5,
-  //           }}
-  //         />
-  //       )}
-  //       renderBubble={(props) => (
-  //         <Bubble
-  //           {...props}
-  //           textStyle={{ right: { color: colors.text } }}
-  //           wrapperStyle={{
-  //             left: {
-  //               backgroundColor: colors.white,
-  //             },
-  //             right: {
-  //               backgroundColor: colors.tertiary,
-  //             },
-  //           }}
-  //         />
-  //       )}
-  //       renderMessageImage={(props) => {
-  //         return (
-  //           <View style={{ borderRadius: 15, padding: 2 }}>
-  //             <TouchableOpacity
-  //               onPress={() => {
-  //                 setModalVisible(true);
-  //                 setSeletedImageView(props.currentMessage.image);
-  //               }}
-  //             >
-  //               <Image
-  //                 resizeMode="contain"
-  //                 style={{
-  //                   width: 200,
-  //                   height: 200,
-  //                   padding: 6,
-  //                   borderRadius: 15,
-  //                   resizeMode: "cover",
-  //                 }}
-  //                 source={{ uri: props.currentMessage.image }}
-  //               />
-  //               {selectedImageView ? (
-  //                 <ImageView
-  //                   imageIndex={0}
-  //                   visible={modalVisible}
-  //                   onRequestClose={() => setModalVisible(false)}
-  //                   images={[{ uri: selectedImageView }]}
-  //                 />
-  //               ) : null}
-  //             </TouchableOpacity>
-  //           </View>
-  //         );
-  //       }}
-  //     />
-  //   </ImageBackground>
-  // );
+        </Screen>
+    )
 };
 
 export default ChatScreen;

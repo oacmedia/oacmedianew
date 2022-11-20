@@ -141,7 +141,6 @@ function MessagesScreen({ navigation, route }) {
             onPress={async() => {
               let getChat = await firestore().collection('Chats').doc(item.id).get();
               setSharedData({chatid: getChat.data().chatid});
-              console.log(getChat);
               if(!getChat.empty){
                 navigation.navigate("ChatScreen");
               }

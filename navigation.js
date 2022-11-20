@@ -74,6 +74,13 @@ import LoginOTP from "./app/screens/LoginOTP";
 import RequestsScreen from "./app/screens/RequestsScreen";
 import { DataSharingContextProvider } from "./app/context/DataSharingContext";
 import FriendsSelect from "./app/screens/FriendsSelect";
+import UploadVideo from "./app/screens/UploadVideo";
+import AddCategory from "./app/screens/AddCategory";
+import SelectThumbnail from "./app/screens/SelectThumbnail";
+import AddVideoData from "./app/screens/AddVideoData";
+import VideoScreen from "./app/screens/VideoScreen";
+import DeleteCategory from "./app/screens/DeleteCategory";
+
 const Stack = createStackNavigator();
 
 const screenOptions = {
@@ -103,6 +110,12 @@ const SignedInStack = () => (
           <Stack.Screen name="SearchScreen" component={SearchScreen} />
           <Stack.Screen name="PostsScreen" component={PostsScreen} />
           <Stack.Screen name="ReelsScreen" component={ReelsScreen} />
+          <Stack.Screen name="UploadVideo" component={UploadVideo} />
+          <Stack.Screen name="AddCategory" component={AddCategory} />
+          <Stack.Screen name="DeleteCategory" component={DeleteCategory} />
+          <Stack.Screen name="SelectThumbnail" component={SelectThumbnail} />
+          <Stack.Screen name="AddVideoData" component={AddVideoData} />
+          <Stack.Screen name="VideoScreen" component={VideoScreen} />
           <Stack.Screen name="ChatScreen" component={ChatScreen} />
           <Stack.Screen name="CallScreen" component={CallScreen} />
           <Stack.Screen name="RequestsScreen" component={RequestsScreen} />

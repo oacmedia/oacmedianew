@@ -1,105 +1,155 @@
-import { Image, ScrollView, StyleSheet, View } from "react-native";
-import React from "react";
+import { Image, ScrollView, StyleSheet, View, TouchableOpacity } from "react-native";
+import React, { useEffect, useState } from "react";
 
 import BottomTabs from "../components/home/BottomTabs";
 import Screen from "../components/Screen";
 import colors from "../config/colors";
 import Text from "../components/Text";
+import { Icon } from "@rneui/base";
+import { useUserAuth } from "../context/UserAuthContext";
+import firebase from '@react-native-firebase/app';
+import auth from '@react-native-firebase/auth';
+import firestore from "@react-native-firebase/firestore";
 
 const movieData = [
   {
     id: 1,
-    type: "Action",
+    type: "Rare",
     url: "https://img.moviescdn.xyz/crop/215/310/media/imagesv2/2022/03/kung-fu-season-2-2022.jpg",
   },
   {
     id: 2,
-    type: "Action",
+    type: "Rare",
     url: "https://img.moviescdn.xyz/crop/215/310/media/imagesv2/2020/02/strike-back-season-8-2020.jpg",
   },
   {
     id: 3,
-    type: "Action",
+    type: "Rare",
     url: "https://img.moviescdn.xyz/crop/215/310/media/imagesv2/2018/04/into-the-badlands-season-3-2018.jpg",
   },
   {
     id: 4,
-    type: "Comedy",
+    type: "Rare",
     url: "https://img.moviescdn.xyz/crop/215/310/media/imagesv2/2018/04/night-school-2018.jpg",
   },
   {
     id: 5,
-    type: "Comedy",
+    type: "Rare",
     url: "https://img.moviescdn.xyz/crop/215/310/media/images/201029_085815/the-conners.jpg",
   },
   {
     id: 6,
-    type: "Comedy",
+    type: "Rare",
     url: "https://img.moviescdn.xyz/crop/215/310/media/images/220915_094515/xiong-chu-mo-chong-fan-di-qiu.jpg",
   },
   {
     id: 7,
-    type: "Sci-Fi",
+    type: "Latest",
     url: "https://img.moviescdn.xyz/crop/215/310/media/imagesv2/2018/03/pacific-rim-uprising-2018.jpg",
   },
   {
     id: 8,
-    type: "Sci-Fi",
+    type: "Latest",
     url: "https://img.moviescdn.xyz/crop/215/310/media/imagesv2/2018/03/mv5by2jiytnmztctytq1oc00yju4lwewmjytzjkwy2y5mdi0otu3xkeyxkfqcgdeqxvynti4mze4mdu-v1-sy1000-cr0-0-674-1000-al-.jpg",
   },
   {
     id: 9,
-    type: "Sci-Fi",
+    type: "Latest",
     url: "https://img.moviescdn.xyz/crop/215/310/media/imagesv2/2019/09/titans-season-2-2019.jpg",
   },
   {
     id: 10,
-    type: "Crime",
+    type: "Latest",
     url: "https://img.moviescdn.xyz/crop/215/310/media/images/211204_112434/la-casa-de-papel.jpg",
   },
   {
     id: 11,
-    type: "Crime",
+    type: "Latest",
     url: "https://img.moviescdn.xyz/crop/215/310/media/imagesv2/2017/08/19-2-season-4-2017-cv.jpg",
   },
   {
     id: 12,
-    type: "Crime",
+    type: "Latest",
     url: "https://img.moviescdn.xyz/crop/215/310/media/imagesv2/2017/06/power-season-4-2017.jpg",
   },
 ];
 
-const ThumbsComponent = ({ movie }) => {
+const ThumbsComponent = ({ movie, navigation }) => {
   return (
-    <Image
-      source={{
-        uri: movie.url,
+    <TouchableOpacity
+      onPress={() => {
+        navigation.navigate("VideoScreen");
       }}
-      style={styles.video}
-    />
+    >
+      <Image
+        source={{
+          uri: movie.url,
+        }}
+        style={styles.video}
+      />
+    </TouchableOpacity>
   );
 };
 
 const ReelsScreen = ({ navigation }) => {
+  const {user, setUser} = useUserAuth();
+  const [categories, setCategories] = useState([]);
+  
+  useEffect(()=>{
+    firestore().collection('Categories').get().then((snapshot)=>{
+      let catData = [];
+      for( let request of snapshot.docs ){
+        let data = request.data();
+        let id = request.id;
+        catData.push({category: data.category});
+      }
+        setCategories(catData);
+    })
+  })
   return (
     <Screen>
+      {user.isAdmin && <TouchableOpacity
+        style={{
+            borderWidth:5,
+            borderColor:'#20194D',
+            alignItems:'center',
+            justifyContent:'center',
+            width:75,
+            height:75,
+            backgroundColor:'#fff',
+            borderRadius:50,
+            position: "absolute",
+            zIndex: 1,
+            bottom: 70,
+            right: 10,
+          }}
+        onPress={() => {
+            navigation.navigate("UploadVideo");
+          }}
+      >
+        <Icon name={"add"}  size={40} color="#20194D" />
+      </TouchableOpacity>}
       <ScrollView style={{ marginBottom: 70 }}>
+      {categories.map((category)=>{
         <View style={styles.container}>
-          <Text style={styles.contText}>Action</Text>
+          <Text style={styles.contText}>{category}</Text>
           <ScrollView horizontal>
             <View style={styles.thumbContainer}>
               {movieData
                 .filter((movie) => {
-                  return movie.type == "Action";
+                  return movie.type == category;
                 })
                 .map((film) => {
-                  return <ThumbsComponent key={film.id} movie={film} />;
+                  return <ThumbsComponent key={film.id} movie={film} navigation={navigation} />;
                 })}
             </View>
           </ScrollView>
         </View>
+      })}
+      </ScrollView>
+      
 
-        <View style={styles.container}>
+        {/* <View style={styles.container}>
           <Text style={styles.contText}>Comedy</Text>
           <ScrollView horizontal>
             <View style={styles.thumbContainer}>
@@ -143,7 +193,7 @@ const ReelsScreen = ({ navigation }) => {
             </View>
           </ScrollView>
         </View>
-      </ScrollView>
+      </ScrollView>  */}
       <BottomTabs navigation={navigation}/>
     </Screen>
   );

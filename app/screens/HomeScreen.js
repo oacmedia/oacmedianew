@@ -10,11 +10,13 @@ import { useUserAuth } from "../context/UserAuthContext";
 import firestore from '@react-native-firebase/firestore';
 import storage from "@react-native-firebase/storage";
 //import { FlatList } from "react-native-gesture-handler";
+import { useDataSharing } from "../context/DataSharingContext";
 
 
 const HomeScreen = ({ routes, navigation }) => {
   const {user, setUser} = useUserAuth();
   const [posts, setPosts] = useState([]);
+  const {sharedData, setSharedData} = useDataSharing();
   const [isLoading, setIsLoading] = useState(true)
   const [isFinished, setIsFinished] = useState(false)
   const [lastDocRef, setLastDocRef] = useState(null)
@@ -54,6 +56,7 @@ const HomeScreen = ({ routes, navigation }) => {
   }, [isFinished, isLoading])
 
   useEffect(() => {
+    setSharedData({});
     loadPosts();
     let query = firestore().collection('Posts');
     let unsubscribe = query.onSnapshot((snapshot) => {
