@@ -1,5 +1,5 @@
-import { Image, ScrollView, StyleSheet, View, TouchableOpacity } from "react-native";
-import React, { useEffect, useState } from "react";
+import { Image, ScrollView, StyleSheet, View, TouchableOpacity, Dimensions, ActivityIndicator, FlatList } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
 
 import BottomTabs from "../components/home/BottomTabs";
 import Screen from "../components/Screen";
@@ -7,107 +7,78 @@ import colors from "../config/colors";
 import Text from "../components/Text";
 import { Icon } from "@rneui/base";
 import { useUserAuth } from "../context/UserAuthContext";
+import AppText from "../components/Text";
 import firebase from '@react-native-firebase/app';
 import auth from '@react-native-firebase/auth';
 import firestore from "@react-native-firebase/firestore";
+import { useVideoData } from "../context/VideoDataContext";
 
-const movieData = [
-  {
-    id: 1,
-    type: "Rare",
-    url: "https://img.moviescdn.xyz/crop/215/310/media/imagesv2/2022/03/kung-fu-season-2-2022.jpg",
-  },
-  {
-    id: 2,
-    type: "Rare",
-    url: "https://img.moviescdn.xyz/crop/215/310/media/imagesv2/2020/02/strike-back-season-8-2020.jpg",
-  },
-  {
-    id: 3,
-    type: "Rare",
-    url: "https://img.moviescdn.xyz/crop/215/310/media/imagesv2/2018/04/into-the-badlands-season-3-2018.jpg",
-  },
-  {
-    id: 4,
-    type: "Rare",
-    url: "https://img.moviescdn.xyz/crop/215/310/media/imagesv2/2018/04/night-school-2018.jpg",
-  },
-  {
-    id: 5,
-    type: "Rare",
-    url: "https://img.moviescdn.xyz/crop/215/310/media/images/201029_085815/the-conners.jpg",
-  },
-  {
-    id: 6,
-    type: "Rare",
-    url: "https://img.moviescdn.xyz/crop/215/310/media/images/220915_094515/xiong-chu-mo-chong-fan-di-qiu.jpg",
-  },
-  {
-    id: 7,
-    type: "Latest",
-    url: "https://img.moviescdn.xyz/crop/215/310/media/imagesv2/2018/03/pacific-rim-uprising-2018.jpg",
-  },
-  {
-    id: 8,
-    type: "Latest",
-    url: "https://img.moviescdn.xyz/crop/215/310/media/imagesv2/2018/03/mv5by2jiytnmztctytq1oc00yju4lwewmjytzjkwy2y5mdi0otu3xkeyxkfqcgdeqxvynti4mze4mdu-v1-sy1000-cr0-0-674-1000-al-.jpg",
-  },
-  {
-    id: 9,
-    type: "Latest",
-    url: "https://img.moviescdn.xyz/crop/215/310/media/imagesv2/2019/09/titans-season-2-2019.jpg",
-  },
-  {
-    id: 10,
-    type: "Latest",
-    url: "https://img.moviescdn.xyz/crop/215/310/media/images/211204_112434/la-casa-de-papel.jpg",
-  },
-  {
-    id: 11,
-    type: "Latest",
-    url: "https://img.moviescdn.xyz/crop/215/310/media/imagesv2/2017/08/19-2-season-4-2017-cv.jpg",
-  },
-  {
-    id: 12,
-    type: "Latest",
-    url: "https://img.moviescdn.xyz/crop/215/310/media/imagesv2/2017/06/power-season-4-2017.jpg",
-  },
-];
+const fullWidth = Dimensions.get('window').width;
 
-const ThumbsComponent = ({ movie, navigation }) => {
-  return (
-    <TouchableOpacity
-      onPress={() => {
-        navigation.navigate("VideoScreen");
-      }}
-    >
-      <Image
-        source={{
-          uri: movie.url,
-        }}
-        style={styles.video}
-      />
-    </TouchableOpacity>
-  );
-};
-
-const ReelsScreen = ({ navigation }) => {
+const VideoScreen = ({ navigation }) => {
   const {user, setUser} = useUserAuth();
-  const [categories, setCategories] = useState([]);
-  
-  useEffect(()=>{
-    firestore().collection('Categories').get().then((snapshot)=>{
-      let catData = [];
+  const [allCategories, setAllCategories] = useState([]);
+  const [movieData, setMovieData] = useState([]);
+  const {videoData, setVideoData} = useVideoData();
+
+  const ThumbsComponent = ({ movie, navigation }) => {
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          setVideoData({videoUrl: movie.videoUrl, title: movie.title, description: movie.description})
+          navigation.navigate("VideoScreen");
+        }}
+      >
+        <Image
+          source={{
+            uri: movie.url,
+          }}
+          style={styles.video}
+        />
+      </TouchableOpacity>
+    );
+  };
+
+  async function getCategories(){
+    let array = [];
+    let count = 0;
+    let snapshot = await firestore().collection('Categories').get()
       for( let request of snapshot.docs ){
+        count++;
         let data = request.data();
         let id = request.id;
-        catData.push({category: data.category});
+        array.push({category: data.category, id: id});
+        if(count == snapshot.docs.length){
+          setAllCategories(array);
+        }
       }
-        setCategories(catData);
-    })
-  })
+      
+  }
+  async function getData(){
+    let array = [];
+    let count = 0;
+    let snapshot = await firestore().collection('Videos').get()
+      for( let request of snapshot.docs ){
+        count++;
+        let data = request.data();
+        let id = request.id;
+        array.push({type: data.category.label, id: id, url: data.thumbUrl, videoUrl: data.videoUrl, title: data.title, description: data.description});
+        if(count == snapshot.docs.length){
+          setMovieData(array);
+        }
+      }
+  }
+  useEffect(()=>{
+    setVideoData({});
+    getData();
+    getCategories();
+  },[])
+
   return (
     <Screen>
+      <View style={{ alignSelf: "center", marginTop: 20 }}>
+        <AppText style={{ fontSize: 25, fontWeight: "700" }}>Videos</AppText>
+      </View>
       {user.isAdmin && <TouchableOpacity
         style={{
             borderWidth:5,
@@ -129,81 +100,41 @@ const ReelsScreen = ({ navigation }) => {
       >
         <Icon name={"add"}  size={40} color="#20194D" />
       </TouchableOpacity>}
-      <ScrollView style={{ marginBottom: 70 }}>
-      {categories.map((category)=>{
-        <View style={styles.container}>
-          <Text style={styles.contText}>{category}</Text>
-          <ScrollView horizontal>
-            <View style={styles.thumbContainer}>
-              {movieData
-                .filter((movie) => {
-                  return movie.type == category;
-                })
-                .map((film) => {
-                  return <ThumbsComponent key={film.id} movie={film} navigation={navigation} />;
-                })}
-            </View>
-          </ScrollView>
-        </View>
-      })}
-      </ScrollView>
-      
-
-        {/* <View style={styles.container}>
-          <Text style={styles.contText}>Comedy</Text>
-          <ScrollView horizontal>
-            <View style={styles.thumbContainer}>
-              {movieData
-                .filter((movie) => {
-                  return movie.type == "Comedy";
-                })
-                .map((film) => {
-                  return <ThumbsComponent key={film.id} movie={film} />;
-                })}
-            </View>
-          </ScrollView>
-        </View>
-
-        <View style={styles.container}>
-          <Text style={styles.contText}>Sci-Fi</Text>
-          <ScrollView horizontal>
-            <View style={styles.thumbContainer}>
-              {movieData
-                .filter((movie) => {
-                  return movie.type == "Sci-Fi";
-                })
-                .map((film) => {
-                  return <ThumbsComponent key={film.id} movie={film} />;
-                })}
-            </View>
-          </ScrollView>
-        </View>
-
-        <View style={styles.container}>
-          <Text style={styles.contText}>Crime</Text>
-          <ScrollView horizontal>
-            <View style={styles.thumbContainer}>
-              {movieData
-                .filter((movie) => {
-                  return movie.type == "Crime";
-                })
-                .map((film) => {
-                  return <ThumbsComponent key={film.id} movie={film} />;
-                })}
-            </View>
-          </ScrollView>
-        </View>
-      </ScrollView>  */}
+      <FlatList style={{ marginBottom: 40 }}
+          data={allCategories}
+          keyExtractor={(category) => category.id}
+          renderItem={(category) => {
+            //const {item: post} = item
+            let catData = category.item
+            //console.log(catData);
+            return  <View style={styles.container}>
+                      <Text style={styles.contText}>{catData.category}</Text>
+                      <ScrollView horizontal>
+                        <View style={styles.thumbContainer}>
+                          {movieData
+                            .filter((movie) => {
+                              //console.log(movie.type != 'undefined' && catData.category != 'undefined'? movie.type == catData.category : false);
+                              
+                              return movie.type != 'undefined' && catData.category != 'undefined'? movie.type == catData.category : false;
+                            })
+                            .map((film) => {
+                              return <ThumbsComponent key={film.id} movie={film} navigation={navigation} />;
+                            })}
+                        </View>
+                      </ScrollView>
+                    </View>
+          }}
+          />
       <BottomTabs navigation={navigation}/>
     </Screen>
   );
 };
 
-export default ReelsScreen;
+export default VideoScreen;
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 30,
+    marginTop: 10,
   },
   contText: {
     marginLeft: 20,
@@ -219,5 +150,15 @@ const styles = StyleSheet.create({
     width: 250,
     height: 150,
     resizeMode: "cover",
+  },
+  backgroundVideo: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+    height: fullWidth,
+    width: fullWidth,
+    backgroundColor: "transparent",
   },
 });

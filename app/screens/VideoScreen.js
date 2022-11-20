@@ -1,4 +1,4 @@
-import { Image, ScrollView, StyleSheet, View, TouchableOpacity, Dimensions, ActivityIndicator } from "react-native";
+import { Image, ScrollView, StyleSheet, View, TouchableOpacity, Dimensions, ActivityIndicator} from "react-native";
 import React from "react";
 
 import BottomTabs from "../components/home/BottomTabs";
@@ -8,16 +8,38 @@ import Text from "../components/Text";
 import { Icon } from "@rneui/base";
 import { useUserAuth } from "../context/UserAuthContext";
 import Video from "react-native-video";
+import { useVideoData } from "../context/VideoDataContext";
+import AppText from "../components/Text";
+import TouchableIcon from "../components/TouchableIcon";
 
 const fullWidth = Dimensions.get('window').width;
 
 const VideoScreen = ({ navigation }) => {
   const {user, setUser} = useUserAuth();
+  const {videoData, setVideoData} = useVideoData();
+  console.log(videoData);
   return (
     <Screen style={{backgroundColor: colors.white}}>
+      <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 20, paddingHorizontal: 10, backgroundColor: "#20194D"}}>
+            <TouchableIcon
+              name="arrow-left"
+              size={30}
+              onPress={() => {
+                navigation.navigate("ReelsScreen");
+              }}
+            />
+            <View style={{ flexDirection: "column",alignSelf: "center" }}>
+              <AppText style={{ fontSize: 25, fontWeight: "700",
+              marginLeft: 15,
+              fontWeight: "500",
+              color: "white", 
+              alignItems: "center",
+              }}>{videoData.title}</AppText>
+            </View>
+      </View>
       <View style={{ marginTop: 0, width: fullWidth }}>
         <ActivityIndicator style={{alignSelf:"center",height: fullWidth, width: fullWidth, justifyContent: "center"}} size={100} color="#20194D"/>
-        <Video source={{uri: 'https://firebasestorage.googleapis.com/v0/b/oacmedia-app-8464c.appspot.com/o/d5fa8c8f-ad46-4224-8549-950d36468ce0.mp4?alt=media&token=272269a5-d184-4fb9-8038-ad6704c38735'}}   // Can be a URL or a local file.
+        <Video source={{uri: videoData.videoUrl}}   // Can be a URL or a local file.
             ref={(ref) => {
             Video.player = ref
             }}
@@ -28,24 +50,18 @@ const VideoScreen = ({ navigation }) => {
             style={styles.backgroundVideo}
         />
     </View>
-    <View style={{ marginTop: 0, width: fullWidth, height: 'auto', backgroundColor: colors.white, paddingHorizontal: 10, paddingTop: 10, }}>
-        <Text style={{color: colors.black, fontWeight: "600", fontSize: 24,}}>
-            This is Video Title
-        </Text>
-    </View>
     <View style={{ width: fullWidth, height: 'auto', backgroundColor: colors.white, paddingHorizontal: 10, paddingTop: 5,}}>
-        <Text style={{color: colors.black, fontWeight: "500", fontSize: 20,}}>
+        <Text style={{color: colors.black, fontWeight: "500", fontSize: 20,paddingVertical: 10,}}>
             Description:
         </Text>
     </View>
     <ScrollView>
         <View style={{ width: fullWidth, height: '100%', backgroundColor: colors.white, paddingHorizontal: 20, paddingVertical: 5, marginBottom: 70, }}>
             <Text style={{color: colors.black, fontWeight: "400", fontSize: 16,}}>
-            Its Video's Description. Just wrote to check how description looks on videos page. if it looks fine i will go with or i have change its styling Its Video's Description.
+            {videoData.description}
             </Text>
         </View>
     </ScrollView>
-      <BottomTabs navigation={navigation}/>
     </Screen>
   );
 };
