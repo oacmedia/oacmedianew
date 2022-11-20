@@ -25,6 +25,10 @@ function RequestsScreen({ navigation }) {
   const [lastDocRef, setLastDocRef] = useState(null)
   let pageSize = 20;
 
+  function returnToFriends(navigation){
+    navigation.navigate("FriendsScreen");
+  }
+
   const loadPosts = useCallback(() => {
     setIsLoading(true);
     let query = firestore().collection('Requests').where('receiver','==',user.id);
@@ -230,7 +234,7 @@ function RequestsScreen({ navigation }) {
                         count = 0;
                         firestore().collection('Requests').doc(request).delete().then(()=>{
                             console.log('request removed!');
-                            //navigation.navigate("FriendsScreen");
+                            returnToFriends(navigation);
                         })
                     }
                 })

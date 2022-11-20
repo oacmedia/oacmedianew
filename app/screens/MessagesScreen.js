@@ -145,9 +145,9 @@ function MessagesScreen({ navigation, route }) {
                 navigation.navigate("ChatScreen");
               }
             }}
-            renderRightActions={() => (
-              <ListItemDeleteAction onPress={() => handleDelete(item)} />
-            )}
+            // renderRightActions={() => (
+            //   <ListItemDeleteAction onPress={() => handleDelete(item)} />
+            // )}
           />
         }}
         ItemSeparatorComponent={ListItemSeparator}

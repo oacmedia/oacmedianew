@@ -13,6 +13,7 @@ import firestore from "@react-native-firebase/firestore";
 // definition of the Item, which will be rendered in the FlatList
 const Item = ({ name, image, id, user }) => {
   const [requestStatus, setReqStatus] = useState(false);
+  const [friendtStatus, setFriendStatus] = useState(false);
   function addFriend(id, user){
     console.log("Friend Req Sent To User ",id," By User ",user.id);
     firestore().collection('Requests').where('sender','==',user.id).where('receiver','==',id).get().then((snapshot)=>{
@@ -47,6 +48,15 @@ const Item = ({ name, image, id, user }) => {
         else{
           setReqStatus(false);
           }
+      })
+      firestore().collection('Friends').doc(user.id).get().then((snapshot)=>{
+        //  console.log();
+        let data = snapshot.data();
+        data.friends.map((friend)=>{
+          if(friend.user == id){
+            setFriendStatus(true);
+          }
+        })
       })  
   },[])
 return(
@@ -57,7 +67,11 @@ return(
         {name}
       </Text>
     </View>
-    <TouchableIcon name={requestStatus?"account-check":"account-plus"} iconColor={colors.black} onPress={()=>{addFriend(id, user)}}/>
+    <TouchableIcon name={friendtStatus ? "account-multiple":(requestStatus?"account-check":"account-plus")} iconColor={colors.black} onPress={()=>{
+      if(!friendtStatus){
+        addFriend(id, user)}}
+      }
+      />
   </View>
 )};
 

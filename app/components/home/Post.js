@@ -104,6 +104,7 @@ const PostHeader = ({ post, postUser, postID, DeleteButton, LoginnedUser, userDa
 
 const PostVideo = ({ imageUrl, index, length }) => {
   const fullWidth = Dimensions.get('window').width;
+  const [mute, setMute] = useState(false);
 return (
   <View style={{ marginTop: 0, width: fullWidth }}>
     <ActivityIndicator style={{alignSelf:"center",height: "100%", width: fullWidth, justifyContent: "center"}} size={100} color="white"/>
@@ -112,7 +113,9 @@ return (
           Video.player = ref
         }}    
         resizeMode={"cover"}
-        repeat                                // Store reference
+        poster={'http://clipart-library.com/images/qiBo9xM5T.png'}
+        controls                                // Store reference
+        paused
         onBuffer={Video.onBuffer}                // Callback when remote video is buffering
         onError={Video.videoError}               // Callback when video cannot be loaded
         style={styles.backgroundVideo}
