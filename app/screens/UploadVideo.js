@@ -13,6 +13,7 @@ import Button from "../components/Button";
 import { useDataSharing } from "../context/DataSharingContext";
 import storage from '@react-native-firebase/storage';
 import { useState } from "react";
+import TouchableIcon from "../components/TouchableIcon";
 
 const UploadVideo = ({ navigation }) => {
   const {user, setUser} = useUserAuth();
@@ -56,9 +57,23 @@ const UploadVideo = ({ navigation }) => {
   return (
     <Screen>
         {processInd && <ActivityIndicator style={{alignSelf:"center",height: fullHeight, width: fullWidth, justifyContent: "center"}} size={100} color="white"/>}
-      <View style={{ alignSelf: "center", marginVertical: 20 }}>
-        <AppText style={{ fontSize: 25, fontWeight: "700" }}>Upload Video</AppText>
-      </View>
+      <View style={{ flexDirection: "row", alignItems: "center", marginVertical: 20, marginHorizontal: 10 }}>
+          <TouchableIcon
+            name="arrow-left"
+            size={30}
+            onPress={() => {
+              navigation.navigate("ReelsScreen");
+            }}
+          />
+          <View style={{ flexDirection: "column",alignSelf: "center" }}>
+            <AppText style={{ fontSize: 25, fontWeight: "700",
+            marginLeft: 15,
+            fontWeight: "500",
+            color: "white", 
+            alignItems: "center",
+            }}>Upload Video</AppText>
+          </View>
+        </View>
       <View style={styles.container}>
         <VideoInput onChangeImage={(uri) => uploadVideo(uri)} />
       </View>

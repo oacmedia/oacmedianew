@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FlatList, StyleSheet, View, Text  } from "react-native";
+import { FlatList, StyleSheet, View, Text, ActivityIndicator, Dimensions,   } from "react-native";
 import firebase from '@react-native-firebase/app';
 import auth from '@react-native-firebase/auth';
 import firestore from "@react-native-firebase/firestore";
@@ -17,9 +17,13 @@ import { useUserAuth } from "../context/UserAuthContext";
 function FriendsScreen({ navigation }) {
   const [messages, setMessages] = useState([]);
   const {user, setUser} = useUserAuth();
+  const [processInd, setProcessInd] = useState(false);
   const [loading, setLoading] = useState(true);
+  const fullWidth = Dimensions.get('window').width;
+  const fullHeight = Dimensions.get('window').height;
   let id = 0;
   const loadPosts = useCallback(() => {
+    setProcessInd(true);
     if(loading){
       let query = firestore().collection('Friends').doc(user.id)
       query.get()
@@ -33,6 +37,7 @@ function FriendsScreen({ navigation }) {
             let rdata = userData.data();
             post.push({id: id,title: rdata.title,firstName: rdata.firstName,lastName: rdata.lastName,profile: rdata.profile, phoneNumber: rdata.phoneNumber});
             if(data.friends.length == id){
+              setProcessInd(false);
               setLoading(false);
               id = 0;
             }
@@ -68,6 +73,7 @@ function FriendsScreen({ navigation }) {
 
   return (
     <Screen>
+      {processInd && <ActivityIndicator style={{alignSelf:"center",height: fullHeight, width: fullWidth, justifyContent: "center"}} size={100} color="white"/>}
       <View style={{ alignSelf: "center", marginVertical: 20 }}>
         <AppText style={{ fontSize: 25, fontWeight: "700" }}>Friends</AppText>
       </View>

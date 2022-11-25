@@ -12,15 +12,15 @@ const Header = ({ navigation }) => {
       <View style={styles.iconsContainer}>
         <TouchableIcon
           name={"plus-box-outline"}
-          size={30}
+          size={40}
           onPress={() => navigation.navigate("ListingEditScreen")}
         />
-        <TouchableIcon
+        {/* <TouchableIcon
           name={"bell-outline"}
           size={30}
           badge={9}
           style={{ marginLeft: 10 }}
-        />
+        /> */}
       </View>
     </View>
   );

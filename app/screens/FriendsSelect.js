@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FlatList, StyleSheet, View, Text  } from "react-native";
+import { FlatList, StyleSheet, View, Text, ActivityIndicator, Dimensions  } from "react-native";
 import firebase from '@react-native-firebase/app';
 import auth from '@react-native-firebase/auth';
 import firestore from "@react-native-firebase/firestore";
@@ -21,6 +21,9 @@ function FriendsSelect({ navigation }) {
   const {user, setUser} = useUserAuth();
   const [loading, setLoading] = useState(true);
   const {sharedData, setSharedData} = useDataSharing();
+  const [processInd, setProcessInd] = useState(false);
+  const fullWidth = Dimensions.get('window').width;
+  const fullHeight = Dimensions.get('window').height;
 
   function setChat(friend){
 
@@ -57,6 +60,7 @@ function FriendsSelect({ navigation }) {
   let id = 0;
 
   const loadPosts = useCallback(() => {
+    setProcessInd(true);
     if(loading){
       let query = firestore().collection('Friends').doc(user.id)
       query.get()
@@ -70,6 +74,7 @@ function FriendsSelect({ navigation }) {
             let rdata = userData.data();
             post.push({id: id,title: rdata.title,firstName: rdata.firstName,lastName: rdata.lastName,profile: rdata.profile, phoneNumber: rdata.phoneNumber});
             if(data.friends.length == id){
+              setProcessInd(false);
               setLoading(false);
               id = 0;
             }
@@ -88,6 +93,7 @@ function FriendsSelect({ navigation }) {
 
   return (
     <Screen>
+      {processInd && <ActivityIndicator style={{alignSelf:"center",height: fullHeight, width: fullWidth, justifyContent: "center"}} size={100} color="white"/>}
         <View style={{ flexDirection: "row", alignItems: "center", marginVertical: 20, marginHorizontal: 10 }}>
           <TouchableIcon
             name="arrow-left"

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
+import { FlatList, StyleSheet, TouchableOpacity, View, ActivityIndicator, Dimensions  } from "react-native";
 import firebase from '@react-native-firebase/app';
 import auth from '@react-native-firebase/auth';
 import firestore from "@react-native-firebase/firestore";
@@ -24,9 +24,14 @@ function MessagesScreen({ navigation, route }) {
   const [isLoading, setIsLoading] = useState(true)
   const [isFinished, setIsFinished] = useState(false)
   const [lastDocRef, setLastDocRef] = useState(null)
+  const [processInd, setProcessInd] = useState(false);
+  const fullWidth = Dimensions.get('window').width;
+  const fullHeight = Dimensions.get('window').height;
+
   let pageSize = 20;
 
   const loadPosts = useCallback(() => {
+    setProcessInd(true);
     setIsLoading(true);
     let query = firestore().collection('Chats').where("user","==",user.id)
     if(lastDocRef) {
@@ -49,6 +54,7 @@ function MessagesScreen({ navigation, route }) {
         if(snapshot.docs.length) {
           setLastDocRef(snapshot.docs[snapshot.docs.length-1]);
         }
+        setProcessInd(false);
         setIsLoading(false);
         setMessages((prevPosts) => {
           let objs = post.map((obj)=>{
@@ -106,6 +112,7 @@ function MessagesScreen({ navigation, route }) {
 
   return (
     <Screen>
+      {processInd && <ActivityIndicator style={{alignSelf:"center",height: fullHeight, width: fullWidth, justifyContent: "center"}} size={100} color="white"/>}
       <TouchableOpacity
         style={{
             borderWidth:5,

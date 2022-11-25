@@ -72,6 +72,10 @@ const VideoScreen = ({ navigation }) => {
     setVideoData({});
     getData();
     getCategories();
+    firestore().collection('Videos').onSnapshot(()=>{
+      getData();
+      getCategories();
+    })
   },[])
 
   return (
@@ -99,6 +103,27 @@ const VideoScreen = ({ navigation }) => {
           }}
       >
         <Icon name={"add"}  size={40} color="#20194D" />
+      </TouchableOpacity>}
+      {user.isAdmin && <TouchableOpacity
+        style={{
+            borderWidth:5,
+            borderColor:'#20194D',
+            alignItems:'center',
+            justifyContent:'center',
+            width:75,
+            height:75,
+            backgroundColor:'#fff',
+            borderRadius:50,
+            position: "absolute",
+            zIndex: 1,
+            bottom: 70,
+            left: 10,
+          }}
+        onPress={() => {
+            navigation.navigate("DeleteVideo");
+          }}
+      >
+        <Icon name={"delete"}  size={40} color="#20194D" />
       </TouchableOpacity>}
       <FlatList style={{ marginBottom: 40 }}
           data={allCategories}

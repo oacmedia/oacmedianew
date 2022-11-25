@@ -81,6 +81,7 @@ import AddVideoData from "./app/screens/AddVideoData";
 import VideoScreen from "./app/screens/VideoScreen";
 import DeleteCategory from "./app/screens/DeleteCategory";
 import { VideoDataContextProvider } from "./app/context/VideoDataContext";
+import DeleteVideo from "./app/screens/DeleteVideo";
 
 const Stack = createStackNavigator();
 
@@ -112,6 +113,7 @@ const SignedInStack = () => (
             <Stack.Screen name="SearchScreen" component={SearchScreen} />
             <Stack.Screen name="PostsScreen" component={PostsScreen} />
             <Stack.Screen name="ReelsScreen" component={ReelsScreen} />
+            <Stack.Screen name="DeleteVideo" component={DeleteVideo} />
             <Stack.Screen name="UploadVideo" component={UploadVideo} />
             <Stack.Screen name="AddCategory" component={AddCategory} />
             <Stack.Screen name="DeleteCategory" component={DeleteCategory} />
