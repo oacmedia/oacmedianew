@@ -58,6 +58,23 @@ const HomeScreen = ({ routes, navigation }) => {
   useEffect(() => {
     setSharedData({});
     loadPosts();
+    firestore().collection('Calls').where('user','==',user.id).get().then((snapshot)=>{
+      if(!snapshot.empty){
+        snapshot.docs.map((doc)=>{
+          let id = doc.id;
+          let data = doc.data();
+          firestore().collection('Calls').doc(id).delete().then(()=>{console.log('deleted!')});
+          firestore().collection('Calls').where('friend','==',user.id).where('chatid','==',data.chatid).get().then((snapshot)=>{
+            if(!snapshot.empty){
+              snapshot.docs.map((doc)=>{
+                let id = doc.id;
+                firestore().collection('Calls').doc(id).delete().then(()=>{console.log('deleted!')});
+              })
+            }
+          })
+        })
+      }
+    });
     let query = firestore().collection('Posts');
     let unsubscribe = query.onSnapshot((snapshot) => {
       setPosts((prevPosts) => {

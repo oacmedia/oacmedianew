@@ -82,6 +82,7 @@ import VideoScreen from "./app/screens/VideoScreen";
 import DeleteCategory from "./app/screens/DeleteCategory";
 import { VideoDataContextProvider } from "./app/context/VideoDataContext";
 import DeleteVideo from "./app/screens/DeleteVideo";
+import { CallDataSharingContextProvider } from "./app/context/CallDataSharingContext";
 
 const Stack = createStackNavigator();
 
@@ -93,39 +94,41 @@ const SignedInStack = () => (
   <UserAuthContextProvider>
     <DataSharingContextProvider>
       <VideoDataContextProvider>
-        <NavigationContainer>
-          <Stack.Navigator
-            initialRouteName="LoginScreen"
-            screenOptions={screenOptions}
-          >
-            <Stack.Screen name="LoginScreen" component={LoginScreen} />
-            <Stack.Screen name="LoginOTP" component={LoginOTP} />
-            <Stack.Screen name="RegisterScreen1" component={RegisterScreen1} />
-            <Stack.Screen name="RegisterScreen2" component={RegisterScreen2} />
-            <Stack.Screen name="RegisterScreen3" component={RegisterScreen3} />
-            <Stack.Screen name="RegisterScreen4" component={RegisterScreen4} />
-            <Stack.Screen name="RegisterScreen5" component={RegisterScreen5} />
-            <Stack.Screen name="HomeScreen" component={HomeScreen} />
-            <Stack.Screen name="ListingEditScreen" component={ListingEditScreen} />
-            <Stack.Screen name="MessagesScreen" component={MessagesScreen} />
-            <Stack.Screen name="FriendsSelect" component={FriendsSelect} />
-            <Stack.Screen name="AccountScreen" component={AccountScreen} />
-            <Stack.Screen name="SearchScreen" component={SearchScreen} />
-            <Stack.Screen name="PostsScreen" component={PostsScreen} />
-            <Stack.Screen name="ReelsScreen" component={ReelsScreen} />
-            <Stack.Screen name="DeleteVideo" component={DeleteVideo} />
-            <Stack.Screen name="UploadVideo" component={UploadVideo} />
-            <Stack.Screen name="AddCategory" component={AddCategory} />
-            <Stack.Screen name="DeleteCategory" component={DeleteCategory} />
-            <Stack.Screen name="SelectThumbnail" component={SelectThumbnail} />
-            <Stack.Screen name="AddVideoData" component={AddVideoData} />
-            <Stack.Screen name="VideoScreen" component={VideoScreen} />
-            <Stack.Screen name="ChatScreen" component={ChatScreen} />
-            <Stack.Screen name="CallScreen" component={CallScreen} />
-            <Stack.Screen name="RequestsScreen" component={RequestsScreen} />
-            <Stack.Screen name="FriendsScreen" component={FriendsScreen} />
-          </Stack.Navigator>
-        </NavigationContainer>
+        <CallDataSharingContextProvider>
+          <NavigationContainer>
+            <Stack.Navigator
+              initialRouteName="LoginScreen"
+              screenOptions={screenOptions}
+            >
+              <Stack.Screen name="LoginScreen" component={LoginScreen} />
+              <Stack.Screen name="LoginOTP" component={LoginOTP} />
+              <Stack.Screen name="RegisterScreen1" component={RegisterScreen1} />
+              <Stack.Screen name="RegisterScreen2" component={RegisterScreen2} />
+              <Stack.Screen name="RegisterScreen3" component={RegisterScreen3} />
+              <Stack.Screen name="RegisterScreen4" component={RegisterScreen4} />
+              <Stack.Screen name="RegisterScreen5" component={RegisterScreen5} />
+              <Stack.Screen name="HomeScreen" component={HomeScreen} />
+              <Stack.Screen name="ListingEditScreen" component={ListingEditScreen} />
+              <Stack.Screen name="MessagesScreen" component={MessagesScreen} />
+              <Stack.Screen name="FriendsSelect" component={FriendsSelect} />
+              <Stack.Screen name="AccountScreen" component={AccountScreen} />
+              <Stack.Screen name="SearchScreen" component={SearchScreen} />
+              <Stack.Screen name="PostsScreen" component={PostsScreen} />
+              <Stack.Screen name="ReelsScreen" component={ReelsScreen} />
+              <Stack.Screen name="DeleteVideo" component={DeleteVideo} />
+              <Stack.Screen name="UploadVideo" component={UploadVideo} />
+              <Stack.Screen name="AddCategory" component={AddCategory} />
+              <Stack.Screen name="DeleteCategory" component={DeleteCategory} />
+              <Stack.Screen name="SelectThumbnail" component={SelectThumbnail} />
+              <Stack.Screen name="AddVideoData" component={AddVideoData} />
+              <Stack.Screen name="VideoScreen" component={VideoScreen} />
+              <Stack.Screen name="ChatScreen" component={ChatScreen} />
+              <Stack.Screen name="CallScreen" component={CallScreen} />
+              <Stack.Screen name="RequestsScreen" component={RequestsScreen} />
+              <Stack.Screen name="FriendsScreen" component={FriendsScreen} />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </CallDataSharingContextProvider>
       </VideoDataContextProvider>
     </DataSharingContextProvider>
   </UserAuthContextProvider>

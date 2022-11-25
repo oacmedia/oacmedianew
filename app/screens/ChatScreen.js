@@ -12,6 +12,7 @@ import AppText from "../components/Text";
 import { POSTS } from "../data/posts";
 import { useDataSharing } from "../context/DataSharingContext";
 import { useUserAuth } from "../context/UserAuthContext";
+import { useCallDataSharing } from "../context/CallDataSharingContext";
 import { Ionicons } from "@expo/vector-icons";
 import {
   Actions,
@@ -43,11 +44,116 @@ export async function askForPermission() {
 const ChatScreen = ({ navigation }) => {
   const [messages, setMessages] = useState([]);
   const {sharedData, setSharedData} = useDataSharing();
+  const {callSharedData, setCallSharedData} = useCallDataSharing();
   const {user, setUser} = useUserAuth();
   const [secondUser, setSecondUser] = useState([]);
   const [userData, setUserData] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImageView, setSeletedImageView] = useState("");
+
+  const appId = '41b0ec4aaeb544dab76572e085446106';
+  const appCertificate = '80977caed4b14c768ae6d13f63c3753c';
+  let uid;
+  let token;
+  let channelName;
+
+  function setCall(friend){
+
+    
+    firestore().collection('Calls').where('user','==',user.id).where('friend','==',friend).get().then((snapshot)=>{
+      if(!snapshot.empty){
+        snapshot.docs.map((result)=>{
+          let data = result.data();
+          channelName = data.channel;
+          let str = user.id;
+          uid = str.slice(-5);
+          token = data.token;
+          setCallSharedData({uid: uid,token: token,channelName: channelName});
+          firestore().collection('Calls').where('user','==',user.id).where('chatid','==',sharedData.chatid).get().then((snapshot)=>{
+            if(!snapshot.empty){
+              snapshot.docs.map((doc)=>{
+                let id = doc.id;
+                firestore().collection('Calls').doc(id).update({
+                  joined: true,
+                }).then(()=>{
+                  console.log('updated');
+                  navigation.navigate("CallScreen");
+                })
+              })
+            }
+          })
+        })
+      }else{
+        channelName = (user.title+user.firstName+user.lastName).toString();
+        let str = user.id;
+        uid = str.slice(-5);
+        const data = {
+                appID: appId,
+                appCertificate: appCertificate,
+                role: '1',
+                channelName: (user.title+user.firstName+user.lastName).toString(),
+                account: uid,
+            };
+          
+          (async () => {
+              const request = await fetch('https://us-central1-oacmedia-app-8464c.cloudfunctions.net/generateToken', {
+                  method: 'POST', // or 'PUT'
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          });
+          const response = await request.json();
+          token = response.token;
+          firestore().collection('Calls').doc().set({
+            user: user.id,
+            friend: friend,
+            chatid: sharedData.chatid,
+            token: token,
+            channel: channelName,
+            joined: true,
+          }).then(()=>{
+            let str = friend;
+            let frUid = str.slice(-5);
+            const data = {
+                    appID: appId,
+                    appCertificate: appCertificate,
+                    role: '2',
+                    channelName: channelName,
+                    account: frUid,
+                };
+              
+              (async () => {
+                  const request = await fetch('https://us-central1-oacmedia-app-8464c.cloudfunctions.net/generateToken', {
+                      method: 'POST', // or 'PUT'
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+              });
+              const frResponse = await request.json();
+              let secToken = frResponse.token;
+            firestore().collection('Calls').doc().set({
+              user: friend,
+              friend: user.id,
+              chatid: sharedData.chatid,
+              token: secToken,
+              channel: channelName,
+              joined: false,
+            }).then(async()=>{
+              setCallSharedData({uid: uid,token: token,channelName: channelName});
+              firestore().collection('Calls').where('user','==',friend).get().then((snapshot)=>{
+                if(!snapshot.empty){
+                  navigation.navigate("CallScreen");
+                }
+              })
+            })
+          })()
+          })
+        })()
+      }
+    });
+  }
 
      const getAllMessages = async ()=>{
         const docid  = sharedData.chatid;
@@ -76,7 +182,15 @@ const ChatScreen = ({ navigation }) => {
       setSecondUser({secondUser: data.id, profile: data.profile});
      }
      const handleCall = () => {
-      navigation.navigate("CallScreen");
+      firestore().collection('Chats').where('user','==',user.id).where('chatid','==',sharedData.chatid)
+      .get().then((snapshot)=>{
+          if(!snapshot.empty){
+            snapshot.docs.map((result)=>{
+              let data = result.data();
+              setCall(data.friend);
+            })
+          }
+        })
     };
 
     async function handlePhotoPicker() {
