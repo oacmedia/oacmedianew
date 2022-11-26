@@ -10,6 +10,7 @@ import firebase from '@react-native-firebase/app';
 import auth from '@react-native-firebase/auth';
 import firestore from "@react-native-firebase/firestore";
 import {PermissionsAndroid, Platform} from 'react-native';
+import {request, PERMISSIONS} from 'react-native-permissions';
 import {
     ClientRoleType,
     createAgoraRtcEngine,
@@ -54,9 +55,13 @@ const CallScreen = ({ navigation }) => {
 
   const getPermission = async () => {
       if (Platform.OS === 'android') {
-        await PermissionsAndroid.requestMultiple([
-              PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-          ]);
+        console.log('i m here!');
+        request(PERMISSIONS.ANDROID.RECORD_AUDIO).then((result)=>{
+          console.log(result, "permission");
+        })
+        // await PermissionsAndroid.requestMultiple([
+        //       PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+        //   ]);
         }
       };
       
