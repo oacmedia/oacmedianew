@@ -12,35 +12,71 @@ import firestore from "@react-native-firebase/firestore";
 import {PermissionsAndroid, Platform} from 'react-native';
 import {request, PERMISSIONS} from 'react-native-permissions';
 import {
-    ClientRoleType,
-    createAgoraRtcEngine,
-    IRtcEngine,
-    RtcSurfaceView,
-    ChannelProfileType,
+  ClientRoleType,
+  createAgoraRtcEngine,
+  IRtcEngine,
+  RtcSurfaceView,
+  ChannelProfileType,
 } from 'react-native-agora';
 import { useCallDataSharing } from "../context/CallDataSharingContext";
 
-import {RtcTokenBuilder, RtmTokenBuilder, RtcRole, RtmRole} from 'agora-access-token';
-
-const Timer = () => {
-  return (
-    <View style={styles.timer}>
-      <Text style={styles.digits}>04:</Text>
-      <Text style={styles.digits}>23</Text>
-    </View>
-  );
-};
+//import {RtcTokenBuilder, RtmTokenBuilder, RtcRole, RtmRole} from 'agora-access-token';
 
 const CallScreen = ({ navigation }) => {
   const {sharedData, setSharedData} = useDataSharing();
   const [mute, setMute] = useState("microphone-off");
   const {user, setUser} = useUserAuth();
   const {callSharedData, setCallSharedData} = useCallDataSharing();
+  const [secondJoined, setSecondJoined] = useState(false);
   const appId = '41b0ec4aaeb544dab76572e085446106';
   const appCertificate = '80977caed4b14c768ae6d13f63c3753c';
   let token;
   let channelName;
   let uid;
+  
+  const Timer = () => {
+    return (
+      <View style={styles.timer}>
+        <Text style={styles.digits}>{secondJoined?'Connected!':'Ringing'}</Text>
+      </View>
+    );
+  };
+
+  //let [milliseconds,seconds,minutes,hours] = [0,0,0,0];
+  //   const [milliseconds, setMilliseconds] = useState(0);
+//   const [seconds, setSeconds] = useState(0);
+//   const [minutes, setMinutes] = useState(0);
+//   const [hours, setHours] = useState(0);
+//   const [h, setH] = useState(0);
+//   const [m, setM] = useState(0);
+//   const [s, setS] = useState(0);
+//   const [ms, setMS] = useState(0);
+// let timerRef;
+// let int = null;
+
+// function displayTimer(){
+//   setMilliseconds(milliseconds+=10);
+
+//   if(milliseconds == 1000){
+//     setMilliseconds(0);
+//     setSeconds(seconds+1);
+
+//       if(seconds == 60){
+//         setSeconds(0);
+//         setMinutes(minutes+1);
+
+//           if(minutes == 60){
+//             setMinutes(0)
+//             setHours(hours+1);
+//           }
+//       }
+//   }
+//   setH(hours < 10 ? "0" + hours : hours);
+//   setM(minutes < 10 ? "0" + minutes : minutes);
+//   setS(seconds < 10 ? "0" + seconds : seconds);
+//   setMS(milliseconds < 10 ? "00" + milliseconds : milliseconds < 100 ? "0" + milliseconds : milliseconds);
+// }
+
 
   const agoraEngineRef = useRef(IRtcEngine); // Agora engine instance
     const [isJoined, setIsJoined] = useState(false); // Indicates if the local user has joined the channel
@@ -65,58 +101,69 @@ const CallScreen = ({ navigation }) => {
         }
       };
       
-      const setupVideoSDKEngine = async () => {
-        try {
-        // use the helper function to get permissions
-        if (Platform.OS === 'android') { await getPermission()};
-        agoraEngineRef.current = createAgoraRtcEngine();
-        const agoraEngine = agoraEngineRef.current;
-        agoraEngine.registerEventHandler({
-            onJoinChannelSuccess: () => {
-                showMessage('Successfully joined the channel ' + channelName);
-                setIsJoined(true);
-            },
-            onUserJoined: (_connection, Uid) => {
-                showMessage('Remote user joined with uid ' + Uid);
-                setRemoteUid(Uid);
-            },
-            onUserOffline: (_connection, Uid) => {
-                showMessage('Remote user left the channel. uid: ' + Uid);
-                setRemoteUid(0);
-            },
-        });
-        agoraEngine.initialize({
-            appId: appId,
-            channelProfile: ChannelProfileType.ChannelProfileLiveBroadcasting,
-        });
-        agoraEngine.enableVideo();
-        join();
-        } catch (e) {
-            console.log(e);
-        }
-     };
-
-     const join = async () => {
-      if (isJoined) {
-          return;
-      }
-      try {
-          agoraEngineRef.current?.setChannelProfile(
-              ChannelProfileType.ChannelProfileCommunication,
-          );
-          agoraEngineRef.current?.startPreview();
-          agoraEngineRef.current?.joinChannel(token, channelName, uid, {
-              clientRoleType: ClientRoleType.ClientRoleBroadcaster,
-          });
-      } catch (e) {
-          console.log(e);
-      }
-  };
+      const setupVoiceSDKEngine = async () => {
+            try {
+            // use the helper function to get permissions
+            if (Platform.OS === 'android') { await getPermission()};
+            agoraEngineRef.current = createAgoraRtcEngine();
+            const agoraEngine = agoraEngineRef.current;
+            agoraEngine.registerEventHandler({
+                onJoinChannelSuccess: () => {
+                    showMessage('Successfully joined the channel ' + channelName);
+                    setIsJoined(true);
+                },
+                onUserJoined: (_connection, Uid) => {
+                    showMessage('Remote user joined with uid ' + Uid);
+                    setRemoteUid(Uid);
+                },
+                onUserOffline: (_connection, Uid) => {
+                  // leave();
+                  // clearInterval(int);
+                  // firestore().collection('Calls').where('chatid','==',sharedData.chatid).get().then((snapshot)=>{
+                  //   if(!snapshot.empty){
+                  //     snapshot.docs.map((doc)=>{
+                  //       let id = doc.id;
+                  //       firestore().collection('Calls').doc(id).delete().then(()=>{
+                  //         console.log('deleted!');
+                  //       })
+                  //     })
+                  //   }
+                  // })
+                  // navigation.navigate("ChatScreen");
+                    showMessage('Remote user left the channel. uid: ' + Uid);
+                    setRemoteUid(0);
+                },
+            });
+            agoraEngine.initialize({
+                appId: appId,
+            });
+            join();
+            } catch (e) {
+                console.log(e);
+            }
+         };
+        
+         const join = async () => {
+          if (isJoined) {
+              return;
+          }
+          try {
+              agoraEngineRef.current?.setChannelProfile(
+                  ChannelProfileType.ChannelProfileCommunication,
+              );
+              agoraEngineRef.current?.joinChannel(token, channelName, uid, {
+                  clientRoleType: ClientRoleType.ClientRoleBroadcaster,
+              });
+          } catch (e) {
+              console.log(e);
+          }
+        };
   const leave = () => {
     try {
         agoraEngineRef.current?.leaveChannel();
-        setRemoteUid(0);
+        setRemoteUid(uid);
         setIsJoined(false);
+        // clearInterval(int);
         showMessage('You left the channel');
     } catch (e) {
         console.log(e);
@@ -126,8 +173,9 @@ const CallScreen = ({ navigation }) => {
     useEffect(()=>{
       token = callSharedData.token;
       channelName = callSharedData.channelName;
-      uid = callSharedData.uid;
-      setupVideoSDKEngine();
+      uid = parseInt(callSharedData.uid);
+      setSecondJoined(callSharedData.secJoin);
+      setupVoiceSDKEngine();
       // console.log(sharedData.chatid)
       firestore().collection('Calls').where('chatid','==',sharedData.chatid).onSnapshot((snapshot)=>{
         snapshot.docChanges().forEach((change)=>{
@@ -143,7 +191,7 @@ const CallScreen = ({ navigation }) => {
       return (
         <Screen>
       <View style={styles.container}>
-        <Text style={styles.text}>Bro Jay</Text>
+        <Text style={styles.text}>{callSharedData.friendName}</Text>
         <Timer />
       </View>
       <View style={styles.footer}>

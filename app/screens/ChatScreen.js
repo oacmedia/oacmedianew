@@ -1,4 +1,4 @@
-import { Image, StyleSheet, View, ImageBackground, TouchableOpacity } from "react-native";
+import { Image, StyleSheet, View, ImageBackground, TouchableOpacity, ActivityIndicator, Dimensions } from "react-native";
 import React, { useEffect, useState, useCallback } from "react";
 import Screen from "../components/Screen";
 import Text from "../components/Text";
@@ -23,6 +23,8 @@ import {
 import ImageView from "react-native-image-viewing";
 import * as ImagePicker from "expo-image-picker";
 import storage from '@react-native-firebase/storage';
+import {PermissionsAndroid, Platform} from 'react-native';
+import {request, PERMISSIONS} from 'react-native-permissions';
 
 export async function pickImage() {
   let result = ImagePicker.launchCameraAsync();
@@ -41,6 +43,18 @@ export async function askForPermission() {
   return status;
 }
 
+const getPermission = async () => {
+  if (Platform.OS === 'android') {
+    console.log('i m here!');
+    request(PERMISSIONS.ANDROID.RECORD_AUDIO).then((result)=>{
+      console.log(result, "permission");
+    })
+    // await PermissionsAndroid.requestMultiple([
+    //       PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+    //   ]);
+    }
+  };
+
 const ChatScreen = ({ navigation }) => {
   const [messages, setMessages] = useState([]);
   const {sharedData, setSharedData} = useDataSharing();
@@ -50,6 +64,9 @@ const ChatScreen = ({ navigation }) => {
   const [userData, setUserData] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImageView, setSeletedImageView] = useState("");
+  const [processInd, setProcessInd] = useState(false);
+  const fullWidth = Dimensions.get('window').width;
+  const fullHeight = Dimensions.get('window').height;
 
   const appId = '41b0ec4aaeb544dab76572e085446106';
   const appCertificate = '80977caed4b14c768ae6d13f63c3753c';
@@ -58,7 +75,10 @@ const ChatScreen = ({ navigation }) => {
   let channelName;
 
   function setCall(friend){
-
+    setProcessInd(true);
+    (async()=>{
+      if (Platform.OS === 'android') { await getPermission()};
+    })();
     
     firestore().collection('Calls').where('user','==',user.id).where('friend','==',friend).get().then((snapshot)=>{
       if(!snapshot.empty){
@@ -68,7 +88,7 @@ const ChatScreen = ({ navigation }) => {
           let str = user.id;
           uid = str.slice(-5);
           token = data.token;
-          setCallSharedData({uid: uid,token: token,channelName: channelName});
+          setCallSharedData({uid: uid,token: token,channelName: channelName,secJoin: true, friendName: userData.title+" "+userData.firstName+" "+userData.lastName});
           firestore().collection('Calls').where('user','==',user.id).where('chatid','==',sharedData.chatid).get().then((snapshot)=>{
             if(!snapshot.empty){
               snapshot.docs.map((doc)=>{
@@ -77,6 +97,7 @@ const ChatScreen = ({ navigation }) => {
                   joined: true,
                 }).then(()=>{
                   console.log('updated');
+                  setProcessInd(false);
                   navigation.navigate("CallScreen");
                 })
               })
@@ -92,7 +113,7 @@ const ChatScreen = ({ navigation }) => {
                 appCertificate: appCertificate,
                 role: '1',
                 channelName: (user.title+user.firstName+user.lastName).toString(),
-                account: uid,
+                uid: uid,
             };
           
           (async () => {
@@ -120,7 +141,7 @@ const ChatScreen = ({ navigation }) => {
                     appCertificate: appCertificate,
                     role: '2',
                     channelName: channelName,
-                    account: frUid,
+                    uid: frUid,
                 };
               
               (async () => {
@@ -141,9 +162,10 @@ const ChatScreen = ({ navigation }) => {
               channel: channelName,
               joined: false,
             }).then(async()=>{
-              setCallSharedData({uid: uid,token: token,channelName: channelName});
+              setCallSharedData({uid: uid,token: token,channelName: channelName, secJoin: false, friendName: userData.title+" "+userData.firstName+" "+userData.lastName});
               firestore().collection('Calls').where('user','==',friend).get().then((snapshot)=>{
                 if(!snapshot.empty){
+                  setProcessInd(false);
                   navigation.navigate("CallScreen");
                 }
               })
@@ -314,6 +336,7 @@ const ChatScreen = ({ navigation }) => {
       }
     return (
         <Screen>
+          {processInd && <ActivityIndicator style={{alignSelf:"center",height: fullHeight, width: fullWidth, justifyContent: "center"}} size={100} color="white"/>}
           <View style={styles.container}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <TouchableIcon
