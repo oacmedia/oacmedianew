@@ -55,8 +55,22 @@ const IncomingCall = ({ navigation }) => {
           size={35}
           style={styles.accept}
           onPress={() => {
-              console.log("hello")
-                navigation.navigate("CallScreen");
+            firestore().collection('Calls').where('user','==',user.id).where('chatid','==',callSharedData.chatid).get().then((snapshot)=>{
+              if(!snapshot.empty){
+                snapshot.docs.map((doc)=>{
+                  let id = doc.id;
+                  firestore().collection('Calls').doc(id).update({
+                    joined: true,
+                  }).then(()=>{
+                    console.log('updated');
+                    //setProcessInd(false);
+                    navigation.navigate("CallScreen");
+                  })
+                })
+              }
+            })
+              //console.log("hello")
+                //navigation.navigate("CallScreen");
             }
           }
         />

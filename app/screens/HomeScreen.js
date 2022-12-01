@@ -69,7 +69,7 @@ const HomeScreen = ({ routes, navigation }) => {
           let str = user.id;
           let uid = str.slice(-5);
           onClick(data.friendName);
-          setCallSharedData({uid: uid,token: data.token,channelName: data.channel, secJoin: false,friend: data.friend, friendName: data.friendName,chatid: data.chatid});
+          setCallSharedData({uid: uid,token: data.token,channelName: data.channel, secJoin: true,friend: data.friend, friendName: data.friendName,chatid: data.chatid});
           navigation.navigate("IncomingCall");
         }
       })

@@ -130,12 +130,19 @@ const CallScreen = ({ navigation }) => {
 //   }
 //   agoraEngineRef.current?.adjustRecordingSignalVolume(volume);
 // };
+
+const callMute = () => {
+  agoraEngineRef.current?.muteLocalAudioStream(true);
+};
+const callUnMute = () => {
+  agoraEngineRef.current?.muteLocalAudioStream(false);
+};
       
     useEffect(()=>{
       token = callSharedData.token;
       channelName = callSharedData.channelName;
       uid = parseInt(callSharedData.uid);
-      //setSecondJoined(callSharedData.secJoin);
+      setSecondJoined(callSharedData.secJoin);
       setupVoiceSDKEngine();
       // console.log(sharedData.chatid)
       firestore().collection('Calls').where('chatid','==',callSharedData.chatid).onSnapshot((snapshot)=>{
@@ -145,7 +152,7 @@ const CallScreen = ({ navigation }) => {
             navigation.navigate("HomeScreen");
           }else{
             let data = change.doc.data();
-            if(data.joined == true){
+            if(data.joined == true && data.user != user.id){
               setSecondJoined(true); 
             }
           }
@@ -175,7 +182,7 @@ const CallScreen = ({ navigation }) => {
             size={35}
             onPress={() => {
               setMute("microphone");
-              agoraEngineRef.current?.muteRemoteAudioStream(remoteUid, false);
+              callUnMute();
             }}
           />
         ) : (
@@ -184,7 +191,7 @@ const CallScreen = ({ navigation }) => {
             size={35}
             onPress={() => {
               setMute("microphone-off");
-              agoraEngineRef.current?.muteRemoteAudioStream(remoteUid, false);
+              callMute();
             }}
           />
         )}
