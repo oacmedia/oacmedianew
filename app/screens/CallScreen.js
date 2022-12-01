@@ -24,7 +24,7 @@ import { useCallDataSharing } from "../context/CallDataSharingContext";
 
 const CallScreen = ({ navigation }) => {
   const {sharedData, setSharedData} = useDataSharing();
-  const [mute, setMute] = useState("microphone-off");
+  const [mute, setMute] = useState("microphone");
   const {user, setUser} = useUserAuth();
   const {callSharedData, setCallSharedData} = useCallDataSharing();
   const [secondJoined, setSecondJoined] = useState(false);
@@ -42,47 +42,10 @@ const CallScreen = ({ navigation }) => {
     );
   };
 
-  //let [milliseconds,seconds,minutes,hours] = [0,0,0,0];
-  //   const [milliseconds, setMilliseconds] = useState(0);
-//   const [seconds, setSeconds] = useState(0);
-//   const [minutes, setMinutes] = useState(0);
-//   const [hours, setHours] = useState(0);
-//   const [h, setH] = useState(0);
-//   const [m, setM] = useState(0);
-//   const [s, setS] = useState(0);
-//   const [ms, setMS] = useState(0);
-// let timerRef;
-// let int = null;
-
-// function displayTimer(){
-//   setMilliseconds(milliseconds+=10);
-
-//   if(milliseconds == 1000){
-//     setMilliseconds(0);
-//     setSeconds(seconds+1);
-
-//       if(seconds == 60){
-//         setSeconds(0);
-//         setMinutes(minutes+1);
-
-//           if(minutes == 60){
-//             setMinutes(0)
-//             setHours(hours+1);
-//           }
-//       }
-//   }
-//   setH(hours < 10 ? "0" + hours : hours);
-//   setM(minutes < 10 ? "0" + minutes : minutes);
-//   setS(seconds < 10 ? "0" + seconds : seconds);
-//   setMS(milliseconds < 10 ? "00" + milliseconds : milliseconds < 100 ? "0" + milliseconds : milliseconds);
-// }
-
-
   const agoraEngineRef = useRef(IRtcEngine); // Agora engine instance
     const [isJoined, setIsJoined] = useState(false); // Indicates if the local user has joined the channel
     const [remoteUid, setRemoteUid] = useState(0); // Uid of the remote user
     const [message, setMessage] = useState(''); // Message to the user
-    var isMuted = false;
 
 
     function showMessage(msg) {
@@ -96,9 +59,6 @@ const CallScreen = ({ navigation }) => {
         request(PERMISSIONS.ANDROID.RECORD_AUDIO).then((result)=>{
           console.log(result, "permission");
         })
-        // await PermissionsAndroid.requestMultiple([
-        //       PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-        //   ]);
         }
       };
       
@@ -118,19 +78,6 @@ const CallScreen = ({ navigation }) => {
                     setRemoteUid(Uid);
                 },
                 onUserOffline: (_connection, Uid) => {
-                  // leave();
-                  // clearInterval(int);
-                  // firestore().collection('Calls').where('chatid','==',sharedData.chatid).get().then((snapshot)=>{
-                  //   if(!snapshot.empty){
-                  //     snapshot.docs.map((doc)=>{
-                  //       let id = doc.id;
-                  //       firestore().collection('Calls').doc(id).delete().then(()=>{
-                  //         console.log('deleted!');
-                  //       })
-                  //     })
-                  //   }
-                  // })
-                  // navigation.navigate("ChatScreen");
                     showMessage('Remote user left the channel. uid: ' + Uid);
                     setRemoteUid(0);
                 },
@@ -183,17 +130,12 @@ const CallScreen = ({ navigation }) => {
 //   }
 //   agoraEngineRef.current?.adjustRecordingSignalVolume(volume);
 // };
-const callMute = () => {
-  isMuted = !isMuted;
-  agoraEngineRef.current?.muteRemoteAudioStream(remoteUid, isMuted);
-};
       
     useEffect(()=>{
-      let count = 0;
       token = callSharedData.token;
       channelName = callSharedData.channelName;
       uid = parseInt(callSharedData.uid);
-      setSecondJoined(callSharedData.secJoin);
+      //setSecondJoined(callSharedData.secJoin);
       setupVoiceSDKEngine();
       // console.log(sharedData.chatid)
       firestore().collection('Calls').where('chatid','==',callSharedData.chatid).onSnapshot((snapshot)=>{
@@ -204,11 +146,7 @@ const callMute = () => {
           }else{
             let data = change.doc.data();
             if(data.joined == true){
-              count++;
-            }
-            if(count == 2){
-              count = 0;
-              setSecondJoined(true);
+              setSecondJoined(true); 
             }
           }
         })
@@ -237,7 +175,7 @@ const callMute = () => {
             size={35}
             onPress={() => {
               setMute("microphone");
-              callMute();
+              agoraEngineRef.current?.muteRemoteAudioStream(remoteUid, false);
             }}
           />
         ) : (
@@ -246,7 +184,7 @@ const callMute = () => {
             size={35}
             onPress={() => {
               setMute("microphone-off");
-              callMute();
+              agoraEngineRef.current?.muteRemoteAudioStream(remoteUid, false);
             }}
           />
         )}
