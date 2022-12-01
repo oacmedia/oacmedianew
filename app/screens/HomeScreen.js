@@ -1,5 +1,5 @@
-import { ScrollView, StyleSheet, FlatList } from "react-native";
-import React, { useCallback, useEffect, useState } from "react";
+import { ScrollView, StyleSheet, FlatList, View, TouchableOpacity, Text,StatusBar } from "react-native";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 
 import BottomTabs from "../components/home/BottomTabs";
 import Header from "../components/home/Header";
@@ -11,12 +11,16 @@ import firestore from '@react-native-firebase/firestore';
 import storage from "@react-native-firebase/storage";
 //import { FlatList } from "react-native-gesture-handler";
 import { useDataSharing } from "../context/DataSharingContext";
-
+import * as Notifications from 'expo-notifications';
+//import Constants from 'expo-constants';
+import AStorage from "@react-native-async-storage/async-storage";
+import { useCallDataSharing } from "../context/CallDataSharingContext";
 
 const HomeScreen = ({ routes, navigation }) => {
   const {user, setUser} = useUserAuth();
   const [posts, setPosts] = useState([]);
   const {sharedData, setSharedData} = useDataSharing();
+  const {callSharedData, setCallSharedData} = useCallDataSharing();
   const [isLoading, setIsLoading] = useState(true)
   const [isFinished, setIsFinished] = useState(false)
   const [lastDocRef, setLastDocRef] = useState(null)
@@ -58,23 +62,19 @@ const HomeScreen = ({ routes, navigation }) => {
   useEffect(() => {
     setSharedData({});
     loadPosts();
-    firestore().collection('Calls').where('user','==',user.id).get().then((snapshot)=>{
-      if(!snapshot.empty){
-        snapshot.docs.map((doc)=>{
-          let id = doc.id;
-          let data = doc.data();
-          firestore().collection('Calls').doc(id).delete().then(()=>{console.log('deleted!')});
-          firestore().collection('Calls').where('friend','==',user.id).where('chatid','==',data.chatid).get().then((snapshot)=>{
-            if(!snapshot.empty){
-              snapshot.docs.map((doc)=>{
-                let id = doc.id;
-                firestore().collection('Calls').doc(id).delete().then(()=>{console.log('deleted!')});
-              })
-            }
-          })
-        })
-      }
-    });
+    firestore().collection('Busy').where('user','==',user.id).where('joined','==',false).onSnapshot((snapshot)=>{
+      snapshot.docChanges().forEach((change)=>{
+        if(change.type === "added"){
+          let data = change.doc.data();
+          let str = user.id;
+          let uid = str.slice(-5);
+          onClick(data.friendName);
+          setCallSharedData({uid: uid,token: data.token,channelName: data.channel, secJoin: false,friend: data.friend, friendName: data.friendName,chatid: data.chatid});
+          navigation.navigate("IncomingCall");
+        }
+      })
+    })
+
     let query = firestore().collection('Posts');
     let unsubscribe = query.onSnapshot((snapshot) => {
       setPosts((prevPosts) => {
@@ -104,7 +104,25 @@ const HomeScreen = ({ routes, navigation }) => {
     return () => {
       unsubscribe();
     }
+    
   }, []);
+
+  const onClick = async (title) => {
+    //navigation.navigate("IncomingCall");
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: title,
+        body: "is Calling You!",
+        data: { data: "Tap To Open Call in APP!" }
+      },
+      trigger: {
+        //hour: 0,
+        //minute: 0,
+        seconds: 1,
+        //repeats: true
+      }
+    });
+  }
   // useEffect(() =>
   //       navigation.addListener('beforeRemove', (e) => {
   //           e.preventDefault();
@@ -115,6 +133,12 @@ const HomeScreen = ({ routes, navigation }) => {
 
   return (
     <Screen>
+      <View style={styles.container}>
+      {/* <TouchableOpacity onPress={onClick}>
+        <Text style={{backgroundColor: 'red', padding: 10, color: 'white'}}>Click me to send a push notification</Text>
+      </TouchableOpacity> */}
+        <StatusBar style="auto" />
+      </View>
       <Header navigation={navigation} />
       {/* <ScrollView style={{ marginBottom: 40 }}> */}
         <FlatList style={{ marginBottom: 40 }}

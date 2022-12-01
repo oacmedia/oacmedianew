@@ -11,6 +11,7 @@ import firebase from '@react-native-firebase/app';
 import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import storage from "../components/storage/storage";
+import { encrypt, decrypt } from 'react-native-simple-encryption';
 
 const validationSchema = Yup.object().shape({
   phone: Yup.string().required().label("OTP"),
@@ -46,12 +47,13 @@ function RegisterScreen5({ navigation }) {
       auth().signInWithCredential(credential).then(async()=>{
           let phno = user.phone;
           const userCreate = firestore().collection('Users').doc(phno);
+          let pass = encrypt('OaCmEdIa@', user.password);
           userCreate.set({
             id: user.phone,
             firstName: user.firstname,
             lastName: user.lastname,
             title: user.title,
-            password: user.password,
+            password: pass,
             phoneNumber: user.phone,
             country: user.countryCode,
             isAdmin: false,

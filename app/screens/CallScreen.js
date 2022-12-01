@@ -82,6 +82,7 @@ const CallScreen = ({ navigation }) => {
     const [isJoined, setIsJoined] = useState(false); // Indicates if the local user has joined the channel
     const [remoteUid, setRemoteUid] = useState(0); // Uid of the remote user
     const [message, setMessage] = useState(''); // Message to the user
+    var isMuted = false;
 
 
     function showMessage(msg) {
@@ -169,19 +170,54 @@ const CallScreen = ({ navigation }) => {
         console.log(e);
     }
 };
+// const increaseVolume = () => {
+//   if (volume !== 100) {
+//       setVolume(volume + 5);
+//   }
+//   agoraEngineRef.current?.adjustRecordingSignalVolume(volume);
+// };
+
+// const decreaseVolume = () => {
+//   if (volume !== 0) {
+//       setVolume(volume - 5);
+//   }
+//   agoraEngineRef.current?.adjustRecordingSignalVolume(volume);
+// };
+const callMute = () => {
+  isMuted = !isMuted;
+  agoraEngineRef.current?.muteRemoteAudioStream(remoteUid, isMuted);
+};
       
     useEffect(()=>{
+      let count = 0;
       token = callSharedData.token;
       channelName = callSharedData.channelName;
       uid = parseInt(callSharedData.uid);
       setSecondJoined(callSharedData.secJoin);
       setupVoiceSDKEngine();
       // console.log(sharedData.chatid)
-      firestore().collection('Calls').where('chatid','==',sharedData.chatid).onSnapshot((snapshot)=>{
+      firestore().collection('Calls').where('chatid','==',callSharedData.chatid).onSnapshot((snapshot)=>{
         snapshot.docChanges().forEach((change)=>{
           if(change.type === "removed"){
             leave();
-            navigation.navigate("ChatScreen");
+            navigation.navigate("HomeScreen");
+          }else{
+            let data = change.doc.data();
+            if(data.joined == true){
+              count++;
+            }
+            if(count == 2){
+              count = 0;
+              setSecondJoined(true);
+            }
+          }
+        })
+      })
+      firestore().collection('Busy').where('chatid','==',callSharedData.chatid).onSnapshot((snapshot)=>{
+        snapshot.docChanges().forEach((change)=>{
+          if(change.type === "removed"){
+            leave();
+            navigation.navigate("HomeScreen");
           }
         })
       })
@@ -201,6 +237,7 @@ const CallScreen = ({ navigation }) => {
             size={35}
             onPress={() => {
               setMute("microphone");
+              callMute();
             }}
           />
         ) : (
@@ -209,6 +246,7 @@ const CallScreen = ({ navigation }) => {
             size={35}
             onPress={() => {
               setMute("microphone-off");
+              callMute();
             }}
           />
         )}
@@ -217,7 +255,7 @@ const CallScreen = ({ navigation }) => {
           size={35}
           onPress={() => {
             leave();
-            firestore().collection('Calls').where('chatid','==',sharedData.chatid).get().then((snapshot)=>{
+            firestore().collection('Calls').where('chatid','==',callSharedData.chatid).get().then((snapshot)=>{
               if(!snapshot.empty){
                 snapshot.docs.map((doc)=>{
                   let id = doc.id;
@@ -227,7 +265,26 @@ const CallScreen = ({ navigation }) => {
                 })
               }
             })
-            navigation.navigate("ChatScreen");
+            firestore().collection('Busy').where('user','==',user.id).get().then((snapshot)=>{
+              if(!snapshot.empty){
+                snapshot.docs.map((doc)=>{
+                  let id = doc.id;
+                  firestore().collection('Busy').doc(id).delete().then(()=>{
+                    firestore().collection('Busy').where('friend','==',user.id).get().then((snapshot)=>{
+                      if(!snapshot.empty){
+                        snapshot.docs.map((doc)=>{
+                          let id = doc.id;
+                          firestore().collection('Busy').doc(id).delete().then(()=>{
+                            console.log('deleted!');
+                          })
+                        })
+                      }
+                    })
+                  })
+                })
+              }
+            })
+            navigation.navigate("HomeScreen");
           }}
         />
       </View>

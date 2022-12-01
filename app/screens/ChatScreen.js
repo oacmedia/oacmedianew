@@ -88,7 +88,7 @@ const ChatScreen = ({ navigation }) => {
           let str = user.id;
           uid = str.slice(-5);
           token = data.token;
-          setCallSharedData({uid: uid,token: token,channelName: channelName,secJoin: true, friendName: userData.title+" "+userData.firstName+" "+userData.lastName});
+          setCallSharedData({uid: uid,token: token,channelName: channelName,secJoin: true,friend: friend, friendName: userData.title+" "+userData.firstName+" "+userData.lastName,chatid: sharedData.chatid});
           firestore().collection('Calls').where('user','==',user.id).where('chatid','==',sharedData.chatid).get().then((snapshot)=>{
             if(!snapshot.empty){
               snapshot.docs.map((doc)=>{
@@ -162,13 +162,35 @@ const ChatScreen = ({ navigation }) => {
               channel: channelName,
               joined: false,
             }).then(async()=>{
-              setCallSharedData({uid: uid,token: token,channelName: channelName, secJoin: false, friendName: userData.title+" "+userData.firstName+" "+userData.lastName});
-              firestore().collection('Calls').where('user','==',friend).get().then((snapshot)=>{
-                if(!snapshot.empty){
+              setCallSharedData({uid: uid,token: token,channelName: channelName, secJoin: false,friend: friend, friendName: userData.title+" "+userData.firstName+" "+userData.lastName,chatid: sharedData.chatid});
+              firestore().collection('Busy').doc().set({
+                user: user.id,
+                friend: friend,
+                chatid: sharedData.chatid,
+                token: token,
+                channel: channelName,
+                friendName: userData.title+" "+userData.firstName+" "+userData.lastName,
+                joined: true,
+              }).then(()=>{
+                firestore().collection('Busy').doc().set({
+                  user: friend,
+                  friend: user.id,
+                  chatid: sharedData.chatid,
+                  token: secToken,
+                  channel: channelName,
+                  friendName: user.title+" "+user.firstName+" "+user.lastName,
+                  joined: false,
+                }).then(()=>{
                   setProcessInd(false);
                   navigation.navigate("CallScreen");
-                }
+                })
               })
+              // firestore().collection('Calls').where('user','==',friend).get().then((snapshot)=>{
+              //   if(!snapshot.empty){
+              //     setProcessInd(false);
+              //     navigation.navigate("CallScreen");
+              //   }
+              // })
             })
           })()
           })
@@ -229,6 +251,7 @@ const ChatScreen = ({ navigation }) => {
     }
 
     useEffect(() => {
+      setCallSharedData({});
       if(sharedData){
         let chatid = sharedData.chatid;
         firestore().collection('Chats').where('chatid','==',chatid).where('user','==',user.id).get().then((snapshot)=>{

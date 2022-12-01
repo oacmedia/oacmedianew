@@ -13,6 +13,8 @@ import { useUserAuth } from "../context/UserAuthContext";
 import storage from "../components/storage/storage";
 import CountryPicker from "react-native-country-picker-modal";
 import defaultStyles from "../config/styles";
+import { useCallDataSharing } from "../context/CallDataSharingContext";
+import { decrypt } from "react-native-simple-encryption";
 
 //let app = firebase.app();
 //let app = firebase.apps[0].firestore;
@@ -38,6 +40,7 @@ function LoginScreen({ navigation }) {
   const [processInd, setProcessInd] = useState(false);
   const fullWidth = Dimensions.get('window').width;
   const fullHeight = Dimensions.get('window').height;
+  const {callSharedData, setCallSharedData} = useCallDataSharing();
   //console.log(user);
   async function signInWPhoneNumber(phoneNumber) {
     const confirmation = await auth().signInWithPhoneNumber(phoneNumber);
@@ -97,8 +100,45 @@ useEffect(() => {
             let logginedUser = userData._data;
             if(userData._exists){
               let data = logginedUser;
-              //console.log(data);
               setUser(data);
+              firestore().collection('Calls').where('user','==',logginedUser.id).get().then((snapshot)=>{
+                if(!snapshot.empty){
+                  snapshot.docs.map((doc)=>{
+                    let id = doc.id;
+                    let data = doc.data();
+                    firestore().collection('Calls').doc(id).delete().then(()=>{console.log('deleted!')});
+                    firestore().collection('Calls').where('friend','==',logginedUser.id).where('chatid','==',data.chatid).get().then((snapshot)=>{
+                      if(!snapshot.empty){
+                        snapshot.docs.map((doc)=>{
+                          let id = doc.id;
+                          firestore().collection('Calls').doc(id).delete().then(()=>{console.log('deleted!')});
+                        })
+                      }
+                    })
+                  })
+                }
+              });
+              firestore().collection('Busy').where('user','==',logginedUser.id).get().then((snapshot)=>{
+                if(!snapshot.empty){
+                  snapshot.docs.map((doc)=>{
+                    let id = doc.id;
+                    firestore().collection('Busy').doc(id).delete().then(()=>{
+                      firestore().collection('Busy').where('friend','==',logginedUser.id).get().then((snapshot)=>{
+                        if(!snapshot.empty){
+                          snapshot.docs.map((doc)=>{
+                            let id = doc.id;
+                            firestore().collection('Busy').doc(id).delete().then(()=>{
+                              console.log('deleted!');
+                            })
+                          })
+                        }
+                      })
+                    })
+                  })
+                }
+              })
+              setCallSharedData({});
+              //console.log(data);
               setProcessInd(false);
               navigation.navigate("HomeScreen");
             }
@@ -180,7 +220,8 @@ useEffect(() => {
           let currentUser = userData._data;
           if(userData._exists){
             if(phno == currentUser.phoneNumber){
-                if(values.password == currentUser.password){
+              let pass = decrypt('OaCmEdIa@', currentUser.password)
+                if(values.password == pass){
                   console.log('Successful!');
                   console.log(currentUser);
                   // let data = currentUser;

@@ -15,6 +15,14 @@ import RNRestart from 'react-native-restart';
 
 const menuItems = [
   {
+    screen: "ProfileChange",
+    title: "Update Profile Picture",
+    icon: {
+      name: "camera",
+      backgroundColor: colors.green,
+    },
+  },
+  {
     screen: "PostsScreen",
     title: "My Posts",
     icon: {
@@ -41,6 +49,7 @@ const menuItems = [
 ];
 function AccountScreen({ navigation }) {
   const {user, setUser} = useUserAuth();
+
   return (
     <Screen style={styles.screen}>
       <View style={styles.container}>

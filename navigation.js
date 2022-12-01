@@ -83,6 +83,8 @@ import DeleteCategory from "./app/screens/DeleteCategory";
 import { VideoDataContextProvider } from "./app/context/VideoDataContext";
 import DeleteVideo from "./app/screens/DeleteVideo";
 import { CallDataSharingContextProvider } from "./app/context/CallDataSharingContext";
+import IncomingCall from "./app/screens/IncomingCall";
+import ProfileChange from "./app/screens/ProfileChange";
 
 const Stack = createStackNavigator();
 
@@ -108,6 +110,7 @@ const SignedInStack = () => (
               <Stack.Screen name="RegisterScreen4" component={RegisterScreen4} />
               <Stack.Screen name="RegisterScreen5" component={RegisterScreen5} />
               <Stack.Screen name="HomeScreen" component={HomeScreen} />
+              <Stack.Screen name="IncomingCall" component={IncomingCall} />
               <Stack.Screen name="ListingEditScreen" component={ListingEditScreen} />
               <Stack.Screen name="MessagesScreen" component={MessagesScreen} />
               <Stack.Screen name="FriendsSelect" component={FriendsSelect} />
@@ -124,6 +127,7 @@ const SignedInStack = () => (
               <Stack.Screen name="VideoScreen" component={VideoScreen} />
               <Stack.Screen name="ChatScreen" component={ChatScreen} />
               <Stack.Screen name="CallScreen" component={CallScreen} />
+              <Stack.Screen name="ProfileChange" component={ProfileChange} />
               <Stack.Screen name="RequestsScreen" component={RequestsScreen} />
               <Stack.Screen name="FriendsScreen" component={FriendsScreen} />
             </Stack.Navigator>
