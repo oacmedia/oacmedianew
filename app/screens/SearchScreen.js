@@ -40,7 +40,7 @@ const SearchScreen = ({ navigation }) => {
         data={usersList}
         setClicked={setClicked}
       />
-      <BottomTabs navigation={navigation} />
+      <BottomTabs navigation={navigation} scrName={"SearchScreen"}/>
     </Screen>
   );
 };

@@ -20,7 +20,6 @@ const VideoScreen = ({ navigation }) => {
   const [allCategories, setAllCategories] = useState([]);
   const [movieData, setMovieData] = useState([]);
   const {videoData, setVideoData} = useVideoData();
-
   const ThumbsComponent = ({ movie, navigation }) => {
     return (
       <TouchableOpacity
@@ -35,6 +34,24 @@ const VideoScreen = ({ navigation }) => {
           }}
           style={styles.video}
         />
+        <View style={{height: 39, width: 250, backgroundColor: "rgba(0, 0, 0, 0.5)", position: "absolute", zIndex: 1, bottom: 0,}}>
+          <Text style={{color: "white",padding: 8, fontSize: 18,fontWeight: "600"}}>{movie.title.length > 23 ? movie.title.slice(0, 20)+"...": movie.title}</Text>
+          <View  style={{
+            alignItems:'center',
+            justifyContent:'center',
+            width:30,
+            height:30,
+            backgroundColor:'rgba(255, 255, 255, 0.5)',
+            borderRadius:30 / 2,
+            position: "absolute",
+            zIndex: 1,
+            bottom: 1,
+            right: 2,
+            marginVertical: 3,
+          }}>
+            <Icon name={"play-arrow"}  size={22} color="#FFF" />
+          </View>
+        </View>
       </TouchableOpacity>
     );
   };
@@ -86,7 +103,7 @@ const VideoScreen = ({ navigation }) => {
       {user.isAdmin && <TouchableOpacity
         style={{
             borderWidth:5,
-            borderColor:'#20194D',
+            borderColor:colors.background,
             alignItems:'center',
             justifyContent:'center',
             width:75,
@@ -102,12 +119,12 @@ const VideoScreen = ({ navigation }) => {
             navigation.navigate("UploadVideo");
           }}
       >
-        <Icon name={"add"}  size={40} color="#20194D" />
+        <Icon name={"add"}  size={40} color={colors.background} />
       </TouchableOpacity>}
       {user.isAdmin && <TouchableOpacity
         style={{
             borderWidth:5,
-            borderColor:'#20194D',
+            borderColor:colors.background,
             alignItems:'center',
             justifyContent:'center',
             width:75,
@@ -123,7 +140,7 @@ const VideoScreen = ({ navigation }) => {
             navigation.navigate("DeleteVideo");
           }}
       >
-        <Icon name={"delete"}  size={40} color="#20194D" />
+        <Icon name={"delete"}  size={40} color={colors.background} />
       </TouchableOpacity>}
       <FlatList style={{ marginBottom: 40 }}
           data={allCategories}
@@ -150,7 +167,7 @@ const VideoScreen = ({ navigation }) => {
                     </View>
           }}
           />
-      <BottomTabs navigation={navigation}/>
+      <BottomTabs navigation={navigation} scrName={"ReelsScreen"}/>
     </Screen>
   );
 };
@@ -162,12 +179,14 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   contText: {
+    marginTop: 10,
     marginLeft: 20,
-    fontSize: 16,
+    fontSize: 22,
     fontWeight: "600",
   },
   thumbContainer: {
-    marginTop: 20,
+    marginTop: 5,
+    marginLeft: 10,
     flexDirection: "row",
   },
   video: {

@@ -267,7 +267,7 @@ function RequestsScreen({ navigation }) {
         onEndReachedThreshold={0.2}
         onEndReached={fetchMoreData}
       />
-      <BottomTabs navigation={navigation} />
+      <BottomTabs navigation={navigation} scrName={"AccountScreen"}/>
     </Screen>
   );
 }

@@ -110,7 +110,7 @@ function AccountScreen({ navigation }) {
         })
       }}
       />
-      <BottomTabs navigation={navigation} />
+      <BottomTabs navigation={navigation} scrName={"AccountScreen"}/>
     </Screen>
   );
 }

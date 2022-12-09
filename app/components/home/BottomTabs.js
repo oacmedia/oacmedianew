@@ -5,8 +5,8 @@ import { Divider } from "@rneui/themed";
 import TouchableIcon from "../TouchableIcon";
 import { BottomTabIcons } from "../../data/bottomIcons";
 
-const BottomTabs = ({ navigation }) => {
-  const [activeTab, setActiveTab] = useState("");
+const BottomTabs = ({ navigation, scrName }) => {
+  const [activeTab, setActiveTab] = useState(scrName);
 
   return (
     <View style={styles.wrapper}>
@@ -16,10 +16,19 @@ const BottomTabs = ({ navigation }) => {
           <TouchableIcon
             key={index}
             name={activeTab === item.name ? item.active : item.inactive}
-            size={30}
+            size={item.name == "MessagesScreen" ? 60: 35}
+            iconColor={"#00008B"}
             onPress={() => {
-              setActiveTab(item.name);
-              navigation.navigate(item.name);
+              if(scrName && scrName == "HomeScreen"){
+                setActiveTab("");
+                navigation.navigate(item.name);  
+              }else if(scrName){
+                setActiveTab(item.name);
+                navigation.navigate(item.name);
+              }else{
+                setActiveTab("");
+                navigation.navigate(item.name);
+              }
             }}
           />
         ))}
@@ -36,13 +45,13 @@ const styles = StyleSheet.create({
     width: "100%",
     bottom: 0,
     zIndex: 9,
-    backgroundColor: "#120E2E",
+    backgroundColor: "#fff",
   },
   container: {
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
     height: 60,
-    paddingTop: 10,
+    paddingVertical: 10,
   },
 });

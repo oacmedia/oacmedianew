@@ -91,7 +91,7 @@ function FriendsScreen({ navigation }) {
         }}
         ItemSeparatorComponent={ListItemSeparator}
       />
-      <BottomTabs navigation={navigation} />
+      <BottomTabs navigation={navigation} scrName={"AccountScreen"}/>
     </Screen>
   );
 }

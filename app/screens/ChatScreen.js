@@ -421,14 +421,14 @@ const ChatScreen = ({ navigation }) => {
                   </>
                 )}                        
 
-                timeTextStyle={{ right: { color: colors.darkGrey } }}
+                timeTextStyle={{ right: { color: "#f8f6f7" } }}
 
                 renderBubble={(props)=>{
                     return <Bubble
                     {...props}
                     wrapperStyle={{
                       right: {
-                        backgroundColor:colors.darkGreen,
+                        backgroundColor: "#563df4",
 
                       }
                       
@@ -466,6 +466,7 @@ const ChatScreen = ({ navigation }) => {
                             padding: 6,
                             borderRadius: 15,
                             resizeMode: "cover",
+                            color: "white",
                           }}
                           source={{ uri: props.currentMessage.image }}
                         />
@@ -490,7 +491,7 @@ const ChatScreen = ({ navigation }) => {
                         height: 40,
                         width: 40,
                         borderRadius: 40,
-                        backgroundColor: colors.darkGreen,
+                        backgroundColor: "#563df4",
                         alignItems: "center",
                         justifyContent: "center",
                         marginVertical: 5,
@@ -528,7 +529,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: '2%',
-    backgroundColor: colors.darkGreen,
+    backgroundColor: "#563df4",
     width: "100%",
   },
   text: {
@@ -551,7 +552,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     paddingVertical: 7,
     paddingHorizontal: 10,
-    backgroundColor: colors.darkGreen,
+    backgroundColor: "#563df4",
     marginVertical: 1,
     marginRight: 20,
   },

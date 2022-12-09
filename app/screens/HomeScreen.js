@@ -152,7 +152,7 @@ const HomeScreen = ({ routes, navigation }) => {
           onEndReached={fetchMoreData}
           />
       {/* </ScrollView> */}
-      <BottomTabs navigation={navigation} />
+      <BottomTabs navigation={navigation} scrName={"HomeScreen"}/>
     </Screen>
   );
 };

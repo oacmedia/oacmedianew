@@ -9,7 +9,8 @@ export default {
   light: "#f8f8f8",
   dark: "#0c0c0c",
   danger: "#ff5252",
-  background: "#20194D",
+  // background: "#20194D",
+  background: "#00008B",
   bottom: "#120E2E",
   darkGrey: "#333",
 };

@@ -517,11 +517,15 @@ const PostCommentsSection = ({ post, postUser, postID, user, CommentSection }) =
                   keyboardType="default"
                   padding={10}
                   placeholder="Add a comment..."
-                  width="70%"
+                  width="100%"
+                  paddingRight={40}
                 />
                 <SubmitButton
-                  title="POST"
-                  style={{ width: "25%", backgroundColor: colors.primary }}
+                  title={<Icon
+                    name={"share"}
+                    size={25} color={colors.background}
+                  />}
+                  style={{ padding: 0,height: 50, width: 60, backgroundColor: "transparent", position: "absolute", right: -5, zIndex: 1, fontSize: 12}}
                 />
               </View>
             </Form>

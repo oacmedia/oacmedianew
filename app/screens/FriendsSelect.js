@@ -125,7 +125,7 @@ function FriendsSelect({ navigation }) {
         }}
         ItemSeparatorComponent={ListItemSeparator}
       />
-      <BottomTabs navigation={navigation} />
+      <BottomTabs navigation={navigation} scrName={"MessagesScreen"}/>
     </Screen>
   );
 }

@@ -14,6 +14,7 @@ import {
 import { useDataSharing } from "../context/DataSharingContext";
 import { useUserAuth } from "../context/UserAuthContext";
 import { Icon } from "@rneui/base";
+import colors from "../config/colors";
 
 
 function MessagesScreen({ navigation, route }) {
@@ -25,9 +26,10 @@ function MessagesScreen({ navigation, route }) {
   const [isFinished, setIsFinished] = useState(false)
   const [lastDocRef, setLastDocRef] = useState(null)
   const [processInd, setProcessInd] = useState(false);
+  // const [friendsList, setFriendsList] = useState([]);
   const fullWidth = Dimensions.get('window').width;
   const fullHeight = Dimensions.get('window').height;
-
+  let friendsList = [];
   let pageSize = 20;
 
   const loadPosts = useCallback(() => {
@@ -46,7 +48,13 @@ function MessagesScreen({ navigation, route }) {
             let id = chat.id;
             let userData = await firestore().collection('Users').doc(data.friend).get();
             let rdata = userData.data();
-            post.push({id: id,title: rdata.title,firstName: rdata.firstName,lastName: rdata.lastName,profile: rdata.profile, phoneNumber: rdata.phoneNumber});
+            for(let list of friendsList){
+              let thisfriend = list.user;
+              if(thisfriend == rdata.phoneNumber){
+                post.push({id: id,title: rdata.title,firstName: rdata.firstName,lastName: rdata.lastName,profile: rdata.profile, phoneNumber: rdata.phoneNumber});
+              }
+            }
+            //post.push({id: id,title: rdata.title,firstName: rdata.firstName,lastName: rdata.lastName,profile: rdata.profile, phoneNumber: rdata.phoneNumber});
         }
         if(snapshot.docs.length < pageSize) {
           setIsFinished(true);
@@ -71,7 +79,11 @@ function MessagesScreen({ navigation, route }) {
   }, [isFinished, isLoading])
 
   useEffect(() => {
-    loadPosts();
+    firestore().collection('Friends').doc(user.id).get().then((snapshot)=>{
+      let fdata = snapshot.data();
+      friendsList = fdata.friends;
+      loadPosts();
+    });
     let query = firestore().collection('Chats').where("user","==",user.id)
     let unsubscribe = query.onSnapshot((snapshot) => {
       setMessages((prevPosts) => {
@@ -116,7 +128,7 @@ function MessagesScreen({ navigation, route }) {
       <TouchableOpacity
         style={{
             borderWidth:5,
-            borderColor:'#20194D',
+            borderColor:colors.background,
             alignItems:'center',
             justifyContent:'center',
             width:75,
@@ -132,7 +144,7 @@ function MessagesScreen({ navigation, route }) {
             navigation.navigate("FriendsSelect");
           }}
       >
-        <Icon name={"add"}  size={40} color="#20194D" />
+        <Icon name={"add"}  size={40} color={colors.background} />
       </TouchableOpacity>
       <View style={{ alignSelf: "center", marginVertical: 20 }}>
         <AppText style={{ fontSize: 25, fontWeight: "700" }}>Chats</AppText>
@@ -161,7 +173,7 @@ function MessagesScreen({ navigation, route }) {
         onEndReachedThreshold={0.2}
         onEndReached={fetchMoreData}
       />
-      <BottomTabs navigation={navigation} />
+      <BottomTabs navigation={navigation} scrName={"MessagesScreen"}/>
     </Screen>
   );
 }

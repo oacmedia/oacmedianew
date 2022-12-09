@@ -52,8 +52,8 @@ const VideoScreen = ({ navigation }) => {
   // var timeString = date.toISOString().substring(11, 19);
   // console.log(timeString);
   return (
-    <Screen style={{backgroundColor: colors.white}}>
-      <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 20, paddingHorizontal: 10, backgroundColor: "#20194D"}}>
+    <Screen style={{backgroundColor: "#563df4"}}>
+      {/* <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 20, paddingHorizontal: 10, backgroundColor: "#563df4"}}>
             <TouchableIcon
               name="arrow-left"
               size={30}
@@ -69,9 +69,9 @@ const VideoScreen = ({ navigation }) => {
               alignItems: "center",
               }}>{videoData.title}</AppText>
             </View>
-      </View>
+      </View> */}
       <View style={{ marginTop: 0, width: fullWidth }}>
-        <ActivityIndicator style={{alignSelf:"center",height: fullWidth, width: fullWidth, justifyContent: "center"}} size={100} color="#20194D"/>
+        <ActivityIndicator style={{alignSelf:"center",height: fullWidth, width: fullWidth, justifyContent: "center"}} size={100} color="#FFF"/>
         <Video source={{uri: videoData.videoUrl}}   // Can be a URL or a local file.
             paused={paused}
             onLoad={handleLoad}
@@ -118,18 +118,29 @@ const VideoScreen = ({ navigation }) => {
             
         </View>
     </View>
-    <View style={{ width: fullWidth, height: 'auto', backgroundColor: colors.white, paddingHorizontal: 10, paddingTop: 5,}}>
-        <Text style={{color: colors.black, fontWeight: "500", fontSize: 20,paddingVertical: 10,}}>
-            Description:
+    <View style={{ width: fullWidth, height: 'auto', backgroundColor: "#563df4", paddingHorizontal: 10, paddingTop: 5,}}>
+        <Text style={{color: "#FFF", fontWeight: "500", fontSize: 20,paddingVertical: 10, alignSelf: "center"}}>
+            About
         </Text>
     </View>
+    <View style={{backgroundColor:"#FFF", width: "95%",padding: 1, alignSelf: "center"}}>
+    </View>
+    <View style={{ flexDirection: "column",alignSelf: "center" }}>
+      <AppText style={{ fontSize: 25, fontWeight: "700",
+      marginTop: 15,
+      fontWeight: "500",
+      color: "white", 
+      alignItems: "center",
+      }}>{videoData.title}</AppText>
+    </View>
     <ScrollView>
-        <View style={{ width: fullWidth, height: '100%', backgroundColor: colors.white, paddingHorizontal: 20, paddingVertical: 5, marginBottom: 70, }}>
-            <Text style={{color: colors.black, fontWeight: "400", fontSize: 16,}}>
+        <View style={{ width: fullWidth, height: '100%', backgroundColor: "#563df4", paddingHorizontal: 20, paddingVertical: 15, marginBottom: 70, }}>
+            <Text style={{color: "#FFF", fontWeight: "400", fontSize: 16,}}>
             {videoData.description}
             </Text>
         </View>
     </ScrollView>
+    <BottomTabs navigation={navigation} scrName={"ReelsScreen"}/>
     </Screen>
   );
 };

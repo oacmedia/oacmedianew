@@ -6,13 +6,13 @@ export const BottomTabIcons = [
   },
   {
     name: "SearchScreen",
-    active: "magnify",
-    inactive: "magnify",
+    active: "account-search",
+    inactive: "account-search-outline",
   },
   {
     name: "MessagesScreen",
-    active: "message",
-    inactive: "message-outline",
+    active: "chat",
+    inactive: "chat-outline",
   },
   {
     name: "ReelsScreen",
