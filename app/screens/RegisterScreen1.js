@@ -15,7 +15,7 @@ function RegisterScreen({ navigation }) {
       <Button
         title={"Next"}
         onPress={() => navigation.navigate("RegisterScreen2")}
-        backgroundColor="yellow"
+        backgroundColor="white"
         color="dark"
       />
     </Screen>
