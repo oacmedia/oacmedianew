@@ -16,7 +16,7 @@ const BottomTabs = ({ navigation, scrName }) => {
           <TouchableIcon
             key={index}
             name={activeTab === item.name ? item.active : item.inactive}
-            size={item.name == "MessagesScreen" ? 60: 35}
+            size={item.name == "MessagesScreen" ? 45: 30}
             iconColor={"#00008B"}
             onPress={() => {
               if(scrName && scrName == "HomeScreen"){
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     width: "100%",
     bottom: 0,
     zIndex: 9,
-    backgroundColor: "#fff",
+    backgroundColor: "#FFF",
   },
   container: {
     flexDirection: "row",
