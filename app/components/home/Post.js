@@ -8,7 +8,8 @@ import {
   Text,
   ActivityIndicator,
   FlatList,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
+  Alert
 } from "react-native";
 import { Dimensions } from "react-native";
 import { Divider } from "@rneui/themed";
@@ -94,12 +95,18 @@ const PostHeader = ({ post, postUser, postID, DeleteButton, LoginnedUser, userDa
       <AppText style={styles.head_title}>{userData.title+" "+userData.firstName+" "+userData.lastName}</AppText>
     </View>
     <TouchableOpacity hitSlop={10}>
+      {!DeleteButton ? (
+        <TouchableIcon name={"alert-circle"} iconColor={colors.medium} size={35} onPress={()=>{Alert.alert("Is Something Wrong?","Tell us at: report@myoacmedia.co.za\nCall us at: +27-67987-1850")}} />
+      ) : (
+        <View></View>
+      )}
       {DeleteButton ? (
         <TouchableIcon name={"delete"} iconColor={colors.danger} size={25} onPress={()=>{deleteCalled()}} />
       ) : (
-        <AppText style={{ fontWeight: "900", color: colors.bottom }}>
-          {/* ... */}
-        </AppText>
+        // <AppText style={{ fontWeight: "900", color: colors.bottom }}>
+        //   {/* ... */}
+        // </AppText>
+        <View></View>
       )}
     </TouchableOpacity>
   </View>)
