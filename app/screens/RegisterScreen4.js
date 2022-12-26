@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, ActivityIndicator, Dimensions, Keyboard } from "react-native";
 import * as Yup from "yup";
 import CountryPicker from "react-native-country-picker-modal";
 
@@ -32,14 +32,21 @@ function RegisterScreen({ navigation }) {
   const {user, setUser} = useUserAuth();
   const [ccError, setCCError] = useState("");
   const [error, setError] = useState();
+  const [processInd, setProcessInd] = useState(false);
+  const fullWidth = Dimensions.get('window').width;
+  const fullHeight = Dimensions.get('window').height;
   //const [confirm, setConfirm] = useState(null);
   //const [code, setCode] = useState('');
 
   async function signInWPhoneNumber(phoneNumber) {
-    const confirmation = await auth().signInWithPhoneNumber(phoneNumber);
-    setConfirm(confirmation);
-    return confirmation;
-    console.log(confirmation);
+    try {
+      const confirmation = await auth().signInWithPhoneNumber(phoneNumber);
+      setConfirm(confirmation);
+      return confirmation;
+      console.log(confirmation);
+    } catch (error) {
+      alert(error);
+    }
   }
   
   // async function confirmCode() {
@@ -102,7 +109,9 @@ function RegisterScreen({ navigation }) {
 
 
   return (
-    <Screen style={styles.container}>
+    <Screen>
+      {processInd && <ActivityIndicator style={{alignSelf:"center",height: fullHeight, width: fullWidth, justifyContent: "center"}} size={100} color="white"/>}
+      <View style={styles.container}>
       <Text style={styles.h1}>Enter your mobile number</Text>
       <Text style={styles.text}>
         Enter the mobile number where you can be reached.
@@ -128,8 +137,10 @@ function RegisterScreen({ navigation }) {
       <Form
         initialValues={{ phone: "" }}
         onSubmit={async(values) => {
+          setProcessInd(true);
             if(!callingCode){
               setCCError("Select Country Code!");
+              setProcessInd(false);
               return false;
             }
             let ph_no = ('+' + callingCode[0] + values.phone).toString();
@@ -141,9 +152,11 @@ function RegisterScreen({ navigation }) {
               const verCode2 = verCode._verificationId;
               let data = {...user , phone: '+'+callingCode[0] + values.phone , countryCode, verCode2};
               setUser(data);
+              setProcessInd(false);
               navigation.navigate("RegisterScreen5");    
             }else if(userData._exists){
-              console.log('Phone Number Already Registered Try a Different One!');
+              setProcessInd(false);
+              alert('Phone Number Already Registered Try a Different One!');
             }
         }}
         validationSchema={validationSchema}
@@ -159,6 +172,7 @@ function RegisterScreen({ navigation }) {
         />
         <SubmitButton title="Next" />
       </Form>
+      </View>
     </Screen>
   );
 }
