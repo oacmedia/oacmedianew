@@ -45,7 +45,7 @@ function RegisterScreen({ navigation }) {
       return confirmation;
       console.log(confirmation);
     } catch (error) {
-      alert(error);
+      console.log(error);
     }
   }
   

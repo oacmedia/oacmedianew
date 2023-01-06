@@ -28,13 +28,50 @@ function LoginOTP({ navigation }) {
   const fullHeight = Dimensions.get('window').height;
 
   // Handle user state changes
-  function onAuthStateChanged(user) {
-    setLoginUser(user);
-    if (initializing) setInitializing(false);
+  async function onAuthStateChange(userD) {
+    if(userD){
+      setProcessInd(true);
+      try {
+          //console.log("It logged In!");
+      
+            let phno = user[0].phoneNumber;
+            const userData = await firestore().collection('Users').doc(phno).get();
+            console.log(userData._exists);
+            let currentUser = userData._data;
+            if(userData._exists){
+              let data = currentUser;
+              storage.save({
+                key: 'loginState', // Note: Do not use underscore("_") in key!
+                data: {
+                  phoneNumber: currentUser.phoneNumber
+                },
+                        
+                // if expires not specified, the defaultExpires will be applied instead.
+                // if set to null, then it will never expire.
+                expires: null
+              });
+              setProcessInd(false);
+              setUser(data);
+              navigation.navigate("HomeScreen");
+            }
+     } catch (error) {
+        if (error.code == 'auth/invalid-verification-code') {
+          //console.log('Invalid code.');
+          setProcessInd(false);
+          setOTPError("Enter a valid Code.");
+        } else {
+          setProcessInd(false);
+          console.log(error);
+          setOTPError("Enter a valid Code.");
+        }
+      }
+    }
+    // setLoginUser(user);
+    // if (initializing) setInitializing(false);
   }
 
   useEffect(() => {
-    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    const subscriber = auth().onAuthStateChanged(onAuthStateChange);
     return subscriber; // unsubscribe on unmount
   }, []);
 

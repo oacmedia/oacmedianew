@@ -29,9 +29,66 @@ function RegisterScreen5({ navigation }) {
   const fullHeight = Dimensions.get('window').height;
 
   // Handle user state changes
-  function onAuthStateChanged(user) {
-    setLoginUser(user);
-    if (initializing) setInitializing(false);
+  async function onAuthStateChanged(userD) {
+    //alert(user);
+    if(userD){
+      setProcessInd(true);
+      // let credential = await auth.PhoneAuthProvider.credential(user.verCode2, code);
+      // auth().signInWithCredential(credential).then(async()=>{
+        try {
+          let phno = user.phone;
+          const userCreate = firestore().collection('Users').doc(phno);
+          let pass = encrypt('OaCmEdIa@', user.password);
+          userCreate.set({
+            id: user.phone,
+            firstName: user.firstname,
+            lastName: user.lastname,
+            title: user.title,
+            password: pass,
+            phoneNumber: user.phone,
+            country: user.countryCode,
+            isAdmin: false,
+            profile: 'https://firebasestorage.googleapis.com/v0/b/oacmedia-app-8464c.appspot.com/o/profileImages%2Fuser.png?alt=media&token=d7d1964f-3286-4297-8cf9-b6ecf27176fe',
+          })
+        .then(async() => {
+          let phno = user.phone;
+          const userData = await firestore().collection('Users').doc(phno).get();
+          console.log(userData._exists); 
+          let currentUser = userData._data;
+          if(userData._exists){
+            let data = currentUser;
+            storage.save({
+              key: 'loginState', // Note: Do not use underscore("_") in key!
+              data: {
+                phoneNumber: phno
+              },
+                      
+              // if expires not specified, the defaultExpires will be applied instead.
+              // if set to null, then it will never expire.
+              expires: null
+            });
+            setUser(data);
+            navigation.navigate("HomeScreen");
+          }
+        }).catch((error)=>{
+          setProcessInd(false);
+          console.log("Post Cannot Be Created!", error);
+          //setOTPError("Enter a valid Code.");
+        });
+      }
+      catch(error){
+        if (error.code == 'auth/invalid-verification-code') {
+          setProcessInd(false);
+          //console.log('Invalid code.');
+          setOTPError("Enter a valid Code.");
+        } else {
+          setProcessInd(false);
+          console.log(error);
+        }
+      };
+    }
+    //setLoginUser(user);
+    //if (initializing) setInitializing(false);
   }
 
   useEffect(() => {
