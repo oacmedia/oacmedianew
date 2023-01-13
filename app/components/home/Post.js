@@ -28,7 +28,7 @@ import Video from "react-native-video";
 import storage from "@react-native-firebase/storage";
 import Icon from 'react-native-vector-icons/FontAwesome';
 import ProgressBar from 'react-native-progress/Bar';
-
+import { useVideoData } from "../../context/VideoDataContext";
 
 const PostHeader = ({ post, postUser, postID, DeleteButton, LoginnedUser, userData }) => {
   
@@ -112,12 +112,17 @@ const PostHeader = ({ post, postUser, postID, DeleteButton, LoginnedUser, userDa
   </View>)
 };
 
-const PostVideo = ({ imageUrl, index, length }) => {
+const PostVideo = ({ imageUrl, index, length, navigation }) => {
   const fullWidth = Dimensions.get('window').width;
   const [mute, setMute] = useState(false);
   const [paused, setPaused] = useState(true);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
+  const {videoData, setVideoData} = useVideoData();
+  const handleFullScreen = () => {
+    setVideoData({url: imageUrl});
+    navigation.navigate("PostsFullScreen");
+  }
   function secondToTime(time){
     return ~~(time / 60)+ ":" + (time % 60 < 10 ? "0" : "") + time % 60;
   }
@@ -129,7 +134,7 @@ const PostVideo = ({ imageUrl, index, length }) => {
   }
   const handleProgressPress = (e) =>{
     const position = e.nativeEvent.locationX;
-    const progress = (position / 250) * duration;
+    const progress = (position / (fullWidth-140)) * duration;
     Video.player.seek(progress);
   }
   const handleEnd = () =>{
@@ -167,7 +172,7 @@ return (
             onPress={handleMainButtonTouch}>
               <Icon
                 name={!paused ? "pause" : "play"}
-                size={30} color="#FFF"
+                size={20} color="#FFF"
               />
             </TouchableWithoutFeedback>
             <TouchableWithoutFeedback
@@ -179,8 +184,8 @@ return (
                   color="#FFF"
                   unfilledColor="rgba(255,255,255,.5)"
                   borderColor="#FFF"
-                  width={250}
-                  height={20}
+                  width={fullWidth-140}
+                  height={2}
                 />
               </View>
             </TouchableWithoutFeedback>
@@ -189,7 +194,15 @@ return (
             >
               {secondToTime(Math.floor(progress * duration))}
             </Text>
-            
+            <TouchableWithoutFeedback
+              onPress={handleFullScreen}
+              >
+              <Icon
+              //style={{marginLeft: 10,}}
+                name={"arrows-alt"}
+                size={20} color="#FFF"
+              />
+            </TouchableWithoutFeedback>
       </View>
   </View>
 )};
@@ -203,7 +216,7 @@ const PostImage = ({ imageUrl, index, length }) => {
     </View>
   )};
 
-const PostContent = ({ post }) => {
+const PostContent = ({ post, navigation }) => {
 
   //const [video, setVideo] = useState(true);
   const [postsLength, setPostsLength] = useState(0);
@@ -246,7 +259,7 @@ const PostContent = ({ post }) => {
         let index = item.index;
         //console.log(imageUrl[0]);
         return imageUrl.type == "video/mp4" ?
-          <PostVideo imageUrl={imageUrl.url} index={index} length={postsLength} />
+          <PostVideo imageUrl={imageUrl.url} index={index} length={postsLength} navigation={navigation}/>
           :
           <PostImage imageUrl={imageUrl.url} index={index} length={postsLength}/>
       }} 
@@ -598,6 +611,7 @@ const Post = ({
   postID,
   user,
   postUser,
+  navigation,
   withHeader = true,
   withImage = true,
   withFooter = true,
@@ -649,7 +663,7 @@ const Post = ({
           postID={postID} postUser={postUser}
         />
       )}
-      {withImage && <PostContent post={post} />}
+      {withImage && <PostContent post={post} navigation={navigation} />}
       {withFooter && <PostFooter user={user} post={post} postID={postID} />}
       <View style={{ marginHorizontal: 10, marginTop: 5 }}>
         {withLikes && <PostLikes post={post} postID={postID} />}
@@ -712,7 +726,7 @@ const styles = StyleSheet.create({
   },
   duration: {
     color: "#FFF",
-    marginLeft: 15,
+    marginLeft: 5,
   },
   mainButton: {
     marginRight: 15,

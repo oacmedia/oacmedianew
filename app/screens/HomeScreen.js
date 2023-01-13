@@ -146,7 +146,7 @@ const HomeScreen = ({ routes, navigation }) => {
           keyExtractor={(post) => post[1]}
           renderItem={(item) => {
             const {item: post} = item
-            return <Post post={post[0]} postID={post[1]} postUser={post[2]} user={user} />
+            return <Post post={post[0]} postID={post[1]} postUser={post[2]} user={user} navigation={navigation} />
           }}
           onEndReachedThreshold={0.2}
           onEndReached={fetchMoreData}

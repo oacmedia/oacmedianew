@@ -1,5 +1,5 @@
-import { Image, ScrollView, StyleSheet, View, TouchableOpacity, Dimensions, ActivityIndicator, TouchableWithoutFeedback} from "react-native";
-import React, { useState } from "react";
+import { Image, ScrollView, StyleSheet, View, TouchableOpacity, Dimensions, ActivityIndicator, TouchableWithoutFeedback, SafeAreaView} from "react-native";
+import React, { useEffect, useState } from "react";
 
 import BottomTabs from "../components/home/BottomTabs";
 import Screen from "../components/Screen";
@@ -13,27 +13,36 @@ import AppText from "../components/Text";
 import TouchableIcon from "../components/TouchableIcon";
 import ProgressBar from 'react-native-progress/Bar';
 import Icon from "react-native-vector-icons/FontAwesome";
+import Orientation from 'react-native-orientation-locker';
 
 const fullWidth = Dimensions.get('window').width;
+const fullHeight = Dimensions.get('window').height;
 
 const VideoScreen = ({ navigation }) => {
   const {user, setUser} = useUserAuth();
   const {videoData, setVideoData} = useVideoData();
   const [paused, setPaused] = useState(false);
+  const [toggleFullScreen, setToggleFullScreen] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [fWidth, setFWidth] = useState(100);
+  const [fHeight, setFHeight] = useState(100);
+  
   const handleMainButtonTouch = () => {
     if(progress > 1){
       Video.player.seek(0);
     }
     setPaused(!paused);
   }
+  const handleFullScreen = () => {
+    navigation.navigate("ReelsFullScreen");
+  }
   function secondToTime(time){
     return ~~(time / 60)+ ":" + (time % 60 < 10 ? "0" : "") + time % 60;
   }
   const handleProgressPress = (e) =>{
     const position = e.nativeEvent.locationX;
-    const progress = (position / 250) * duration;
+    const progress = (position / (fullWidth-140)) * duration;
     Video.player.seek(progress);
   }
   const handleEnd = () =>{
@@ -45,32 +54,18 @@ const VideoScreen = ({ navigation }) => {
   const handleLoad = (meta) =>{
     setDuration(meta.duration);
   }
-  // const {width} = Dimensions.get("window");
-  // const height = width * .5625;
-  // var date = new Date(0);
-  // date.setSeconds(45); // specify value for SECONDS here
-  // var timeString = date.toISOString().substring(11, 19);
-  // console.log(timeString);
+
+  useEffect(()=>{
+    //Orientation.lockToPortrait();
+    // console.log(Dimensions.get('window').width);
+    setFWidth(Dimensions.get('window').width);
+    setFHeight(Dimensions.get('window').height);
+  },[])
   return (
     <Screen style={{backgroundColor: "#563df4"}}>
-      {/* <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 20, paddingHorizontal: 10, backgroundColor: "#563df4"}}>
-            <TouchableIcon
-              name="arrow-left"
-              size={30}
-              onPress={() => {
-                navigation.navigate("ReelsScreen");
-              }}
-            />
-            <View style={{ flexDirection: "column",alignSelf: "center" }}>
-              <AppText style={{ fontSize: 25, fontWeight: "700",
-              marginLeft: 15,
-              fontWeight: "500",
-              color: "white", 
-              alignItems: "center",
-              }}>{videoData.title}</AppText>
-            </View>
-      </View> */}
-      <View style={{ marginTop: 0, width: fullWidth }}>
+      <View 
+      //style={{ marginTop: 0, width: fullWidth }}
+      >
         <ActivityIndicator style={{alignSelf:"center",height: fullWidth, width: fullWidth, justifyContent: "center"}} size={100} color="#FFF"/>
         <Video source={{uri: videoData.videoUrl}}   // Can be a URL or a local file.
             paused={paused}
@@ -84,6 +79,10 @@ const VideoScreen = ({ navigation }) => {
             posterResizeMode={"cover"}
             // controls
             resizeMode={"cover"}
+            //fullscreen={true}
+            fullscreen={toggleFullScreen}
+            fullscreenAutorotate={true}
+            fullscreenOrientation={"landscape"}
             // onBuffer={Video.onBuffer}                // Callback when remote video is buffering
             // onError={Video.videoError}               // Callback when video cannot be loaded
             style={styles.backgroundVideo}
@@ -93,7 +92,7 @@ const VideoScreen = ({ navigation }) => {
             onPress={handleMainButtonTouch}>
               <Icon
                 name={!paused ? "pause" : "play"}
-                size={30} color="#FFF"
+                size={20} color="#FFF"
               />
             </TouchableWithoutFeedback>
             <TouchableWithoutFeedback
@@ -105,8 +104,8 @@ const VideoScreen = ({ navigation }) => {
                   color="#FFF"
                   unfilledColor="rgba(255,255,255,.5)"
                   borderColor="#FFF"
-                  width={250}
-                  height={20}
+                  width={fullWidth-140}
+                  height={2}
                 />
               </View>
             </TouchableWithoutFeedback>
@@ -115,7 +114,14 @@ const VideoScreen = ({ navigation }) => {
             >
               {secondToTime(Math.floor(progress * duration))}
             </Text>
-            
+            <TouchableWithoutFeedback
+              onPress={handleFullScreen}>
+              <Icon
+              //style={{marginLeft: 6,}}
+                name={"arrows-alt"}
+                size={20} color="#FFF"
+              />
+            </TouchableWithoutFeedback>
         </View>
     </View>
     <View style={{ width: fullWidth, height: 'auto', backgroundColor: "#563df4", paddingHorizontal: 10, paddingTop: 5,}}>
@@ -178,7 +184,7 @@ const styles = StyleSheet.create({
   },
   duration: {
     color: "#FFF",
-    marginLeft: 15,
+    marginLeft: 5,
   },
   mainButton: {
     marginRight: 15,
@@ -196,3 +202,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   }
 });
+

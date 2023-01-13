@@ -85,6 +85,8 @@ import DeleteVideo from "./app/screens/DeleteVideo";
 import { CallDataSharingContextProvider } from "./app/context/CallDataSharingContext";
 import IncomingCall from "./app/screens/IncomingCall";
 import ProfileChange from "./app/screens/ProfileChange";
+import ReelsFullScreen from "./app/screens/ReelsFullScreen";
+import PostsFullScreen from "./app/screens/PostsFullScreen";
 
 const Stack = createStackNavigator();
 
@@ -110,6 +112,7 @@ const SignedInStack = () => (
               <Stack.Screen name="RegisterScreen4" component={RegisterScreen4} />
               <Stack.Screen name="RegisterScreen5" component={RegisterScreen5} />
               <Stack.Screen name="HomeScreen" component={HomeScreen} />
+              <Stack.Screen name="PostsFullScreen" component={PostsFullScreen} />
               <Stack.Screen name="IncomingCall" component={IncomingCall} />
               <Stack.Screen name="ListingEditScreen" component={ListingEditScreen} />
               <Stack.Screen name="MessagesScreen" component={MessagesScreen} />
@@ -125,6 +128,7 @@ const SignedInStack = () => (
               <Stack.Screen name="SelectThumbnail" component={SelectThumbnail} />
               <Stack.Screen name="AddVideoData" component={AddVideoData} />
               <Stack.Screen name="VideoScreen" component={VideoScreen} />
+              <Stack.Screen name="ReelsFullScreen" component={ReelsFullScreen} />
               <Stack.Screen name="ChatScreen" component={ChatScreen} />
               <Stack.Screen name="CallScreen" component={CallScreen} />
               <Stack.Screen name="ProfileChange" component={ProfileChange} />
