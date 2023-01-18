@@ -22,6 +22,7 @@ const VideoScreen = ({ navigation }) => {
   const {user, setUser} = useUserAuth();
   const {videoData, setVideoData} = useVideoData();
   const [paused, setPaused] = useState(false);
+  const [mute, setMute] = useState(false);
   const [toggleFullScreen, setToggleFullScreen] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -34,6 +35,9 @@ const VideoScreen = ({ navigation }) => {
     }
     setPaused(!paused);
   }
+  const handleMuteButtonTouch = () => {
+    setMute(!mute);
+  }
   const handleFullScreen = () => {
     navigation.navigate("ReelsFullScreen");
   }
@@ -42,7 +46,7 @@ const VideoScreen = ({ navigation }) => {
   }
   const handleProgressPress = (e) =>{
     const position = e.nativeEvent.locationX;
-    const progress = (position / (fullWidth-140)) * duration;
+    const progress = (position / (fullWidth-160)) * duration;
     Video.player.seek(progress);
   }
   const handleEnd = () =>{
@@ -62,7 +66,9 @@ const VideoScreen = ({ navigation }) => {
     setFHeight(Dimensions.get('window').height);
   },[])
   return (
-    <Screen style={{backgroundColor: "#563df4"}}>
+    <Screen
+    //style={{backgroundColor: "#563df4"}}
+    >
       <View 
       //style={{ marginTop: 0, width: fullWidth }}
       >
@@ -72,6 +78,7 @@ const VideoScreen = ({ navigation }) => {
             onLoad={handleLoad}
             onProgress={handleProgress}
             onEnd={handleEnd}
+            muted={mute}
             ref={(ref) => {
             Video.player = ref
             }}
@@ -104,7 +111,7 @@ const VideoScreen = ({ navigation }) => {
                   color="#FFF"
                   unfilledColor="rgba(255,255,255,.5)"
                   borderColor="#FFF"
-                  width={fullWidth-140}
+                  width={fullWidth-160}
                   height={2}
                 />
               </View>
@@ -114,6 +121,13 @@ const VideoScreen = ({ navigation }) => {
             >
               {secondToTime(Math.floor(progress * duration))}
             </Text>
+            <TouchableWithoutFeedback 
+            onPress={handleMuteButtonTouch}>
+              <Icon
+                name={!mute ? "volume-down" : "volume-off"}
+                size={20} color="#FFF"
+              />
+            </TouchableWithoutFeedback>
             <TouchableWithoutFeedback
               onPress={handleFullScreen}>
               <Icon
@@ -124,7 +138,9 @@ const VideoScreen = ({ navigation }) => {
             </TouchableWithoutFeedback>
         </View>
     </View>
-    <View style={{ width: fullWidth, height: 'auto', backgroundColor: "#563df4", paddingHorizontal: 10, paddingTop: 5,}}>
+    <View style={{ width: fullWidth, height: 'auto',
+    //backgroundColor: "#563df4",
+    paddingHorizontal: 10, paddingTop: 5,}}>
         <Text style={{color: "#FFF", fontWeight: "500", fontSize: 20,paddingVertical: 10, alignSelf: "center"}}>
             About
         </Text>
@@ -140,7 +156,9 @@ const VideoScreen = ({ navigation }) => {
       }}>{videoData.title}</AppText>
     </View>
     <ScrollView>
-        <View style={{ width: fullWidth, height: '100%', backgroundColor: "#563df4", paddingHorizontal: 20, paddingVertical: 15, marginBottom: 70, }}>
+        <View style={{ width: fullWidth, height: '100%',
+        //backgroundColor: "#563df4",
+        paddingHorizontal: 20, paddingVertical: 15, marginBottom: 70, }}>
             <Text style={{color: "#FFF", fontWeight: "400", fontSize: 16,}}>
             {videoData.description}
             </Text>

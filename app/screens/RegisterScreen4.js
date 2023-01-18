@@ -3,7 +3,7 @@ import { StyleSheet, View, ActivityIndicator, Dimensions, Keyboard } from "react
 import * as Yup from "yup";
 import CountryPicker from "react-native-country-picker-modal";
 
-import Screen from "../components/Screen";
+import Screen from "../components/ScreenLR";
 import Text from "../components/Text";
 import { Form, FormField, SubmitButton } from "../components/forms";
 import defaultStyles from "../config/styles";

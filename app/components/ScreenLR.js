@@ -6,7 +6,7 @@ import colors from "../config/colors";
 function Screen({ children, style }) {
   return (
     <SafeAreaView style={[styles.screen, style]}>
-      <ImageBackground source={require('../../assets/bg_app.jpg')} resizeMode="cover" style={styles.image}>
+      <ImageBackground source={require('../../assets/bg_login.jpg')} resizeMode="cover" style={styles.image}>
         <View style={[styles.view, style]}>{children}</View>
       </ImageBackground>
     </SafeAreaView>

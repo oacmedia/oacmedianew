@@ -25,34 +25,36 @@ const AddCategory = ({ navigation }) => {
   const fullWidth = Dimensions.get('window').width;
   const fullHeight = Dimensions.get('window').height;
   return (
-    <Screen style={styles.container}>
+    <Screen>
         {processInd && <ActivityIndicator style={{alignSelf:"center",height: fullHeight, width: fullWidth, justifyContent: "center"}} size={100} color="white"/>}
-      <View style={{ alignSelf: "center", marginVertical: 20 }}>
-        <AppText style={{ fontSize: 25, fontWeight: "700" }}>Add Category</AppText>
-      </View>
-      <Form
-        initialValues={{ category: "" }}
-        onSubmit={(values) => {
-            Keyboard.dismiss();
-            setProcessInd(true);
-          console.log(values);
-          firestore().collection('Categories').doc().set(values).then(()=>{
-            setProcessInd(false);
-            console.log("Category Added!");
-            navigation.navigate("UploadVideo");
-          })
-        }}
-        validationSchema={validationSchema}
-      >
-        <FormField
-          autoCapitalize="none"
-          autoCorrect={false}
-          icon="plus"
-          name="category"
-          placeholder="Type Category Name"
-        />
-        <SubmitButton title="Add Category" />
-      </Form>
+        <View style={styles.container}>
+          <View style={{ alignSelf: "center", marginVertical: 20 }}>
+            <AppText style={{ fontSize: 25, fontWeight: "700" }}>Add Category</AppText>
+          </View>
+          <Form
+            initialValues={{ category: "" }}
+            onSubmit={(values) => {
+                Keyboard.dismiss();
+                setProcessInd(true);
+              console.log(values);
+              firestore().collection('Categories').doc().set(values).then(()=>{
+                setProcessInd(false);
+                console.log("Category Added!");
+                navigation.navigate("UploadVideo");
+              })
+            }}
+            validationSchema={validationSchema}
+          >
+            <FormField
+              autoCapitalize="none"
+              autoCorrect={false}
+              icon="plus"
+              name="category"
+              placeholder="Type Category Name"
+            />
+            <SubmitButton title="Add Category" />
+          </Form>
+        </View>
     </Screen>
   );
 };

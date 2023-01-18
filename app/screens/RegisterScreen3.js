@@ -1,8 +1,8 @@
 import React from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import * as Yup from "yup";
 
-import Screen from "../components/Screen";
+import Screen from "../components/ScreenLR";
 import Text from "../components/Text";
 import { Form, FormField, SubmitButton } from "../components/forms";
 import {useUserAuth} from "../context/UserAuthContext";
@@ -17,38 +17,40 @@ const validationSchema = Yup.object().shape({
 function RegisterScreen({ navigation }) {
   const {setUser} = useUserAuth();
   return (
-    <Screen style={styles.container}>
-      <Text style={styles.h1}>Let's set up a password for you</Text>
-      <Text style={styles.text}>Enter your password.</Text>
-      <Form
-        initialValues={{ password: "" }}
-        onSubmit={(values) => {
-          console.log(values);
-          setUser((prev) => ({...prev , password: values.password}))
-          navigation.navigate("RegisterScreen4");
-        }}
-        validationSchema={validationSchema}
-      >
-        <FormField
-          autoCapitalize="none"
-          autoCorrect={false}
-          icon="lock"
-          name="password"
-          placeholder="Password"
-          secureTextEntry
-          textContentType="password"
-        />
-        <FormField
-          autoCapitalize="none"
-          autoCorrect={false}
-          icon="lock"
-          name="confirmPassword"
-          placeholder="Confirm Password"
-          secureTextEntry
-          textContentType="password"
-        />
-        <SubmitButton title="Register" />
-      </Form>
+    <Screen>
+      <View style={styles.container}>
+        <Text style={styles.h1}>Let's set up a password for you</Text>
+        <Text style={styles.text}>Enter your password.</Text>
+        <Form
+          initialValues={{ password: "" }}
+          onSubmit={(values) => {
+            console.log(values);
+            setUser((prev) => ({...prev , password: values.password}))
+            navigation.navigate("RegisterScreen4");
+          }}
+          validationSchema={validationSchema}
+        >
+          <FormField
+            autoCapitalize="none"
+            autoCorrect={false}
+            icon="lock"
+            name="password"
+            placeholder="Password"
+            secureTextEntry
+            textContentType="password"
+          />
+          <FormField
+            autoCapitalize="none"
+            autoCorrect={false}
+            icon="lock"
+            name="confirmPassword"
+            placeholder="Confirm Password"
+            secureTextEntry
+            textContentType="password"
+          />
+          <SubmitButton title="Register" />
+        </Form>
+      </View>
     </Screen>
   );
 }

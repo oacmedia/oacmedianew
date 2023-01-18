@@ -19,11 +19,15 @@ function ReelsFullScreen({ navigation }) {
     const [paused, setPaused] = useState(false);
     const [progress, setProgress] = useState(0);
     const [duration, setDuration] = useState(0);
+    const [mute, setMute] = useState(false);
     
     const handleFullScreen = () => {
         navigation.navigate("VideoScreen");
       }
-
+    
+    const handleMuteButtonTouch = () => {
+      setMute(!mute);
+    }
     const handleMainButtonTouch = () => {
         if(progress > 1){
           Video.player.seek(0);
@@ -66,6 +70,7 @@ function ReelsFullScreen({ navigation }) {
             onLoad={handleLoad}
             onProgress={handleProgress}
             onEnd={handleEnd}
+            muted={mute}
             //repeat={true}
             //paused={this.state.paused}
             //muted={this.state.muted}
@@ -74,7 +79,30 @@ function ReelsFullScreen({ navigation }) {
             style={styles.videoStyle}
             //onLoad={this.onVideoLoaded.bind(this)}
           />
-          <View style={styles.controls}>
+          <View style={{
+            backgroundColor: !paused ? "transparent" : "rgba(0, 0, 0, 0.5)",
+            height: 75,
+            width: 75,
+            borderRadius: 38,
+            top: (height/2)-200,
+            left: (height/2)-24,
+            bottom: 0,
+            right: 0,
+            position: "absolute",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-around",
+            paddingHorizontal: 10,
+          }}>
+            <TouchableWithoutFeedback 
+              onPress={handleMainButtonTouch}>
+                <Icon
+                  name={!paused ? "pause" : "play"}
+                  size={20} color={!paused ? "transparent" : "#FFF"}
+                />
+            </TouchableWithoutFeedback>
+          </View>
+          {!paused && <View style={styles.controls}>
                 <TouchableWithoutFeedback 
                 onPress={handleMainButtonTouch}>
                 <Icon
@@ -101,6 +129,13 @@ function ReelsFullScreen({ navigation }) {
                 >
                 {secondToTime(Math.floor(progress * duration))}
                 </Text>
+                <TouchableWithoutFeedback 
+                onPress={handleMuteButtonTouch}>
+                  <Icon
+                    name={!mute ? "volume-down" : "volume-off"}
+                    size={20} color="#FFF"
+                  />
+                </TouchableWithoutFeedback>
                 <TouchableWithoutFeedback
                 onPress={handleFullScreen}>
                 <Icon
@@ -109,7 +144,7 @@ function ReelsFullScreen({ navigation }) {
                     size={20} color="#FFF"
                 />
                 </TouchableWithoutFeedback>
-            </View>
+            </View>}
         </View>
       </View>
     </Screen>

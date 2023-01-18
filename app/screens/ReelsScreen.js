@@ -103,11 +103,11 @@ const VideoScreen = ({ navigation }) => {
       {user.isAdmin && <TouchableOpacity
         style={{
             borderWidth:5,
-            borderColor:colors.background,
+            borderColor:"transparent",
             alignItems:'center',
             justifyContent:'center',
-            width:75,
-            height:75,
+            width:65,
+            height:65,
             backgroundColor:'#fff',
             borderRadius:50,
             position: "absolute",
@@ -119,16 +119,16 @@ const VideoScreen = ({ navigation }) => {
             navigation.navigate("UploadVideo");
           }}
       >
-        <Icon name={"add"}  size={40} color={colors.background} />
+        <Icon name={"add"}  size={35} color={colors.background} />
       </TouchableOpacity>}
       {user.isAdmin && <TouchableOpacity
         style={{
             borderWidth:5,
-            borderColor:colors.background,
+            borderColor:"transparent",
             alignItems:'center',
             justifyContent:'center',
-            width:75,
-            height:75,
+            width:65,
+            height:65,
             backgroundColor:'#fff',
             borderRadius:50,
             position: "absolute",
@@ -140,7 +140,7 @@ const VideoScreen = ({ navigation }) => {
             navigation.navigate("DeleteVideo");
           }}
       >
-        <Icon name={"delete"}  size={40} color={colors.background} />
+        <Icon name={"delete"}  size={35} color={colors.background} />
       </TouchableOpacity>}
       <FlatList style={{ marginBottom: 40 }}
           data={allCategories}

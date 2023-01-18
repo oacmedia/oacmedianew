@@ -2,12 +2,12 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 import * as Yup from "yup";
 
-import Screen from "../components/ScreenLR";
+import Screen from "../components/Screen";
 import Text from "../components/Text";
 import { Form, FormField, SubmitButton } from "../components/forms";
 import AppPicker from "../components/Picker";
 import { useState } from "react";
-
+import firestore from "@react-native-firebase/firestore";
 import {useUserAuth} from "../context/UserAuthContext";
 
 const categories = [
@@ -26,16 +26,16 @@ const validationSchema = Yup.object().shape({
   lastname: Yup.string().required().label("Last Name"),
 });
 
-function RegisterScreen({ navigation }) {
+function ChangeName({ navigation }) {
   const [category, setCategory] = useState('');
   const [firstname , setFirstname] = useState('');
   const [lastname , setLastname] = useState('');
-  const {setUser} = useUserAuth();
+  const {user, setUser} = useUserAuth();
   const [catError, setCatError] = useState('');
   return (
     <Screen>
       <View style={styles.container}>
-        <Text style={styles.h1}>What's your name?</Text>
+        <Text style={styles.h1}>Change Your Title and Username</Text>
         <Text style={styles.text}>Enter the name you use in real life.</Text>
         {catError.length > 0 &&
           <Text style={styles.error}>{catError}</Text>
@@ -54,9 +54,16 @@ function RegisterScreen({ navigation }) {
               return false;
             }
             setCatError('');
-            console.log(values);
-            setUser((prev) => ({...prev , firstname: values.firstname , lastname : values.lastname , title:category.label}))
-            navigation.navigate("RegisterScreen3" , values);
+            firestore().collection('Users').doc(user.id).update({
+              title: category.label,
+              firstName: values.firstname,
+              lastName: values.lastname
+            }).then(()=>{
+              console.log('updated');
+              navigation.navigate("AccountScreen");
+            })
+            // setUser((prev) => ({...prev , firstname: values.firstname , lastname : values.lastname , title:category.label}))
+            // navigation.navigate("RegisterScreen3" , values);
           }}
           validationSchema={validationSchema}
         >
@@ -90,6 +97,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     fontWeight: "800",
     marginBottom: 10,
+    fontSize: 18,
   },
   error:{
     alignSelf: "center",
@@ -102,4 +110,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RegisterScreen;
+export default ChangeName;

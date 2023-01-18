@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, TouchableOpacity, View, ActivityIndicator, Dimensions, Keyboard } from "react-native";
 import * as Yup from "yup";
 
-import Screen from "../components/Screen";
+import Screen from "../components/ScreenLR";
 import { Form, FormField, SubmitButton } from "../components/forms";
 import Text from "../components/Text";
 import colors from "../config/colors";
@@ -178,7 +178,7 @@ useEffect(() => {
     <Screen>
       {processInd && <ActivityIndicator style={{alignSelf:"center",height: fullHeight, width: fullWidth, justifyContent: "center"}} size={100} color="white"/>}
       <View style={styles.container}>
-        <Text style={styles.logo}>OAC</Text>
+        <Text style={styles.logo}>My<Text style={{fontSize: 72,fontFamily: "Roboto", fontWeight: "600",}}>OAC</Text></Text>
           {ccError.length > 0 &&
             <Text style={styles.error}>{ccError}</Text>
           }
@@ -289,8 +289,9 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   logo: {
-    fontSize: 72,
-    fontWeight: "700",
+    fontSize: 50,
+    fontFamily: "Roboto",
+    fontWeight: "600",
     alignSelf: "center",
     marginTop: 80,
     marginBottom: 50,

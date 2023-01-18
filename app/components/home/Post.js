@@ -132,9 +132,12 @@ const PostVideo = ({ imageUrl, index, length, navigation }) => {
     }
     setPaused(!paused);
   }
+  const handleMuteButtonTouch = () => {
+    setMute(!mute);
+  }
   const handleProgressPress = (e) =>{
     const position = e.nativeEvent.locationX;
-    const progress = (position / (fullWidth-140)) * duration;
+    const progress = (position / (fullWidth-160)) * duration;
     Video.player.seek(progress);
   }
   const handleEnd = () =>{
@@ -154,6 +157,7 @@ return (
         onLoad={handleLoad}
         onProgress={handleProgress}
         onEnd={handleEnd}
+        muted={mute}
         ref={(ref) => {
           Video.player = ref
         }}    
@@ -167,7 +171,30 @@ return (
         style={styles.backgroundVideo}
     />
     <Text style={styles.page}>{(index+1)+"/"+length}</Text>
-    <View style={styles.controls}>
+    <View style={{
+      backgroundColor: !paused ? "transparent" : "rgba(0, 0, 0, 0.5)",
+      height: 48,
+      width: 48,
+      borderRadius: 24,
+      top: fullWidth/2,
+      left: (fullWidth/2)-24,
+      bottom: 0,
+      right: 0,
+      position: "absolute",
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-around",
+      paddingHorizontal: 10,
+    }}>
+      <TouchableWithoutFeedback 
+        onPress={handleMainButtonTouch}>
+          <Icon
+            name={!paused ? "pause" : "play"}
+            size={20} color={!paused ? "transparent" : "#FFF"}
+          />
+      </TouchableWithoutFeedback>
+    </View>
+    {!paused && <View style={styles.controls}>
             <TouchableWithoutFeedback 
             onPress={handleMainButtonTouch}>
               <Icon
@@ -184,7 +211,7 @@ return (
                   color="#FFF"
                   unfilledColor="rgba(255,255,255,.5)"
                   borderColor="#FFF"
-                  width={fullWidth-140}
+                  width={fullWidth-160}
                   height={2}
                 />
               </View>
@@ -194,6 +221,13 @@ return (
             >
               {secondToTime(Math.floor(progress * duration))}
             </Text>
+            <TouchableWithoutFeedback 
+            onPress={handleMuteButtonTouch}>
+              <Icon
+                name={!mute ? "volume-down" : "volume-off"}
+                size={20} color="#FFF"
+              />
+            </TouchableWithoutFeedback>
             <TouchableWithoutFeedback
               onPress={handleFullScreen}
               >
@@ -203,15 +237,22 @@ return (
                 size={20} color="#FFF"
               />
             </TouchableWithoutFeedback>
-      </View>
+      </View>}
   </View>
 )};
-const PostImage = ({ imageUrl, index, length }) => {
+const PostImage = ({ imageUrl, index, length, navigation }) => {
   const fullWidth = Dimensions.get('window').width;
+  const {videoData, setVideoData} = useVideoData();
+  const handleFullScreen = () => {
+    setVideoData({url: imageUrl});
+    navigation.navigate("ImageFullScreen");
+  }
   return (
     <View style={{ marginTop: 0 }}>
-      <Image source={{ uri: imageUrl, width: fullWidth }}
-        style={{ height: "100%", resizeMode: "cover" }}></Image>
+      <TouchableOpacity onPress={handleFullScreen}>
+        <Image source={{ uri: imageUrl, width: fullWidth }}
+          style={{ height: "100%", resizeMode: "cover" }}></Image>
+      </TouchableOpacity>
       <Text style={styles.page}>{(index+1)+"/"+length}</Text>
     </View>
   )};
@@ -261,7 +302,7 @@ const PostContent = ({ post, navigation }) => {
         return imageUrl.type == "video/mp4" ?
           <PostVideo imageUrl={imageUrl.url} index={index} length={postsLength} navigation={navigation}/>
           :
-          <PostImage imageUrl={imageUrl.url} index={index} length={postsLength}/>
+          <PostImage imageUrl={imageUrl.url} index={index} length={postsLength} navigation={navigation}/>
       }} 
       pagingEnabled
       horizontal

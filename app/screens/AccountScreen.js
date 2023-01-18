@@ -23,6 +23,14 @@ const menuItems = [
     },
   },
   {
+    screen: "ChangeName",
+    title: "Change Your Name",
+    icon: {
+      name: "text",
+      backgroundColor: "orange",
+    },
+  },
+  {
     screen: "PostsScreen",
     title: "My Posts",
     icon: {
@@ -116,7 +124,7 @@ function AccountScreen({ navigation }) {
 }
 const styles = StyleSheet.create({
   screen: {
-    backgroundColor: colors.background,
+    //backgroundColor: colors.background,
   },
   container: {
     //marginVertical: 20,

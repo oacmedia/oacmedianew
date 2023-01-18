@@ -87,6 +87,8 @@ import IncomingCall from "./app/screens/IncomingCall";
 import ProfileChange from "./app/screens/ProfileChange";
 import ReelsFullScreen from "./app/screens/ReelsFullScreen";
 import PostsFullScreen from "./app/screens/PostsFullScreen";
+import ChangeName from "./app/screens/ChangeName";
+import ImageFullScreen from "./app/screens/ImageFullScreen";
 
 const Stack = createStackNavigator();
 
@@ -113,11 +115,13 @@ const SignedInStack = () => (
               <Stack.Screen name="RegisterScreen5" component={RegisterScreen5} />
               <Stack.Screen name="HomeScreen" component={HomeScreen} />
               <Stack.Screen name="PostsFullScreen" component={PostsFullScreen} />
+              <Stack.Screen name="ImageFullScreen" component={ImageFullScreen} />
               <Stack.Screen name="IncomingCall" component={IncomingCall} />
               <Stack.Screen name="ListingEditScreen" component={ListingEditScreen} />
               <Stack.Screen name="MessagesScreen" component={MessagesScreen} />
               <Stack.Screen name="FriendsSelect" component={FriendsSelect} />
               <Stack.Screen name="AccountScreen" component={AccountScreen} />
+              <Stack.Screen name="ChangeName" component={ChangeName} />
               <Stack.Screen name="SearchScreen" component={SearchScreen} />
               <Stack.Screen name="PostsScreen" component={PostsScreen} />
               <Stack.Screen name="ReelsScreen" component={ReelsScreen} />

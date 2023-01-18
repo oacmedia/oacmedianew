@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Text } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import Screen from "../components/Screen";
 import List from "../components/search/List";
 import SearchBar from "../components/search/SearchBar";
@@ -26,20 +26,22 @@ const SearchScreen = ({ navigation }) => {
   }, []);
 
   return (
-    <Screen style={styles.root}>
-      <Text style={styles.title}>Search Friends</Text>
-      <SearchBar
-        searchPhrase={searchPhrase}
-        setSearchPhrase={setSearchPhrase}
-        clicked={clicked}
-        setClicked={setClicked}
-      />
+    <Screen>
+      <View style={styles.root}>
+        <Text style={styles.title}>Search Friends</Text>
+        <SearchBar
+          searchPhrase={searchPhrase}
+          setSearchPhrase={setSearchPhrase}
+          clicked={clicked}
+          setClicked={setClicked}
+        />
 
-      <List
-        searchPhrase={searchPhrase}
-        data={usersList}
-        setClicked={setClicked}
-      />
+        <List
+          searchPhrase={searchPhrase}
+          data={usersList}
+          setClicked={setClicked}
+        />
+      </View>
       <BottomTabs navigation={navigation} scrName={"SearchScreen"}/>
     </Screen>
   );
@@ -49,6 +51,7 @@ export default SearchScreen;
 
 const styles = StyleSheet.create({
   root: {
+    alignSelf: "center",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -57,7 +60,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 25,
     fontWeight: "bold",
-    marginLeft: "10%",
+    //marginLeft: "10%",
     color: colors.white,
   },
 });

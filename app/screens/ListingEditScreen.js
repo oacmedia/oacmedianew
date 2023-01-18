@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, ActivityIndicator, Dimensions, Keyboard, TouchableWithoutFeedback } from "react-native";
+import { View, StyleSheet, ActivityIndicator, Dimensions, Keyboard, TouchableWithoutFeedback } from "react-native";
 import * as Yup from "yup";
 
 import { Form, FormField, SubmitButton } from "../components/forms";
 import Screen from "../components/Screen";
 import FormImagePicker from "../components/forms/FormImagePicker";
 import { POSTS } from "../data/posts";
-
+import Text from "../components/Text";
 import firebase from '@react-native-firebase/app';
 import auth from '@react-native-firebase/auth';
 import storage from '@react-native-firebase/storage';
@@ -101,6 +101,9 @@ function ListingEditScreen({ navigation }) {
   return (
     <Screen style={styles.container}>
       {processInd && <ActivityIndicator style={{alignSelf:"center",height: fullHeight, width: fullWidth, justifyContent: "center"}} size={100} color="white"/>}
+      <View style={{marginBottom: 10,}}>
+        <Text style={{alignSelf:"center",fontSize:20,}}>Post your images or videos and share with your beloved.</Text>
+      </View>
       <Form
         initialValues={{
           description: "",
