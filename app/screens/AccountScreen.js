@@ -120,6 +120,16 @@ function AccountScreen({ navigation }) {
               <Text style={styles.textStyle}
               >Delete Account</Text>
             </Pressable>
+            <Pressable
+               style={[styles.buttonNew, styles.buttonClose]}
+              onPress={() => setModalVisible(!modalVisible)}>
+                {/* <Icon
+                    name={"close"}
+                    size={24} color={colors.white}
+                  /> */}
+              <Text style={styles.textStyle}
+              >Cancel</Text>
+            </Pressable>
           </View>
         </View>
       </Modal>
@@ -233,12 +243,19 @@ const styles = StyleSheet.create({
     elevation: 2,
     marginTop: 10,
   },
+  buttonNew2: {
+    borderRadius: 40,
+    paddingVertical: 8,
+    paddingHorizontal:15,
+    elevation: 2,
+    marginTop: 10,
+  },
   buttonOpen: {
     backgroundColor: '#F194FF',
   },
   buttonClose: {
-    backgroundColor: '#2196F3',
-    //backgroundColor: 'grey',
+    //backgroundColor: '#2196F3',
+    backgroundColor: 'grey',
   },
   buttonClose_New: {
     //backgroundColor: '#2196F3',
