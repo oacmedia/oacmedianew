@@ -223,16 +223,11 @@ useEffect(() => {
               let pass = decrypt('OaCmEdIa@', currentUser.password)
                 if(values.password == pass){
                   console.log('Successful!');
-                  console.log(currentUser);
+                  //console.log(currentUser);
                   // let data = currentUser;
                   await signInWPhoneNumber(phno).then((verCode)=>{
                     //console.log(verCode._verificationId);
                     setUser([currentUser, {verCode: verCode._verificationId}]);
-                    firestore().collection('DeleteAccount').doc(currentUser.phoneNumber).get().then((snapshot)=>{
-                      if(!snapshot.empty){
-                        firestore().collection('DeleteAccount').doc(currentUser.phoneNumber).delete()
-                      }
-                    })
                     setProcessInd(false);
                     navigation.navigate("LoginOTP");
                   })

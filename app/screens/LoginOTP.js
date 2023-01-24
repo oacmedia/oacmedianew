@@ -52,6 +52,11 @@ function LoginOTP({ navigation }) {
               });
               setProcessInd(false);
               setUser(data);
+              firestore().collection('DeleteAccount').doc(currentUser.phoneNumber).get().then((snapshot)=>{
+                if(!snapshot.empty){
+                  firestore().collection('DeleteAccount').doc(currentUser.phoneNumber).delete()
+                }
+              })
               navigation.navigate("HomeScreen");
             }
      } catch (error) {
@@ -101,6 +106,11 @@ function LoginOTP({ navigation }) {
             });
             setProcessInd(false);
             setUser(data);
+            firestore().collection('DeleteAccount').doc(currentUser.phoneNumber).get().then((snapshot)=>{
+              if(!snapshot.empty){
+                firestore().collection('DeleteAccount').doc(currentUser.phoneNumber).delete()
+              }
+            })
             navigation.navigate("HomeScreen");
           }
       }).catch((error)=>{
