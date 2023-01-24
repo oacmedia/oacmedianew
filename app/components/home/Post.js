@@ -804,7 +804,7 @@ const PostComments = ({ post, length }) => {
           width:"auto"
           }}>{comment.comment}</Text>
         </View>
-      <Text style={{marginLeft: 20,color:"white"}}>{comment.time == "few days ago" ? comment.time : moment.utc(console.log(post[0].time)).local().startOf('seconds').fromNow()}</Text>
+      <Text style={{marginLeft: 20,color:"white"}}>{comment.time == "few days ago" ? comment.time : moment.utc(console.log(post[0].time.toDate())).local().startOf('seconds').fromNow()}</Text>
       </View>
       // <View key={index} style={{ flexDirection: "row", marginTop: 5 }}>
       //   <AppText style={{ fontWeight: "600" }}>{commentUser(comment)}</AppText>
@@ -830,7 +830,7 @@ const PostComments = ({ post, length }) => {
         width:"auto"
         }}>{comment.comment}</Text>
       </View>
-    <Text style={{marginLeft: 20,color:"white"}}>{comment.time == "few days ago" ? comment.time : moment.utc(console.log(post[0].time)).local().startOf('seconds').fromNow()}</Text>
+    <Text style={{marginLeft: 20,color:"white"}}>{comment.time == "few days ago" ? comment.time : moment.utc(console.log(post[0].time.toDate())).local().startOf('seconds').fromNow()}</Text>
     </View>
   ))}
   </>

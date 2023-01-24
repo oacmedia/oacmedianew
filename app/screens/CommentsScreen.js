@@ -172,7 +172,7 @@ const CommentsScreen = ({ navigation }) => {
               width:"auto"
               }}>{item.comment}</Text>
             </View>
-            <Text style={{marginLeft: 20,}}>{item.time == "few days ago" ? item.time : moment.utc(item.time).local().startOf('seconds').fromNow()}</Text>
+            <Text style={{marginLeft: 20,}}>{item.time == "few days ago" ? item.time : moment.utc(item.time.toDate()).local().startOf('seconds').fromNow()}</Text>
           </View>
           // return <ListItem
           //   title={item.name}
