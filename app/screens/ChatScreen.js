@@ -301,6 +301,26 @@ const ChatScreen = ({ navigation }) => {
         
       }, [])
 
+      useEffect(()=>{
+        // const unsubscribe = navigation.addListener('focus', () => {
+        //   // Do whatever you want
+        // });
+        // unsubscribe;
+        firestore().collection('UnreadMessages').where('chatid','==',sharedData.chatid).where('sentTo','==',user.id).onSnapshot((snapshotFirst)=>{
+          //console.log(snapshot.docs.length);
+          if(!snapshotFirst.empty){
+            firestore().collection('onChatScreen').where('chatid','==',sharedData.chatid).where('CUser','==',user.id).get().then((snapshot)=>{
+              if(!snapshot.empty){
+                snapshotFirst.docs.map((snapData)=>{
+                  let id = snapData.id;
+                  firestore().collection('UnreadMessages').doc(id).delete();
+                })
+              }
+            })
+          }
+        })
+      },[])
+
       async function sendImage(uri){
         let url;
         let pathToFile = uri.toString();
@@ -331,7 +351,32 @@ const ChatScreen = ({ navigation }) => {
             .doc(docid)
             .collection('messages')
             .add({...lastMessage,createdAt:firestore.FieldValue.serverTimestamp()})
-
+            
+            await firestore().collection('UnreadMessages')
+            .doc()
+            .set({
+              sentBy: user.id,
+              sentTo: secondUser.secondUser,
+              chatid: sharedData.chatid,
+              mainid: sharedData.mainid,
+              messageType: "image",
+            })
+            firestore().collection('onChatScreen').where('chatid','==',sharedData.chatid).where('CUser','==',secondUser.secondUser).get().then((snapshot)=>{
+              if(snapshot.empty){
+                firestore().collection('Notifications')
+                .doc()
+                .set({
+                  sentBy: user.id,
+                  sentTo: secondUser.secondUser,
+                  chatid: sharedData.chatid,
+                  mainid: sharedData.mainid,
+                  messageType: "image",
+                  text: "Sent a Photo",
+                  profile: user.profile,
+                  name: user.title+" "+user.firstName+" "+user.lastName,
+                })  
+              }
+            })
           }
         })
         .catch((e)=>{
@@ -355,7 +400,31 @@ const ChatScreen = ({ navigation }) => {
        .collection('messages')
        .add({...mymsg,createdAt:firestore.FieldValue.serverTimestamp()})
 
-
+       firestore().collection('UnreadMessages')
+       .doc()
+       .set({
+         sentBy: user.id,
+         sentTo: secondUser.secondUser,
+         chatid: sharedData.chatid,
+         mainid: sharedData.mainid,
+         messageType: "text",
+       })
+       firestore().collection('onChatScreen').where('chatid','==',sharedData.chatid).where('CUser','==',secondUser.secondUser).get().then((snapshot)=>{
+        if(snapshot.empty){
+          firestore().collection('Notifications')
+          .doc()
+          .set({
+            sentBy: user.id,
+            sentTo: secondUser.secondUser,
+            chatid: sharedData.chatid,
+            mainid: sharedData.mainid,
+            messageType: "text",
+            ...msg,
+            profile: user.profile,
+            name: user.title+" "+user.firstName+" "+user.lastName,
+          })  
+        }
+      })
       }
     return (
         <Screen>
@@ -368,7 +437,8 @@ const ChatScreen = ({ navigation }) => {
                 onPress={() => {
                   setSharedData({});
                   setUserData([]);
-                  navigation.navigate("MessagesScreen");
+                  navigation.replace("MessagesScreen");
+                 //navigation.navigate("MessagesScreen");
                 }}
               />
               <View style={{ flexDirection: "row", alignItems: "center" }}>

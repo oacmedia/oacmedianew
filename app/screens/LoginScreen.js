@@ -228,6 +228,11 @@ useEffect(() => {
                   await signInWPhoneNumber(phno).then((verCode)=>{
                     //console.log(verCode._verificationId);
                     setUser([currentUser, {verCode: verCode._verificationId}]);
+                    firestore().collection('DeleteAccount').doc(currentUser.phoneNumber).get().then((snapshot)=>{
+                      if(!snapshot.empty){
+                        firestore().collection('DeleteAccount').doc(currentUser.phoneNumber).delete()
+                      }
+                    })
                     setProcessInd(false);
                     navigation.navigate("LoginOTP");
                   })

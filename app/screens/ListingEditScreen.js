@@ -12,7 +12,7 @@ import auth from '@react-native-firebase/auth';
 import storage from '@react-native-firebase/storage';
 import firestore from '@react-native-firebase/firestore';
 import { useUserAuth } from "../context/UserAuthContext";
-
+import * as VideoThumbnails from 'expo-video-thumbnails';
 
 const validationSchema = Yup.object().shape({
   description: Yup.string().label("Description"),
@@ -34,34 +34,72 @@ function ListingEditScreen({ navigation }) {
       array = listing.images.map((content)=>{
         let pathToFile = content.toString();
         let filename = pathToFile.substring(pathToFile.lastIndexOf('/')+1);
-        
+        console.log(filename);
+        console.log(pathToFile);
         let image = storage().ref(filename).putFile(pathToFile)
         image.on('state_changed',taskSnapshot => {
-          console.log(`${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`);
+          //console.log(`${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`);
         });
         image.then(async(data) => {
           count++;
           let url = await storage().ref(data.metadata.fullPath).getDownloadURL();
-          console.log('File: '+data.metadata.name+' uploaded to the bucket!');
-          array.push({path: data.metadata.fullPath,type: data.metadata.contentType,url: url});
-          
-          if(data.state == "success" && listing.images.length == count){
-            count = 0;
-            array.splice(0,listing.images.length);
-            if(array.length > 0){
-                const postCreate = await firestore().collection('Posts').doc();
-                postCreate.set({
-                  contents: array,
-                  caption: (listing.description).toString(),
-                  userID: user.phoneNumber,
-                });
-                resetForm();
-                navigation.navigate("HomeScreen");
-              }else{
-                return false;
+          //console.log('File: '+data.metadata.name+' uploaded to the bucket!');
+          if(data.metadata.contentType == "video/mp4"){
+            const { uri } = await VideoThumbnails.getThumbnailAsync(
+              url,
+              {
+                time: 5000,
               }
-            //console.log(array);
-          }
+              );
+              let thumbFilename = uri.substring(uri.lastIndexOf('/')+1);
+              let thumbImage = storage().ref(thumbFilename).putFile(uri);
+              console.log(thumbFilename+"thumbFilename");
+              console.log(thumbImage+"thumbImage");
+              thumbImage.on('state_changed',taskSnapshot => {
+                //console.log(`${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`);
+              });
+              thumbImage.then(async(thumbData)=>{
+                let thumbUrl = await storage().ref(thumbData.metadata.fullPath).getDownloadURL();
+                console.log(thumbUrl+"thumbUrl");
+                array.push({path: data.metadata.fullPath,type: data.metadata.contentType,url: url, thumbnail: thumbUrl});
+                if(data.state == "success" && listing.images.length == count){
+                  count = 0;
+                  array.splice(0,listing.images.length);
+                  if(array.length > 0){
+                      const postCreate = await firestore().collection('Posts').doc();
+                      postCreate.set({
+                        contents: array,
+                        caption: (listing.description).toString(),
+                        userID: user.phoneNumber,
+                      });
+                      resetForm();
+                      navigation.navigate("HomeScreen");
+                    }else{
+                      return false;
+                    }
+                  //console.log(array);
+                }
+              })
+            }else{
+              array.push({path: data.metadata.fullPath,type: data.metadata.contentType,url: url});
+              if(data.state == "success" && listing.images.length == count){
+                count = 0;
+                array.splice(0,listing.images.length);
+                if(array.length > 0){
+                    const postCreate = await firestore().collection('Posts').doc();
+                    postCreate.set({
+                      contents: array,
+                      caption: (listing.description).toString(),
+                      userID: user.phoneNumber,
+                    });
+                    resetForm();
+                    navigation.navigate("HomeScreen");
+                  }else{
+                    return false;
+                  }
+                //console.log(array);
+              }
+            }
         });
       });
     }else{
@@ -99,30 +137,32 @@ function ListingEditScreen({ navigation }) {
   // };
 
   return (
-    <Screen style={styles.container}>
+    <Screen>
       {processInd && <ActivityIndicator style={{alignSelf:"center",height: fullHeight, width: fullWidth, justifyContent: "center"}} size={100} color="white"/>}
-      <View style={{marginBottom: 10,}}>
-        <Text style={{alignSelf:"center",fontSize:20,}}>Post your images or videos and share with your beloved.</Text>
+      <View style={styles.container}>
+        <View style={{marginBottom: 10,}}>
+          <Text style={{alignSelf:"center",fontSize:20,}}>Post your images or videos and share with your beloved.</Text>
+        </View>
+        <Form
+          initialValues={{
+            description: "",
+            images: [],
+          }}
+          onSubmit={handleSubmit}
+          validationSchema={validationSchema}
+        >
+          <FormImagePicker name="images" />
+          <FormField
+            maxLength={255}
+            multiline
+            name="description"
+            numberOfLines={3}
+            placeholder="Description"
+            
+          />
+          <SubmitButton title="Post" />
+        </Form>
       </View>
-      <Form
-        initialValues={{
-          description: "",
-          images: [],
-        }}
-        onSubmit={handleSubmit}
-        validationSchema={validationSchema}
-      >
-        <FormImagePicker name="images" />
-        <FormField
-          maxLength={255}
-          multiline
-          name="description"
-          numberOfLines={3}
-          placeholder="Description"
-          
-        />
-        <SubmitButton title="Post" />
-      </Form>
     </Screen>
   );
 }

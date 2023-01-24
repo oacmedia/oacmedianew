@@ -3,7 +3,7 @@ import React from "react";
 
 import Icon from "./Icon";
 
-const TouchableIcon = ({ badge, name, onPress, size, style, iconColor }) => {
+const TouchableIcon = ({ badge, name, onPress, size, style, iconColor, backgroundColor }) => {
   return (
     <TouchableOpacity onPress={onPress}>
       {badge && (
@@ -11,7 +11,7 @@ const TouchableIcon = ({ badge, name, onPress, size, style, iconColor }) => {
           <Text style={styles.unreadBadgeText}>{badge}</Text>
         </View>
       )}
-      <Icon iconColor={iconColor} name={name} size={size} style={style} />
+      <Icon iconColor={iconColor} name={name} backgroundColor={backgroundColor} size={size} style={style} />
     </TouchableOpacity>
   );
 };
@@ -30,8 +30,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 20,
     bottom: 18,
-    width: 25,
-    height: 18,
+    paddingVertical: 3,
+    paddingHorizontal: 7,
     borderRadius: 25,
     alignItems: "center",
     justifyContent: "center",

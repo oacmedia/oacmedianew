@@ -64,7 +64,7 @@ return(
     {image && <Image style={styles.image} source={{ uri: image }} />}
     <View style={styles.detailsContainer}>
       <Text style={styles.title} numberOfLines={1}>
-        {name}
+        {name.length <= 14 ? name : name.slice(0,12)+"..."}
       </Text>
     </View>
     <TouchableIcon name={friendtStatus ? "account-multiple":(requestStatus?"account-check":"account-plus")} iconColor={colors.black} onPress={()=>{

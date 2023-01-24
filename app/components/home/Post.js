@@ -6,10 +6,12 @@ import {
   TouchableOpacity,
   View,
   Text,
+  Modal,
   ActivityIndicator,
   FlatList,
   TouchableWithoutFeedback,
-  Alert
+  Alert,
+  Pressable
 } from "react-native";
 import { Dimensions } from "react-native";
 import { Divider } from "@rneui/themed";
@@ -29,9 +31,69 @@ import storage from "@react-native-firebase/storage";
 import Icon from 'react-native-vector-icons/FontAwesome';
 import ProgressBar from 'react-native-progress/Bar';
 import { useVideoData } from "../../context/VideoDataContext";
+import { useCommentsSharing } from "../../context/CommentsSharingContext";
+import moment from "moment/moment";
 
-const PostHeader = ({ post, postUser, postID, DeleteButton, LoginnedUser, userData }) => {
-  
+const PostHeader = ({ post, postUser, postID, DeleteButton, LoginnedUser, userData, navigation }) => {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [frStatus, setFrStatus] = useState(false);
+  const [me,setMe] = useState(false);
+  const [requestStatus, setReqStatus] = useState(false);
+  const [frRequestStatus, setFrReqStatus] = useState(false);
+  function getFrStatus(id){
+    firestore().collection('Friends').doc(LoginnedUser.id).get().then((snapshot)=>{
+      //  console.log();
+      let data = snapshot.data();
+      data.friends.map((friend)=>{
+        if(friend.user == id){
+          setFrStatus(true);
+        }
+      })
+    })
+  }
+  function getReqStatus(user,id){
+    firestore().collection('Requests').where('sender','==',user.id).where('receiver','==',id).get().then((snapshot)=>{
+      //  console.log();
+        if(snapshot._docs.length > 0){
+          setReqStatus(true);
+        }
+        else{
+          setReqStatus(false);
+          }
+      })
+  }
+  function getFrReqStatus(user, id){
+    firestore().collection('Requests').where('sender','==',id).where('receiver','==',user.id).get().then((snapshot)=>{
+      if(snapshot._docs.length > 0){
+        setFrReqStatus(true);
+      }else{
+        setFrReqStatus(false);
+      }
+    })
+  }
+  function addFriend(id, user){
+    //console.log("Friend Req Sent To User ",id," By User ",user.id);
+    firestore().collection('Requests').where('sender','==',user.id).where('receiver','==',id).get().then((snapshot)=>{
+    //  console.log();
+      if(snapshot._docs.length > 0){
+        console.log("Already Sent Req");
+      }
+      else{
+        firestore().collection('Requests').where('sender','==',id).where('receiver','==',user.id).get().then((snapshot)=>{
+          if(snapshot._docs.length > 0){
+            Alert.alert("Friend Request Failed!","User Already Sent You A Friend Req!");
+          }else{
+            firestore().collection('Requests').doc()
+            .set({
+              sender: user.id,
+              receiver: id,
+            })
+            setReqStatus(true);
+          }
+        })
+        }
+      })
+    }
   function deleteCalled(){
     firestore().collection('Likes').where("postID", "==", postID).get()
     .then((snapshot)=>{
@@ -91,8 +153,76 @@ const PostHeader = ({ post, postUser, postID, DeleteButton, LoginnedUser, userDa
   return(
   <View style={styles.head_container}>
     <View style={{ flexDirection: "row", alignItems: "center" }}>
-      <Image source={{ uri: userData.profile }} style={styles.head_image} />
-      <AppText style={styles.head_title}>{userData.title+" "+userData.firstName+" "+userData.lastName}</AppText>
+    <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          //Alert.alert('Modal has been closed.');
+          setModalVisible(!modalVisible);
+        }}>
+        <View style={styles.centeredView}
+        >
+          <View style={styles.modalView}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Image source={{ uri: userData.profile }} style={styles.head_image_new} />
+              <AppText style={styles.head_title_new}>{userData.title+" "+userData.firstName+" "+userData.lastName}</AppText>
+            </View>
+            <View>
+            {me?<Text style={styles.modalText}
+            >It's Me!</Text>:(frStatus?
+              <Pressable
+              style={[styles.buttonNew, styles.buttonClose]}
+              onPress={
+                () => { setModalVisible(!modalVisible)
+                  navigation.navigate("MessagesScreen")} 
+                //setModalVisible(!modalVisible)
+                }>
+              <Text style={styles.textStyle}>Message</Text>
+            </Pressable>
+            : requestStatus? 
+            <Text style={styles.modalText}
+            >Request Sent!</Text>
+            :
+            frRequestStatus? 
+            <Text style={styles.modalText}
+            >Already Sent You Req!</Text>
+            :
+            <Pressable
+              style={[styles.buttonNew, styles.buttonClose]}
+              onPress={
+                () => {addFriend(userData.phoneNumber, LoginnedUser)} 
+                //setModalVisible(!modalVisible)
+                }>
+              <Text style={styles.textStyle}>Add Friend</Text>
+            </Pressable>
+            )}</View>
+            <Pressable
+               style={[styles.button, styles.buttonClose_New]}
+              onPress={() => setModalVisible(!modalVisible)}>
+                <Icon
+                    name={"close"}
+                    size={24} color={colors.white}
+                  />
+              {/* <Text style={styles.textStyle}
+              >X</Text> */}
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+      <TouchableOpacity style={{ flexDirection: "row", alignItems: "center" }} onPress={()=>{ setModalVisible(!modalVisible);
+      if(LoginnedUser.id == userData.phoneNumber){
+        setMe(true);
+      }
+        getReqStatus(LoginnedUser,userData.phoneNumber);
+        getFrReqStatus(LoginnedUser, userData.phoneNumber);
+        getFrStatus(userData.phoneNumber);
+        //alert("You Opened "+userData.title+" "+userData.firstName+" "+userData.lastName+"'s profile with phone number "+userData.phoneNumber)
+        }}>
+        <Image source={{ uri: userData.profile }} style={styles.head_image} />
+        <AppText style={styles.head_title}>{userData.title+" "+userData.firstName+" "+userData.lastName}</AppText>
+      </TouchableOpacity>
     </View>
     <TouchableOpacity hitSlop={10}>
       {!DeleteButton ? (
@@ -112,7 +242,7 @@ const PostHeader = ({ post, postUser, postID, DeleteButton, LoginnedUser, userDa
   </View>)
 };
 
-const PostVideo = ({ imageUrl, index, length, navigation }) => {
+const PostVideo = ({ imageUrl, index, length, navigation,thumb }) => {
   const fullWidth = Dimensions.get('window').width;
   const [mute, setMute] = useState(false);
   const [paused, setPaused] = useState(true);
@@ -162,7 +292,7 @@ return (
           Video.player = ref
         }}    
         resizeMode={"cover"}
-        poster={'https://firebasestorage.googleapis.com/v0/b/oacmedia-app-8464c.appspot.com/o/thumbnail.jpg?alt=media&token=1d69f50c-8546-4cbe-9fcc-a42f170ff31d'}
+        poster={thumb}
         posterResizeMode={"cover"}
         // controls                                // Store reference
         // paused
@@ -300,7 +430,7 @@ const PostContent = ({ post, navigation }) => {
         let index = item.index;
         //console.log(imageUrl[0]);
         return imageUrl.type == "video/mp4" ?
-          <PostVideo imageUrl={imageUrl.url} index={index} length={postsLength} navigation={navigation}/>
+          <PostVideo imageUrl={imageUrl.url} thumb={imageUrl.thumbnail?imageUrl.thumbnail:"https://firebasestorage.googleapis.com/v0/b/oacmedia-app-8464c.appspot.com/o/thumbnail.jpg?alt=media&token=1d69f50c-8546-4cbe-9fcc-a42f170ff31d"} index={index} length={postsLength} navigation={navigation}/>
           :
           <PostImage imageUrl={imageUrl.url} index={index} length={postsLength} navigation={navigation}/>
       }} 
@@ -443,9 +573,14 @@ const PostCaption = ({ post, userData}) => (
   </View>
 );
 
-const PostCommentsSection = ({ post, postUser, postID, user, CommentSection }) => {
+const PostCommentsSection = ({ post, postUser, postID, user, CommentSection, navigation }) => {
   const [showComments, setShowComments] = useState(0);
   const [commentsArr, setCommentsArr] = useState([]);
+  const {commentsData, setCommentsData} = useCommentsSharing();
+  function redirect(){
+    setCommentsData({postID: postID, postUser: postUser});
+    navigation.navigate("CommentsScreen");
+  }
   useEffect(() => {
     let pComments = [];
   //   firestore().collection('Comments').where('postID', '==', postID)
@@ -463,14 +598,24 @@ const PostCommentsSection = ({ post, postUser, postID, user, CommentSection }) =
 
     function onResult(QuerySnapshot) {
       //console.log('I got called!');
-      if(!QuerySnapshot._changes.length == '0'){
-        QuerySnapshot._changes.map((data, index)=>{
-          pComments.push(data._nativeData.doc.data);
-        })
-      }
-      if(!pComments.length == '0'){
-        setCommentsArr(pComments);
-      }
+      //console.log(QuerySnapshot.docs);
+      let count = 0;
+      QuerySnapshot.docs.map((snapshot)=>{
+        count++;
+        //console.log(snapshot.data());
+        let data = snapshot.data();
+        let id = snapshot.id;
+        pComments.push({id: id,postID: data.postID,comment: data.comment,name: data.user,time: (data.time? data.time : "few days ago")})
+        if(!pComments.length == '0' && count == QuerySnapshot.docs.length){
+          //console.log(pComments);
+          setCommentsArr(pComments);
+        }
+      })
+      // if(!QuerySnapshot._changes.length == '0'){
+      //   QuerySnapshot._changes.map((data, index)=>{
+      //     pComments.push(data._nativeData.doc.data);
+      //   })
+      // }
     // if(!QuerySnapshot._changes.length == '0'){
     //   console.log(QuerySnapshot._changes.length);
     //       setLikesCount(QuerySnapshot._changes.length);
@@ -484,7 +629,6 @@ const PostCommentsSection = ({ post, postUser, postID, user, CommentSection }) =
     }
 
     firestore().collection('Comments').where('postID', '==', postID).onSnapshot(onResult, onError);
-
 
   // });
   // function onResult(QuerySnapshot) {
@@ -516,22 +660,40 @@ const PostCommentsSection = ({ post, postUser, postID, user, CommentSection }) =
                 <>
                   <TouchableOpacity
                     onPress={() => {
-                      setShowComments(1);
+                      //showComments ?
+                        redirect()
+                       //: setShowComments(1);
                     }}
                   >
-                    <AppText style={{ color: "gray" }}>
-                      View all {commentsArr.length} comments
+                    <AppText style={{ color: "white", textAlign:"left" }}>
+                      {/* View all {commentsArr.length} comments */}
+                      View all comments
                     </AppText>
                   </TouchableOpacity>
                   {showComments ? (
-                    <PostComments post={commentsArr} />
+                    <PostComments post={commentsArr} length={commentsArr.length} />
                   ) : (
                     <PostSingleComment post={commentsArr} />
                   )}
                 </>
               ) : (
                 <>
-                  <PostSingleComment  post={commentsArr} />
+                <TouchableOpacity
+                    onPress={() => {
+                        redirect()
+                    }}
+                  >
+                    <AppText style={{ color: "white", textAlign:"left" }}>
+                      {/* View all {commentsArr.length} comments */}
+                      View all comments
+                    </AppText>
+                  </TouchableOpacity>
+                  {showComments ? (
+                    <PostComments post={commentsArr} length={commentsArr.length} />
+                  ) : (
+                    <PostSingleComment post={commentsArr} />
+                  )}
+                  {/* <PostSingleComment  post={commentsArr} /> */}
                     {/* <AppText style={{ color: "gray" }}>View 1 comment</AppText> */}
                 </>
               )}
@@ -551,6 +713,7 @@ const PostCommentsSection = ({ post, postUser, postID, user, CommentSection }) =
                   postID: postID,
                   user: (user.title+" "+user.firstName).toString(),
                   comment: values.comment,
+                  time: firestore.FieldValue.serverTimestamp()
                 })
                 .then((sent)=>{
                   //console.log(sent);
@@ -595,50 +758,107 @@ const PostCommentsSection = ({ post, postUser, postID, user, CommentSection }) =
       );
 };
 
-function commentChecker(comment){
-  if(comment){
-    if(comment.comment){
-      return (comment.comment).length > 1 ? comment.comment[1] : comment.comment;
-    }else{
-      return comment[0].comment[1];
-    }
-  }else{
-    return 'No Comments';
-  }
-}
-function commentUser(comment){
-  if(comment){
-    if(comment.user){
-      return (comment.user).length > 1 ? comment.user[1] : comment.user;
-    }else{
-      return comment[0].user[1];
-    }
+// function commentChecker(comment){
+//   if(comment){
+//     if(comment.comment){
+//       return (comment.comment).length > 1 ? comment.comment[1] : comment.comment;
+//     }else{
+//       return comment[0].comment[1];
+//     }
+//   }else{
+//     return 'No Comments';
+//   }
+// }
+// function commentUser(comment){
+//   //console.log(comment[0] ? comment[0] : "no time");
+//   if(comment){
+//     if(comment.user){
+//       return (comment.user).length > 1 ? comment.user[1] : comment.user;
+//     }else{
+//       return comment[0].user[1];
+//     }
     
-  }else{
-    return '';
-  }
-}
+//   }else{
+//     return '';
+//   }
+// }
 
-const PostComments = ({ post }) => {
+const PostComments = ({ post, length }) => {
   //console.log(post, "pOsts data");
   return(
   <>
-    {post.map((comment, index) => (
-      <View key={index} style={{ flexDirection: "row", marginTop: 5 }}>
-        <AppText style={{ fontWeight: "600" }}>{commentUser(comment)}</AppText>
-        <AppText> {commentChecker(comment)}
-        </AppText>
+    {length<=5 ? post.map((comment, index) => (
+      <View key={index} style={{alignSelf: 'flex-start',
+      paddingVertical:5,
+      //paddingHorizontal:10
+      }}>
+        <View style={{backgroundColor:"rgba(220,220,220,0.2)",borderRadius:30,paddingVertical:15,paddingLeft: 5, paddingRight: 20,}}>
+          <Text style={{ fontSize: 18, fontWeight: "700",
+          marginLeft: 15,
+          color: "white",
+          width:"auto"
+          }}>{comment.name+"  "}</Text>
+          <Text style={{ fontSize: 14, fontWeight: "600",
+          marginLeft: 15,
+          color: "white",
+          width:"auto"
+          }}>{comment.comment}</Text>
+        </View>
+      <Text style={{marginLeft: 20,color:"white"}}>{comment.time == "few days ago" ? comment.time : moment.utc(console.log(post[0].time)).local().startOf('seconds').fromNow()}</Text>
       </View>
-    ))}
+      // <View key={index} style={{ flexDirection: "row", marginTop: 5 }}>
+      //   <AppText style={{ fontWeight: "600" }}>{commentUser(comment)}</AppText>
+      //   <AppText> {commentChecker(comment)}
+      //   </AppText>
+      // </View>
+    ))
+  :
+  post.slice(0,5).map((comment, index) => (
+    <View key={index} style={{alignSelf: 'flex-start',
+    paddingVertical:5,
+    //paddingHorizontal:10
+    }}>
+      <View style={{backgroundColor:"rgba(220,220,220,0.2)",borderRadius:30,paddingVertical:15,paddingLeft: 5, paddingRight: 20,}}>
+        <Text style={{ fontSize: 18, fontWeight: "700",
+        marginLeft: 15,
+        color: "white",
+        width:"auto"
+        }}>{comment.name+"  "}</Text>
+        <Text style={{ fontSize: 14, fontWeight: "600",
+        marginLeft: 15,
+        color: "white",
+        width:"auto"
+        }}>{comment.comment}</Text>
+      </View>
+    <Text style={{marginLeft: 20,color:"white"}}>{comment.time == "few days ago" ? comment.time : moment.utc(console.log(post[0].time)).local().startOf('seconds').fromNow()}</Text>
+    </View>
+  ))}
   </>
 )};
 
 const PostSingleComment = ({ post }) => (
-  
-  <View style={{ flexDirection: "row", marginTop: 5 }}>
-    <AppText style={{ fontWeight: "600" }}>{commentUser(post)}</AppText>
-    <AppText> {commentChecker(post)}</AppText>
-  </View>
+  <View style={{alignSelf: 'flex-start',
+      paddingVertical:5,
+      //paddingHorizontal:10
+      }}>
+        <View style={{backgroundColor:"rgba(220,220,220,0.2)",borderRadius:30,paddingVertical:15,paddingLeft: 5, paddingRight: 20,}}>
+          <Text style={{ fontSize: 18, fontWeight: "700",
+          marginLeft: 15,
+          color: "white",
+          width:"auto"
+          }}>{post[0].name+"  "}</Text>
+          <Text style={{ fontSize: 14, fontWeight: "600",
+          marginLeft: 15,
+          color: "white",
+          width:"auto"
+          }}>{post[0].comment}</Text>
+        </View>
+      <Text style={{marginLeft: 20,color:"white"}}>{post[0].time == "few days ago" ? post[0].time : moment.utc(post[0].time).local().startOf('seconds').fromNow()}</Text>
+      </View>
+  // <View style={{ flexDirection: "row", marginTop: 5 }}>
+  //   <AppText style={{ fontWeight: "600" }}>{post[0].name}</AppText>
+  //   <AppText> {post[0].comment}</AppText>
+  // </View>
 );
 
 // const AddComment = ({commentsArr})=>{
@@ -702,6 +922,7 @@ const Post = ({
           DeleteButton={btnAccess}
           deletePost={deletePost}
           postID={postID} postUser={postUser}
+          navigation={navigation}
         />
       )}
       {withImage && <PostContent post={post} navigation={navigation} />}
@@ -709,7 +930,7 @@ const Post = ({
       <View style={{ marginHorizontal: 10, marginTop: 5 }}>
         {withLikes && <PostLikes post={post} postID={postID} />}
         {withComments && <PostCaption userData={userData} post={post} />}
-        <PostCommentsSection user={user} post={post} postID={postID} postUser={postUser} CommentSection={withCommentSection} />
+        <PostCommentsSection user={user} post={post} postID={postID} postUser={postUser} CommentSection={withCommentSection} navigation={navigation} />
       </View>
     </View>
   );
@@ -759,8 +980,23 @@ const styles = StyleSheet.create({
     borderWidth: 1.6,
     borderColor: "#FF8501",
   },
+  head_image_new: {
+    width: 45,
+    height: 45,
+    resizeMode: "contain",
+    borderRadius: 50,
+    marginLeft: 6,
+    borderWidth: 1.6,
+    borderColor: "#FF8501",
+  },
   head_title: {
     fontSize: 14,
+    marginLeft: 5,
+    fontWeight: "700",
+    color: colors.bottom,
+  },
+  head_title_new: {
+    fontSize: 18,
     marginLeft: 5,
     fontWeight: "700",
     color: colors.bottom,
@@ -783,5 +1019,71 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-around",
     paddingHorizontal: 10,
-  }
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 22,
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  button: {
+    borderRadius: 40,
+    paddingVertical: 6,
+    paddingHorizontal:10,
+    elevation: 2,
+    position: "absolute",
+    top: -20,
+    right: -20,
+  },
+  buttonNew: {
+    borderRadius: 40,
+    paddingVertical: 8,
+    paddingHorizontal:15,
+    elevation: 2,
+    marginTop: 10,
+  },
+  buttonOpen: {
+    backgroundColor: '#F194FF',
+  },
+  buttonClose: {
+    backgroundColor: '#2196F3',
+    //backgroundColor: 'grey',
+  },
+  buttonClose_New: {
+    //backgroundColor: '#2196F3',
+    backgroundColor: 'red',
+  },
+  textStyle: {
+    color: 'white',
+    fontWeight: '900',
+    textAlign: 'center',
+    fontSize: 18,
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '900',
+    backgroundColor: '#2196F3',
+    color: "white",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 50,
+    marginTop: 10,
+  },
 });

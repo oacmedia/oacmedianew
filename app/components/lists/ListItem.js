@@ -12,6 +12,9 @@ function ListItem({
   image,
   IconComponent,
   onPress,
+  notification,
+  message,
+  comment,
   renderRightActions,
 }) {
   return (
@@ -29,12 +32,30 @@ function ListItem({
                 {subTitle}
               </Text>
             )}
+            {comment && (
+              <Text style={styles.commentStyle} numberOfLines={1}>
+                {"Commented: "+'"'+comment+'"'+" 9 Jan"}
+              </Text>
+            )}
+            {message && (
+              <Text style={styles.msgStyle} numberOfLines={1}>
+                {message == 'Sent a Photo'? message : 'Sent you a message: '+'"'+message+'"'}
+              </Text>
+            )}
+            {notification>0 && (
+              <Text style={styles.notfStyle} numberOfLines={1}>
+                {notification>99?"99+":notification}
+              </Text>
+            )}
           </View>
-          {renderRightActions && <MaterialCommunityIcons
-            color={colors.medium}
-            name="chevron-left"
-            size={25}
-          />}
+          {/* <View>
+            {notification && (<Text>{notification}</Text>)}
+          </View> */}
+            {renderRightActions && <MaterialCommunityIcons
+              color={colors.medium}
+              name="chevron-left"
+              size={25}
+            />}
         </View>
       </TouchableHighlight>
     </Swipeable>
@@ -60,6 +81,26 @@ const styles = StyleSheet.create({
   },
   subTitle: {
     color: colors.medium,
+  },
+  notfStyle: {
+    color: "white",
+    position: "absolute",
+    paddingVertical: 5,
+    paddingHorizontal: 12,
+    backgroundColor: "red",
+    fontSize: 18,
+    borderRadius: 48,
+    right: 10,
+  },
+  msgStyle: {
+    fontSize: 18,
+    color: colors.green,
+    fontWeight: "700",
+  },
+  commentStyle: {
+    fontSize: 18,
+    color: colors.green,
+    fontWeight: "700",
   },
   title: {
     fontWeight: "500",

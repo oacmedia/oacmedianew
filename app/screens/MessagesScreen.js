@@ -21,7 +21,7 @@ function MessagesScreen({ navigation, route }) {
   const [messages, setMessages] = useState('');
   const {sharedData, setSharedData} = useDataSharing();
   const {user, setUser} = useUserAuth();
-  
+  const [notification, setNotification] = useState([]);
   const [isLoading, setIsLoading] = useState(true)
   const [isFinished, setIsFinished] = useState(false)
   const [lastDocRef, setLastDocRef] = useState(null)
@@ -46,12 +46,13 @@ function MessagesScreen({ navigation, route }) {
         for( let chat of snapshot.docs ){
             let data = chat.data();
             let id = chat.id;
+            let notf = await firestore().collection('UnreadMessages').where("sentTo",'==',user.id).where("chatid",'==',data.chatid).get();
             let userData = await firestore().collection('Users').doc(data.friend).get();
             let rdata = userData.data();
             for(let list of friendsList){
               let thisfriend = list.user;
               if(thisfriend == rdata.phoneNumber){
-                post.push({id: id,title: rdata.title,firstName: rdata.firstName,lastName: rdata.lastName,profile: rdata.profile, phoneNumber: rdata.phoneNumber});
+                post.push({id: id,title: rdata.title,firstName: rdata.firstName,lastName: rdata.lastName,profile: rdata.profile, phoneNumber: rdata.phoneNumber, notification: notf.docs.length});
               }
             }
             //post.push({id: id,title: rdata.title,firstName: rdata.firstName,lastName: rdata.lastName,profile: rdata.profile, phoneNumber: rdata.phoneNumber});
@@ -94,6 +95,7 @@ function MessagesScreen({ navigation, route }) {
         snapshot.docChanges().forEach(async(change)=> {
           let data = change.doc.data();
           let id = change.doc.id;
+          let notf = await firestore().collection('UnreadMessages').where("sentTo",'==',user.id).where("chatid",'==',data.chatid).get();
           let userInfo = await firestore().collection('Users').doc(data.friend).get();
           let userData = userInfo.data();
 
@@ -102,7 +104,7 @@ function MessagesScreen({ navigation, route }) {
             newPosts.splice(_postIndex, 1);
             return;
           }
-          let post = {id: id,title: userData.title,firstName: userData.firstName,lastName: userData.lastName,profile: userData.profile, phoneNumber: userData.phoneNumber};
+          let post = {id: id,title: userData.title,firstName: userData.firstName,lastName: userData.lastName,profile: userData.profile, phoneNumber: userData.phoneNumber, notification:notf.docs.length};
           if(_postIndex !== -1) {
             newPosts.splice(_postIndex, 1, post);
           } else {
@@ -116,6 +118,52 @@ function MessagesScreen({ navigation, route }) {
       unsubscribe();
     }
   }, []);
+  useEffect(()=>{
+    // firestore().collection('UnreadMessages').where("sentTo",'==',user.id).get().then((snapshot)=>{
+    //   if(!snapshot.empty){
+    //     // let id = snapshot.doc.id;
+    //     // let data = snapshot.doc.data();
+    //     // console.log(id+" and "+data);
+    //     console.log(snapshot.docs.length);
+    //   }
+    // })
+    // firestore().collection('UnreadMessages').where("sentTo",'==',user.id).onSnapshot((snapshot)=>{
+    //   if(!snapshot.empty){
+    //     //navigation.replace('MessagesScreen');
+    //   }
+    //       // setMessages((prevPosts) => {
+    //       //   // don't load posts on reload
+    //       //   if(prevPosts.length === 0)
+    //       //     return prevPosts;
+    //       //   let newPosts = [...prevPosts];
+    //       //   snapshot.docChanges().forEach(async(change)=> {
+    //       //     let data = change.doc.data();
+    //       //     let id = change.doc.id;
+    //       //     let notf = await firestore().collection('UnreadMessages').where("sentTo",'==',user.id).where("chatid",'==',data.chatid).get();
+    //       //     let userInfo = await firestore().collection('Users').doc(data.sentBy).get();
+    //       //     let userData = userInfo.data();
+    
+    //       //     let _postIndex = newPosts.findIndex((_post) => _post.id == data.mainid);
+    //       //     if(change.type === "removed") {
+    //       //       return;
+    //       //     }
+    //       //     let post = {id: id,title: userData.title,firstName: userData.firstName,lastName: userData.lastName,profile: userData.profile, phoneNumber: userData.phoneNumber, notification:notf.docs.length};
+    //       //     if(_postIndex !== -1) {
+    //       //       newPosts.splice(_postIndex, 1, post);
+    //       //     }
+    //       //   })
+    //       //   return newPosts;
+    //       // })
+    // })
+    firestore().collection('onChatScreen').where('CUser','==',user.id).get().then((snapshot)=>{
+      if(!snapshot.empty){
+        snapshot.docs.map((doc)=>{
+          let id = doc.id;
+          firestore().collection('onChatScreen').doc(id).delete();
+        })
+      }
+    })
+  },[])
 
   const handleDelete = (message) => {
     // Delete the message from messages
@@ -157,11 +205,19 @@ function MessagesScreen({ navigation, route }) {
             title={item.title+" "+item.firstName+" "+item.lastName}
             subTitle={item.description}
             image={item.profile}
+            notification={item.notification}
             onPress={async() => {
+              setProcessInd(true);
               let getChat = await firestore().collection('Chats').doc(item.id).get();
-              setSharedData({chatid: getChat.data().chatid});
+              setSharedData({chatid: getChat.data().chatid, mainid: item.id});
               if(!getChat.empty){
-                navigation.navigate("ChatScreen");
+                firestore().collection('onChatScreen').doc().set({
+                  CUser: user.id,
+                  chatid: getChat.data().chatid,
+                }).then(()=>{
+                  setProcessInd(false);
+                  navigation.replace("ChatScreen");
+                })
               }
             }}
             // renderRightActions={() => (

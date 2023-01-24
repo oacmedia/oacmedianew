@@ -15,15 +15,18 @@ import * as Notifications from 'expo-notifications';
 //import Constants from 'expo-constants';
 import AStorage from "@react-native-async-storage/async-storage";
 import { useCallDataSharing } from "../context/CallDataSharingContext";
+import { useCommentsSharing } from "../context/CommentsSharingContext";
 
 const HomeScreen = ({ routes, navigation }) => {
   const {user, setUser} = useUserAuth();
   const [posts, setPosts] = useState([]);
   const {sharedData, setSharedData} = useDataSharing();
   const {callSharedData, setCallSharedData} = useCallDataSharing();
+  const {commentsData, setCommentsData} = useCommentsSharing();
   const [isLoading, setIsLoading] = useState(true)
   const [isFinished, setIsFinished] = useState(false)
   const [lastDocRef, setLastDocRef] = useState(null)
+  const [notfCount, setNotfCount] = useState(0);
   let pageSize = 3;
 
   const loadPosts = useCallback(() => {
@@ -123,13 +126,46 @@ const HomeScreen = ({ routes, navigation }) => {
       }
     });
   }
-  // useEffect(() =>
-  //       navigation.addListener('beforeRemove', (e) => {
-  //           e.preventDefault();
-  //           return
-  //       }),
-  //       [navigation]
-  //   );
+  useEffect(() => {
+    firestore().collection('onChatScreen').where('CUser','==',user.id).get().then((snapshot)=>{
+      if(!snapshot.empty){
+        snapshot.docs.map((doc)=>{
+          let id = doc.id;
+          firestore().collection('onChatScreen').doc(id).delete();
+        })
+      }
+    })
+    firestore().collection('Notifications').where('sentTo','==',user.id).onSnapshot(async(snapshot)=>{
+      if(!snapshot.empty){
+        snapshot.docChanges().forEach(async(change)=>{
+          if(change.type !== "removed") {
+            setNotfCount(snapshot.docs.length);
+            await Notifications.scheduleNotificationAsync({
+              content: {
+                title: "You have new messages",
+                body: "Make sure to check them!",
+                data: { data: "Tap To Open APP!" }
+              },
+              trigger: {
+                //hour: 0,
+                //minute: 0,
+                seconds: 1,
+                //repeats: true
+              }
+            });
+          }else{
+            setNotfCount(snapshot.docs.length);
+          }
+        })
+      }
+    })
+  },[]
+        // navigation.addListener('beforeRemove', (e) => {
+        //     e.preventDefault();
+        //     return
+        // }),
+        // [navigation]
+    );
 
   return (
     <Screen>
@@ -139,7 +175,7 @@ const HomeScreen = ({ routes, navigation }) => {
       </TouchableOpacity> */}
         <StatusBar style="auto" />
       </View>
-      <Header navigation={navigation} />
+      <Header navigation={navigation} notfCount={notfCount} />
       {/* <ScrollView style={{ marginBottom: 40 }}> */}
         <FlatList style={{ marginBottom: 40 }}
           data={posts}
