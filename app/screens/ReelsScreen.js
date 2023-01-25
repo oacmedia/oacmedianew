@@ -24,7 +24,7 @@ const VideoScreen = ({ navigation }) => {
     return (
       <TouchableOpacity
         onPress={() => {
-          setVideoData({videoUrl: movie.videoUrl, title: movie.title, description: movie.description})
+          setVideoData({videoUrl: movie.videoUrl, title: movie.title, description: movie.description, tUrl: movie.url})
           navigation.navigate("VideoScreen");
         }}
       >

@@ -12,13 +12,13 @@ const Header = ({ navigation, notfCount }) => {
       <View style={styles.iconsContainer}>
         <TouchableIcon
           name={"bell-outline"}
-          size={40}
+          size={35}
           badge={notfCount>0?(notfCount>99?"99+":notfCount):""}
           onPress={() => navigation.navigate("NotificationsScreen")}
           />
         <TouchableIcon
           name={"plus-box-outline"}
-          size={40}
+          size={35}
           style={{ marginLeft: 10 }}
           onPress={() => navigation.navigate("ListingEditScreen")}
         />

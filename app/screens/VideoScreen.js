@@ -82,7 +82,7 @@ const VideoScreen = ({ navigation }) => {
             ref={(ref) => {
             Video.player = ref
             }}
-            poster={'https://firebasestorage.googleapis.com/v0/b/oacmedia-app-8464c.appspot.com/o/thumbnail.jpg?alt=media&token=1d69f50c-8546-4cbe-9fcc-a42f170ff31d'}
+            poster={videoData.tUrl}
             posterResizeMode={"cover"}
             // controls
             resizeMode={"cover"}
@@ -147,18 +147,27 @@ const VideoScreen = ({ navigation }) => {
     </View>
     <View style={{backgroundColor:"#FFF", width: "95%",padding: 1, alignSelf: "center"}}>
     </View>
-    <View style={{ flexDirection: "column",alignSelf: "center" }}>
-      <AppText style={{ fontSize: 25, fontWeight: "700",
+    <View style={{ flexDirection: "column",alignSelf: "flex-start", marginLeft:10, }}>
+      <AppText style={{ fontSize: 15, fontWeight: "700",
       marginTop: 15,
       fontWeight: "500",
       color: "white", 
       alignItems: "center",
       }}>{videoData.title}</AppText>
     </View>
-    <ScrollView>
-        <View style={{ width: fullWidth, height: '100%',
+    <View style={{ flexDirection: "column",alignSelf: "flex-start", marginLeft:10, }}>
+      <AppText style={{ fontSize: 17, fontWeight: "700",
+      marginTop: 15,
+      fontWeight: "500",
+      color: "white", 
+      alignItems: "center",
+      }}>{"Description"}</AppText>
+    </View>
+    <ScrollView style={{padding: 10}}>
+        <View style={{ width: fullWidth-22, 
         //backgroundColor: "#563df4",
-        paddingHorizontal: 20, paddingVertical: 15, marginBottom: 70, }}>
+        paddingHorizontal: 20, paddingVertical: 15, marginBottom: 70, marginTop: 2,
+        backgroundColor:"rgba(220,220,220,0.2)",borderRadius:30 }}>
             <Text style={{color: "#FFF", fontWeight: "400", fontSize: 16,}}>
             {videoData.description}
             </Text>
