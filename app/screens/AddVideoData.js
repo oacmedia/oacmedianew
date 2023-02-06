@@ -99,6 +99,7 @@ const AddVideoData = ({ navigation }) => {
                     thumbUrl: sharedData.thumbUrl,
                     thumbPath: sharedData.thumbPath,
                     thumbType: sharedData.thumbType,
+                    time: firestore.FieldValue.serverTimestamp(),
                 }).then(()=>{
                     setProcessInd(false);
                     navigation.navigate("ReelsScreen");    

@@ -7,7 +7,7 @@ const Header = ({ navigation, notfCount }) => {
   return (
     <View style={styles.container}>
       <TouchableOpacity>
-        <AppText style={{ fontSize: 35, fontWeight: "600" }}>OAC</AppText>
+        <AppText style={{ fontSize: 35, fontWeight: "600" }}>MyOAC</AppText>
       </TouchableOpacity>
       <View style={styles.iconsContainer}>
         <TouchableIcon

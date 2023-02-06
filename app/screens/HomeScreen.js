@@ -140,19 +140,36 @@ const HomeScreen = ({ routes, navigation }) => {
         snapshot.docChanges().forEach(async(change)=>{
           if(change.type !== "removed") {
             setNotfCount(snapshot.docs.length);
-            await Notifications.scheduleNotificationAsync({
-              content: {
-                title: "You have new messages",
-                body: "Make sure to check them!",
-                data: { data: "Tap To Open APP!" }
-              },
-              trigger: {
-                //hour: 0,
-                //minute: 0,
-                seconds: 1,
-                //repeats: true
-              }
-            });
+            let changeData = change.data();
+            if(changeData.messageType == "request"){
+              await Notifications.scheduleNotificationAsync({
+                content: {
+                  title: "You have new friend requests",
+                  body: "Make sure to check them!",
+                  data: { data: "Tap To Open APP!" }
+                },
+                trigger: {
+                  //hour: 0,
+                  //minute: 0,
+                  seconds: 1,
+                  //repeats: true
+                }
+              });
+            }else if(changeData.messageType == "image" || changeData.messageType == "text"){
+              await Notifications.scheduleNotificationAsync({
+                content: {
+                  title: "You have new messages",
+                  body: "Make sure to check them!",
+                  data: { data: "Tap To Open APP!" }
+                },
+                trigger: {
+                  //hour: 0,
+                  //minute: 0,
+                  seconds: 1,
+                  //repeats: true
+                }
+              });
+            }
           }else{
             setNotfCount(snapshot.docs.length);
           }

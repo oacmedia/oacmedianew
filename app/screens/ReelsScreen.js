@@ -12,6 +12,7 @@ import firebase from '@react-native-firebase/app';
 import auth from '@react-native-firebase/auth';
 import firestore from "@react-native-firebase/firestore";
 import { useVideoData } from "../context/VideoDataContext";
+import moment from "moment/moment";
 
 const fullWidth = Dimensions.get('window').width;
 
@@ -20,80 +21,166 @@ const VideoScreen = ({ navigation }) => {
   const [allCategories, setAllCategories] = useState([]);
   const [movieData, setMovieData] = useState([]);
   const {videoData, setVideoData} = useVideoData();
-  const ThumbsComponent = ({ movie, navigation }) => {
+  const [messages, setMessages] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFinished, setIsFinished] = useState(false);
+  const [lastDocRef, setLastDocRef] = useState(null);
+  let pageSize = 5;
+
+  const ThumbsComponent = ({ title, time, cat, key }) => {
     return (
       <TouchableOpacity
-        onPress={() => {
-          setVideoData({videoUrl: movie.videoUrl, title: movie.title, description: movie.description, tUrl: movie.url})
-          navigation.navigate("VideoScreen");
-        }}
-      >
-        <Image
-          source={{
-            uri: movie.url,
-          }}
-          style={styles.video}
-        />
-        <View style={{height: 39, width: 250, backgroundColor: "rgba(0, 0, 0, 0.5)", position: "absolute", zIndex: 1, bottom: 0,}}>
-          <Text style={{color: "white",padding: 8, fontSize: 18,fontWeight: "600"}}>{movie.title.length > 23 ? movie.title.slice(0, 20)+"...": movie.title}</Text>
-          <View  style={{
-            alignItems:'center',
-            justifyContent:'center',
-            width:30,
-            height:30,
-            backgroundColor:'rgba(255, 255, 255, 0.5)',
-            borderRadius:30 / 2,
-            position: "absolute",
-            zIndex: 1,
-            bottom: 1,
-            right: 2,
-            marginVertical: 3,
-          }}>
-            <Icon name={"play-arrow"}  size={22} color="#FFF" />
-          </View>
-        </View>
-      </TouchableOpacity>
+            onPress={() => {
+              //setVideoData({videoUrl: movie.videoUrl, title: movie.title, description: movie.description, tUrl: movie.url})
+              //navigation.navigate("VideoScreen");
+            }}
+            style={{marginHorizontal: 10,marginTop:10,width: fullWidth-20, height: title.length > 30?((fullWidth/100)*56.25)+80:((fullWidth/100)*56.25)+65}}
+          >
+            <Image
+              source={{
+                uri: "https://firebasestorage.googleapis.com/v0/b/oacmedia-app-8464c.appspot.com/o/ef6e178f-0428-4140-839e-863627f47323.jpeg?alt=media&token=64e83b67-9069-40b6-9853-e2a757cf38e7",
+              }}
+              style={styles.video}
+            />
+            <View style={{height: title.length > 45?91:76, width: fullWidth-20, backgroundColor: "white",
+              //"rgba(220,220,220,0.2)",
+               position: "absolute", zIndex: 1, bottom: 0,padding: 10,}}>
+              <Text style={{color: colors.background,paddingLeft: 6, fontSize: title.length > 30?16:18,fontWeight: "600"}}>{title.length > 90 ? title.slice(0, 90)+"...": title}</Text>
+              <View style={{position:"absolute", bottom: 10, left: 8,}}>
+                <Text style={{color: colors.dark, paddingLeft: 8,fontSize: 12,fontWeight: "500"}}>{cat.length > 20 ? cat.slice(0, 20)+"...": cat}</Text>
+              </View>
+              <View style={{position:"absolute", bottom: 10, right: 60,}}>
+                <Text style={{color: colors.dark, paddingLeft: 8,fontSize: 14,fontWeight: "500"}}>{moment.utc(time.toDate()).local().startOf('seconds').fromNow()}</Text>
+              </View>
+              <View  style={{
+                alignItems:'center',
+                justifyContent:'center',
+                width:30,
+                height:30,
+                backgroundColor:colors.background,
+                borderRadius:30 / 2,
+                position: "absolute",
+                zIndex: 1,
+                bottom: 1,
+                right: 8,
+                marginVertical: 3,
+              }}>
+                <Icon name={"play-arrow"}  size={22} color="#FFF" />
+              </View>
+            </View>
+          </TouchableOpacity>
     );
   };
 
-  async function getCategories(){
-    let array = [];
-    let count = 0;
-    let snapshot = await firestore().collection('Categories').get()
-      for( let request of snapshot.docs ){
-        count++;
-        let data = request.data();
-        let id = request.id;
-        array.push({category: data.category, id: id});
-        if(count == snapshot.docs.length){
-          setAllCategories(array);
+  const loadPosts = useCallback(() => {
+    setIsLoading(true);
+    let query = firestore().collection('Videos')
+    if(lastDocRef) {
+      query = query.startAfter(lastDocRef)
+    }
+    query = query.limit(pageSize)
+    query.get()
+      .then(async (snapshot) => {
+        let post = [];
+        for( let cat of snapshot.docs ){
+            let data = cat.data();
+            let id = cat.id;
+            post.push({type: data.category.label, id: id, url: data.thumbUrl, videoUrl: data.videoUrl, title: data.title, description: data.description, time: data.time});
         }
-      }
+        if(snapshot.docs.length < pageSize) {
+          setIsFinished(true);
+        }
+        if(snapshot.docs.length) {
+          setLastDocRef(snapshot.docs[snapshot.docs.length-1]);
+        }
+        setIsLoading(false);
+        setMessages((prevPosts) => {
+          let objs = post.map((obj)=>{
+            return obj;
+          });
+          return [...prevPosts, ...objs];
+        });
+      });
+  }, [setIsLoading, setIsFinished, setMessages, lastDocRef, setLastDocRef])
+
+  const fetchMoreData = useCallback(() => {
+    if(isLoading || isFinished) return;
+    loadPosts();
+  }, [isFinished, isLoading])
+
+  // async function getCategories(){
+  //   let array = [];
+  //   let count = 0;
+  //   let snapshot = await firestore().collection('Categories').get()
+  //     for( let request of snapshot.docs ){
+  //       count++;
+  //       let data = request.data();
+  //       let id = request.id;
+  //       array.push({category: data.category, id: id});
+  //       if(count == snapshot.docs.length){
+  //         setAllCategories(array);
+  //       }
+  //     }
       
-  }
-  async function getData(){
-    let array = [];
-    let count = 0;
-    let snapshot = await firestore().collection('Videos').get()
-      for( let request of snapshot.docs ){
-        count++;
-        let data = request.data();
-        let id = request.id;
-        array.push({type: data.category.label, id: id, url: data.thumbUrl, videoUrl: data.videoUrl, title: data.title, description: data.description});
-        if(count == snapshot.docs.length){
-          setMovieData(array);
-        }
-      }
-  }
+  // }
+  // async function getData(){
+  //   let array = [];
+  //   let count = 0;
+  //   let snapshot = await firestore().collection('Videos').get()
+  //     for( let request of snapshot.docs ){
+  //       count++;
+  //       let data = request.data();
+  //       let id = request.id;
+  //       array.push({type: data.category.label, id: id, url: data.thumbUrl, videoUrl: data.videoUrl, title: data.title, description: data.description});
+  //       if(count == snapshot.docs.length){
+  //         setMovieData(array);
+  //       }
+  //     }
+  // }
+  // useEffect(()=>{
+  //   setVideoData({});
+  //   getData();
+  //   getCategories();
+  //   firestore().collection('Videos').onSnapshot(()=>{
+  //     getData();
+  //     getCategories();
+  //   })
+  // },[])
+
   useEffect(()=>{
-    setVideoData({});
-    getData();
-    getCategories();
-    firestore().collection('Videos').onSnapshot(()=>{
-      getData();
-      getCategories();
+
+    loadPosts();
+
+    let query = firestore().collection('Videos')
+    let unsubscribe = query.onSnapshot((snapshot) => {
+      setMessages((prevPosts) => {
+        // don't load posts on reload
+        if(prevPosts.length === 0)
+          return prevPosts;
+        let newPosts = [...prevPosts];
+        snapshot.docChanges().forEach(async(change)=> {
+          let data = change.doc.data();
+          let id = change.doc.id;
+
+          let _postIndex = newPosts.findIndex((_post) => _post.id === id);
+          if(change.type === "removed") {
+            newPosts.splice(_postIndex, 1);
+            return;
+          }
+          let post = [{type: data.category.label, id: id, url: data.thumbUrl, videoUrl: data.videoUrl, title: data.title, description: data.description, time: data.time}];
+          if(_postIndex !== -1) {
+            newPosts.splice(_postIndex, 1, ...post);
+          } else {
+            newPosts.unshift(...post);
+          }
+        })
+        return newPosts;
+      })
     })
-  },[])
+    return () => {
+      unsubscribe();
+    }
+  },[]);
 
   return (
     <Screen>
@@ -111,7 +198,7 @@ const VideoScreen = ({ navigation }) => {
             backgroundColor:'#fff',
             borderRadius:50,
             position: "absolute",
-            zIndex: 1,
+            zIndex: 2,
             bottom: 70,
             right: 10,
           }}
@@ -132,7 +219,7 @@ const VideoScreen = ({ navigation }) => {
             backgroundColor:'#fff',
             borderRadius:50,
             position: "absolute",
-            zIndex: 1,
+            zIndex: 2,
             bottom: 70,
             left: 10,
           }}
@@ -142,31 +229,17 @@ const VideoScreen = ({ navigation }) => {
       >
         <Icon name={"delete"}  size={35} color={colors.background} />
       </TouchableOpacity>}
-      <FlatList style={{ marginBottom: 40 }}
-          data={allCategories}
-          keyExtractor={(category) => category.id}
-          renderItem={(category) => {
-            //const {item: post} = item
-            let catData = category.item
-            //console.log(catData);
-            return  <View style={styles.container}>
-                      <Text style={styles.contText}>{catData.category}</Text>
-                      <ScrollView horizontal>
-                        <View style={styles.thumbContainer}>
-                          {movieData
-                            .filter((movie) => {
-                              //console.log(movie.type != 'undefined' && catData.category != 'undefined'? movie.type == catData.category : false);
-                              
-                              return movie.type != 'undefined' && catData.category != 'undefined'? movie.type == catData.category : false;
-                            })
-                            .map((film) => {
-                              return <ThumbsComponent key={film.id} movie={film} navigation={navigation} />;
-                            })}
-                        </View>
-                      </ScrollView>
-                    </View>
-          }}
-          />
+      <View style={styles.container}>
+      <FlatList
+        data={messages}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => {
+          return <ThumbsComponent key={item.id} title={item.title} time={item.time} cat={item.type} />
+        }}
+        onEndReachedThreshold={0.2}
+        onEndReached={fetchMoreData}
+      />
+      </View>
       <BottomTabs navigation={navigation} scrName={"ReelsScreen"}/>
     </Screen>
   );
@@ -177,6 +250,7 @@ export default VideoScreen;
 const styles = StyleSheet.create({
   container: {
     marginTop: 10,
+    marginBottom: 120,
   },
   contText: {
     marginTop: 10,
@@ -191,8 +265,8 @@ const styles = StyleSheet.create({
   },
   video: {
     marginRight: 10,
-    width: 250,
-    height: 150,
+    width: fullWidth-20,
+    height: (fullWidth/100)*56.25,
     resizeMode: "cover",
   },
   backgroundVideo: {

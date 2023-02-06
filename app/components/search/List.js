@@ -31,6 +31,15 @@ const Item = ({ name, image, id, user }) => {
               sender: user.id,
               receiver: id,
             })
+            firestore().collection('Notifications').doc()
+            .set({
+              sentBy: user.id,
+                  sentTo: id,
+                  messageType: "request",
+                  text: "Requested You to Be Friends",
+                  profile: user.profile,
+                  name: user.title+" "+user.firstName+" "+user.lastName,
+            })
             setReqStatus(true);
           }
         })

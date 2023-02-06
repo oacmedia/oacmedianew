@@ -11,7 +11,8 @@ import {
   FlatList,
   TouchableWithoutFeedback,
   Alert,
-  Pressable
+  Pressable,
+  ImageBackground
 } from "react-native";
 import { Dimensions } from "react-native";
 import { Divider } from "@rneui/themed";
@@ -87,6 +88,15 @@ const PostHeader = ({ post, postUser, postID, DeleteButton, LoginnedUser, userDa
             .set({
               sender: user.id,
               receiver: id,
+            })
+            firestore().collection('Notifications').doc()
+            .set({
+              sentBy: user.id,
+                  sentTo: id,
+                  messageType: "request",
+                  text: "Requested You to Be Friends",
+                  profile: user.profile,
+                  name: user.title+" "+user.firstName+" "+user.lastName,
             })
             setReqStatus(true);
           }
@@ -281,93 +291,99 @@ const PostVideo = ({ imageUrl, index, length, navigation,thumb }) => {
   }
 return (
   <View style={{ marginTop: 0, width: fullWidth }}>
-    <ActivityIndicator style={{alignSelf:"center",height: "100%", width: fullWidth, justifyContent: "center"}} size={100} color="white"/>
-    <Video source={{uri: imageUrl}}   // Can be a URL or a local file.
-        paused={paused}
-        onLoad={handleLoad}
-        onProgress={handleProgress}
-        onEnd={handleEnd}
-        muted={mute}
-        ref={(ref) => {
-          Video.player = ref
-        }}    
-        resizeMode={"cover"}
-        poster={thumb}
-        posterResizeMode={"cover"}
-        // controls                                // Store reference
-        // paused
-        // onBuffer={Video.onBuffer}                // Callback when remote video is buffering
-        // onError={Video.videoError}               // Callback when video cannot be loaded
-        style={styles.backgroundVideo}
-    />
-    <Text style={styles.page}>{(index+1)+"/"+length}</Text>
-    <View style={{
-      backgroundColor: !paused ? "transparent" : "rgba(0, 0, 0, 0.5)",
-      height: 48,
-      width: 48,
-      borderRadius: 24,
-      top: fullWidth/2,
-      left: (fullWidth/2)-24,
-      bottom: 0,
-      right: 0,
-      position: "absolute",
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-around",
-      paddingHorizontal: 10,
-    }}>
-      <TouchableWithoutFeedback 
-        onPress={handleMainButtonTouch}>
-          <Icon
-            name={!paused ? "pause" : "play"}
-            size={20} color={!paused ? "transparent" : "#FFF"}
-          />
-      </TouchableWithoutFeedback>
-    </View>
-    {!paused && <View style={styles.controls}>
-            <TouchableWithoutFeedback 
-            onPress={handleMainButtonTouch}>
-              <Icon
-                name={!paused ? "pause" : "play"}
-                size={20} color="#FFF"
-              />
-            </TouchableWithoutFeedback>
-            <TouchableWithoutFeedback
-              onPress={handleProgressPress}
-            >
-              <View>
-                <ProgressBar 
-                  progress={progress}
-                  color="#FFF"
-                  unfilledColor="rgba(255,255,255,.5)"
-                  borderColor="#FFF"
-                  width={fullWidth-160}
-                  height={2}
+    {!paused && <ActivityIndicator style={{alignSelf:"center",height: "100%", width: fullWidth, justifyContent: "center"}} size={100} color="white"/>} 
+      <Video source={{uri: imageUrl}}   // Can be a URL or a local file.
+          paused={paused}
+          onLoad={handleLoad}
+          onProgress={handleProgress}
+          onEnd={handleEnd}
+          muted={mute}
+          ref={(ref) => {
+            Video.player = ref
+          }}    
+          resizeMode={"cover"}
+          poster={thumb}
+          posterResizeMode={"cover"}
+          // controls                                // Store reference
+          // paused
+          // onBuffer={Video.onBuffer}                // Callback when remote video is buffering
+          // onError={Video.videoError}               // Callback when video cannot be loaded
+          style={styles.backgroundVideo}
+      />
+      <Text style={styles.page}>{(index+1)+"/"+length}</Text>
+      {paused && <Image
+        style={{height: "100%",
+        width: "100%",position: "absolute",zIndex: 1,resizeMode: 'cover',}}
+        source={{uri: thumb}}
+      />} 
+      <View style={{
+        backgroundColor: !paused ? "transparent" : "rgba(0, 0, 0, 0.5)",
+        height: 48,
+        width: 48,
+        borderRadius: 24,
+        top: fullWidth/2,
+        left: (fullWidth/2)-24,
+        bottom: 0,
+        right: 0,
+        position: "absolute",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-around",
+        paddingHorizontal: 10,
+        zIndex: 3,
+      }}>
+        <TouchableWithoutFeedback 
+          onPress={handleMainButtonTouch}>
+            <Icon
+              name={!paused ? "pause" : "play"}
+              size={20} color={!paused ? "transparent" : "#FFF"}
+            />
+        </TouchableWithoutFeedback>
+      </View>
+      {!paused && <View style={styles.controls}>
+              <TouchableWithoutFeedback 
+              onPress={handleMainButtonTouch}>
+                <Icon
+                  name={!paused ? "pause" : "play"}
+                  size={20} color="#FFF"
                 />
-              </View>
-            </TouchableWithoutFeedback>
-            <Text 
-              style={styles.duration}
-            >
-              {secondToTime(Math.floor(progress * duration))}
-            </Text>
-            <TouchableWithoutFeedback 
-            onPress={handleMuteButtonTouch}>
-              <Icon
-                name={!mute ? "volume-down" : "volume-off"}
-                size={20} color="#FFF"
-              />
-            </TouchableWithoutFeedback>
-            <TouchableWithoutFeedback
-              onPress={handleFullScreen}
+              </TouchableWithoutFeedback>
+              <TouchableWithoutFeedback
+                onPress={handleProgressPress}
               >
-              <Icon
-              //style={{marginLeft: 10,}}
-                name={"arrows-alt"}
-                size={20} color="#FFF"
-              />
-            </TouchableWithoutFeedback>
-      </View>}
+                <View>
+                  <ProgressBar 
+                    progress={progress}
+                    color="#FFF"
+                    unfilledColor="rgba(255,255,255,.5)"
+                    borderColor="#FFF"
+                    width={fullWidth-160}
+                    height={2}
+                  />
+                </View>
+              </TouchableWithoutFeedback>
+              <Text 
+                style={styles.duration}
+              >
+                {secondToTime(Math.floor(progress * duration))}
+              </Text>
+              <TouchableWithoutFeedback 
+              onPress={handleMuteButtonTouch}>
+                <Icon
+                  name={!mute ? "volume-down" : "volume-off"}
+                  size={20} color="#FFF"
+                />
+              </TouchableWithoutFeedback>
+              <TouchableWithoutFeedback
+                onPress={handleFullScreen}
+                >
+                <Icon
+                //style={{marginLeft: 10,}}
+                  name={"arrows-alt"}
+                  size={20} color="#FFF"
+                />
+              </TouchableWithoutFeedback>
+        </View>}
   </View>
 )};
 const PostImage = ({ imageUrl, index, length, navigation }) => {
@@ -442,7 +458,7 @@ const PostContent = ({ post, navigation }) => {
   </View>
 )};
 
-const PostFooter = ({user, post, postID}) => (
+const PostFooter = ({user, post, postID, postUser, navigation}) => (
   <View
     style={{
       width: "100%",
@@ -455,54 +471,76 @@ const PostFooter = ({user, post, postID}) => (
     }}
   >
     <PostIconH name={"cards-heart-outline"} size={30} user={user} postID={postID}/>
-    <PostIconC name={"comment-outline"} size={30} style={{ marginLeft: 10 }} />
+    <PostIconC name={"comment-outline"} size={30} style={{ marginLeft: 10 }} postUser={postUser} postID={postID} navigation={navigation}/>
   </View>
 );
 
 const PostIconH = ({ name, user, size, style, postID }) => {
   const [clicked, setClicked] = useState(false);
-  const [likeID, setLikeID] = useState('');
+  //const [likeID, setLikeID] = useState('');
+  const [enable, setEnable] = useState(true);
   //const [tLikes, setTLikes] = useState(postAllLikes);
   function setLike(){
-    if(clicked == true){
-       firestore().collection('Likes').doc(likeID).delete()
-       .then((res)=>{
-         console.log("Like Deleted!", res);
-       })
-      setClicked(false);
-    }else if(clicked == false){
-      firestore().collection('Likes').doc().set({
-        userID: user.phoneNumber,
-        postID: postID,
+    setEnable(false);
+    firestore().collection('Likes').where('userID', '==', user.phoneNumber).where('postID', '==', postID).get().then((snapshot)=>{
+      if(!snapshot.empty){
+        snapshot.docs.map((snapDoc)=>{
+          let id = snapDoc.id;
+          firestore().collection('Likes').doc(id).delete()
+          .then((res)=>{
+            console.log("Like Deleted!", res);
+          })
+          setClicked(false);
+          setEnable(true);
         })
-      .then((res)=>{
-        console.log("Like Added!",res);
-        firestore().collection('Likes').where('userID', '==', user.phoneNumber).where('postID', '==', postID).get()
-        .then((data)=>{
-          if(!data._docs.length == '0'){
-            let likesData = data._docs[0]._data;
-            if(likesData.postID == postID){
-              setLikeID(data._docs[0]._ref._documentPath._parts[1]);
-              //setClicked(true);
-            }
-          }   
+      }else if(snapshot.empty){
+        firestore().collection('Likes').doc().set({
+          userID: user.phoneNumber,
+          postID: postID,
         })
+        .then((res)=>{
+          setClicked(true);
+          setEnable(true);
       })
-      setClicked(true);
     }
+    })
   }
+  // function setLike(){
+  //   if(clicked == true){
+  //      firestore().collection('Likes').doc(likeID).delete()
+  //      .then((res)=>{
+  //        console.log("Like Deleted!", res);
+  //      })
+  //     setClicked(false);
+  //   }else if(clicked == false){
+  //     firestore().collection('Likes').doc().set({
+  //       userID: user.phoneNumber,
+  //       postID: postID,
+  //       })
+  //     .then((res)=>{
+  //       console.log("Like Added!",res);
+  //       firestore().collection('Likes').where('userID', '==', user.phoneNumber).where('postID', '==', postID).get()
+  //       .then((data)=>{
+  //         if(!data._docs.length == '0'){
+  //           let likesData = data._docs[0]._data;
+  //           if(likesData.postID == postID){
+  //             setLikeID(data._docs[0]._ref._documentPath._parts[1]);
+  //             //setClicked(true);
+  //           }
+  //         }   
+  //       })
+  //     })
+  //     setClicked(true);
+  //   }
+  // }
   useEffect(()=>{
     //console.log(user);
     firestore().collection('Likes').where('userID', '==', user.phoneNumber).where('postID', '==', postID).get()
-    .then((data)=>{
-      if(!data._docs.length == '0'){
-        let likesData = data._docs[0]._data;
-      if(likesData.postID == postID){
-        setLikeID(data._docs[0]._ref._documentPath._parts[1]);
+    .then((snapshot)=>{
+      if(!snapshot.empty){
         setClicked(true);
       }
-    }
-    })
+    });
   },[]);
   return (
     <TouchableIcon
@@ -510,47 +548,33 @@ const PostIconH = ({ name, user, size, style, postID }) => {
       size={size}
       iconColor={clicked ? colors.danger : colors.background}
       style={style}
-      onPress={() => (setLike())}
+      onPress={() => (enable ? setLike() : "")}
     />
   );
 };
-const PostIconC = ({ name, size, style }) => {
+const PostIconC = ({ name, size, style, postUser, postID, navigation }) => {
+  const {commentsData, setCommentsData} = useCommentsSharing();
+  function redirect(){
+    setCommentsData({postID: postID, postUser: postUser});
+    navigation.navigate("CommentsScreen");
+  }
   return (
     <TouchableIcon
       name={name}
       size={size}
       iconColor={colors.background}
       style={style}
+      onPress={() => (redirect())}
     />
   );
 };
 
 const PostLikes = ({ post, postID }) => {
-  // let likes = 0;
-  // if(postAllLikes){
-  //   likes = postAllLikes;
-  // }else{
-  //   likes = postAllLikes;
-  // }
   const [likes, setLikes] = useState('0');
   useEffect(()=>{
-    function onResult(QuerySnapshot) {
-      //console.log('Starts From Here!', QuerySnapshot._docs.length);
-    //console.log(QuerySnapshot._changes.length);
-      if(!QuerySnapshot._changes.length == '0'){
-        //console.log(QuerySnapshot._changes.length);
-        setLikes(QuerySnapshot._docs.length);
-      }else{
-        setLikes(QuerySnapshot._docs.length);
-      }
-    }
-  
-    function onError(error) {
-      console.error(error);
-    }
-  
-    firestore().collection('Likes').where('postID','==',postID).onSnapshot(onResult, onError);
-    //let likes = 0;
+    firestore().collection('Likes').where('postID', '==', postID).onSnapshot((snapshot)=>{
+        setLikes(snapshot.docs.length);
+    })
   },[]);
 return (
   <View style={{ flexDirection: "row", marginTop: 5 }}>
@@ -926,7 +950,7 @@ const Post = ({
         />
       )}
       {withImage && <PostContent post={post} navigation={navigation} />}
-      {withFooter && <PostFooter user={user} post={post} postID={postID} />}
+      {withFooter && <PostFooter user={user} post={post} postID={postID} postUser={postUser} navigation={navigation}/>}
       <View style={{ marginHorizontal: 10, marginTop: 5 }}>
         {withLikes && <PostLikes post={post} postID={postID} />}
         {withComments && <PostCaption userData={userData} post={post} />}
@@ -955,10 +979,11 @@ const styles = StyleSheet.create({
     height: "100%",
     width: "100%",
     backgroundColor: "transparent",
+    zIndex: 2,
   },
   page:{
     position: "absolute",
-    zIndex: 1,
+    zIndex: 2,
     backgroundColor: "black",
     color: "white",
     fontWeight: "900",
@@ -1019,6 +1044,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-around",
     paddingHorizontal: 10,
+    zIndex: 3,
   },
   centeredView: {
     flex: 1,
