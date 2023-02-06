@@ -5,16 +5,55 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1f188389-daea-4763-be31-dbd05e45032b" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/eas.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ios/GoogleService-Info.plist" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/drawable-hdpi/splashscreen_image.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/drawable-hdpi/splashscreen_image.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/drawable-mdpi/splashscreen_image.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/drawable-mdpi/splashscreen_image.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/drawable-xhdpi/splashscreen_image.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/drawable-xhdpi/splashscreen_image.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/drawable-xxhdpi/splashscreen_image.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/drawable-xxhdpi/splashscreen_image.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/drawable-xxxhdpi/splashscreen_image.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/drawable-xxxhdpi/splashscreen_image.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/mipmap-hdpi/ic_launcher.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/mipmap-hdpi/ic_launcher.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/mipmap-mdpi/ic_launcher.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/mipmap-mdpi/ic_launcher.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/android/gradle.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.json" beforeDir="false" afterPath="$PROJECT_DIR$/app.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/data/posts.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/data/posts.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/screens/AccountScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/screens/AccountScreen.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/screens/HomeScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/screens/HomeScreen.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/screens/ListingEditScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/screens/ListingEditScreen.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/screens/LoginScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/screens/LoginScreen.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/screens/RegisterScreen4.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/screens/RegisterScreen4.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/screens/RegisterScreen5.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/screens/RegisterScreen5.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eas.json" beforeDir="false" afterPath="$PROJECT_DIR$/eas.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/Podfile" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Podfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/Podfile.properties.json" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Podfile.properties.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/oacmedia.xcodeproj/project.pbxproj" beforeDir="false" afterPath="$PROJECT_DIR$/ios/oacmedia.xcodeproj/project.pbxproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/oacmedia.xcodeproj/xcshareddata/xcschemes/oacmedia.xcscheme" beforeDir="false" afterPath="$PROJECT_DIR$/ios/oacmedia.xcodeproj/xcshareddata/xcschemes/oacmedia.xcscheme" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/oacmedia/AppDelegate.mm" beforeDir="false" afterPath="$PROJECT_DIR$/ios/oacmedia/AppDelegate.mm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-20x20@1x.png" beforeDir="false" afterPath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-20x20@1x.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-20x20@2x.png" beforeDir="false" afterPath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-20x20@2x.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-20x20@3x.png" beforeDir="false" afterPath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-20x20@3x.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-29x29@1x.png" beforeDir="false" afterPath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-29x29@1x.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-29x29@2x.png" beforeDir="false" afterPath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-29x29@2x.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-29x29@3x.png" beforeDir="false" afterPath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-29x29@3x.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-40x40@1x.png" beforeDir="false" afterPath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-40x40@1x.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-40x40@2x.png" beforeDir="false" afterPath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-40x40@2x.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-40x40@3x.png" beforeDir="false" afterPath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-40x40@3x.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-60x60@2x.png" beforeDir="false" afterPath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-60x60@2x.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-60x60@3x.png" beforeDir="false" afterPath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-60x60@3x.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-76x76@1x.png" beforeDir="false" afterPath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-76x76@1x.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-76x76@2x.png" beforeDir="false" afterPath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-76x76@2x.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-83.5x83.5@2x.png" beforeDir="false" afterPath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/App-Icon-83.5x83.5@2x.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/ItunesArtwork@2x.png" beforeDir="false" afterPath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/AppIcon.appiconset/ItunesArtwork@2x.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/SplashScreen.imageset/image.png" beforeDir="false" afterPath="$PROJECT_DIR$/ios/oacmedia/Images.xcassets/SplashScreen.imageset/image.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/oacmedia/Info.plist" beforeDir="false" afterPath="$PROJECT_DIR$/ios/oacmedia/Info.plist" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/yarn.lock" afterDir="false" />
     </list>
