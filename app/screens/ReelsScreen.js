@@ -27,7 +27,7 @@ const VideoScreen = ({ navigation }) => {
   const [lastDocRef, setLastDocRef] = useState(null);
   let pageSize = 5;
 
-  const ThumbsComponent = ({ title, time, cat, key }) => {
+  const ThumbsComponent = ({ title, time, cat }) => {
     return (
       <TouchableOpacity
             onPress={() => {
@@ -234,7 +234,7 @@ const VideoScreen = ({ navigation }) => {
         data={messages}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
-          return <ThumbsComponent key={item.id} title={item.title} time={item.time} cat={item.type} />
+          return <ThumbsComponent title={item.title} time={item.time} cat={item.type} />
         }}
         onEndReachedThreshold={0.2}
         onEndReached={fetchMoreData}
