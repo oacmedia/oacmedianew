@@ -27,18 +27,18 @@ const VideoScreen = ({ navigation }) => {
   const [lastDocRef, setLastDocRef] = useState(null);
   let pageSize = 5;
 
-  const ThumbsComponent = ({ title, time, cat }) => {
+  const ThumbsComponent = ({ title, time, cat, tUrl, description, videoUrl }) => {
     return (
       <TouchableOpacity
             onPress={() => {
-              //setVideoData({videoUrl: movie.videoUrl, title: movie.title, description: movie.description, tUrl: movie.url})
-              //navigation.navigate("VideoScreen");
+              setVideoData({videoUrl: videoUrl, title: title, description: description, tUrl: tUrl})
+              navigation.navigate("VideoScreen");
             }}
             style={{marginHorizontal: 10,marginTop:10,width: fullWidth-20, height: title.length > 30?((fullWidth/100)*56.25)+80:((fullWidth/100)*56.25)+65}}
           >
             <Image
               source={{
-                uri: "https://firebasestorage.googleapis.com/v0/b/oacmedia-app-8464c.appspot.com/o/ef6e178f-0428-4140-839e-863627f47323.jpeg?alt=media&token=64e83b67-9069-40b6-9853-e2a757cf38e7",
+                uri: tUrl,
               }}
               style={styles.video}
             />
@@ -234,7 +234,7 @@ const VideoScreen = ({ navigation }) => {
         data={messages}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
-          return <ThumbsComponent title={item.title} time={item.time} cat={item.type} />
+          return <ThumbsComponent title={item.title} time={item.time} cat={item.type} tUrl={item.url} videoUrl={item.videoUrl} description={item.description} />
         }}
         onEndReachedThreshold={0.2}
         onEndReached={fetchMoreData}

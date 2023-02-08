@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, Dimensions, StatusBar, PixelRatio, TouchableWithoutFeedback } from "react-native";
+import { StyleSheet, View, Dimensions, StatusBar, PixelRatio, TouchableWithoutFeedback, Platform } from "react-native";
 import { useEffect, useState } from "react";
 import Screen from "../components/Screen";
 import Text from "../components/Text";
@@ -184,13 +184,13 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     height: 48,
     left: 0,
-    bottom: width,
+    bottom: Platform.OS == 'ios' ? width+20 : width,
     right: 0,
     position: "absolute",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
-    paddingHorizontal: 10,
+    paddingHorizontal: Platform.OS == 'ios' ? 60 : 10,
   }
 });
 

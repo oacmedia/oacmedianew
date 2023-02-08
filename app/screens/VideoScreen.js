@@ -39,6 +39,7 @@ const VideoScreen = ({ navigation }) => {
     setMute(!mute);
   }
   const handleFullScreen = () => {
+    setPaused(true);
     navigation.navigate("ReelsFullScreen");
   }
   function secondToTime(time){
@@ -94,49 +95,79 @@ const VideoScreen = ({ navigation }) => {
             // onError={Video.videoError}               // Callback when video cannot be loaded
             style={styles.backgroundVideo}
         />
-        <View style={styles.controls}>
-            <TouchableWithoutFeedback 
-            onPress={handleMainButtonTouch}>
-              <Icon
-                name={!paused ? "pause" : "play"}
-                size={20} color="#FFF"
-              />
-            </TouchableWithoutFeedback>
-            <TouchableWithoutFeedback
-              onPress={handleProgressPress}
-            >
-              <View>
-                <ProgressBar 
-                  progress={progress}
-                  color="#FFF"
-                  unfilledColor="rgba(255,255,255,.5)"
-                  borderColor="#FFF"
-                  width={fullWidth-160}
-                  height={2}
+        {paused && <Image
+          style={{height: "100%",
+            width: "100%",position: "absolute",zIndex: 1,resizeMode: 'cover',}}
+          source={{uri: videoData.tUrl}}
+        />} 
+        <View style={{
+        backgroundColor: !paused ? "transparent" : "rgba(0, 0, 0, 0.5)",
+        height: 48,
+        width: 48,
+        borderRadius: 24,
+        top: (fullWidth/2)-24,
+        left: (fullWidth/2)-24,
+        bottom: 0,
+        right: 0,
+        position: "absolute",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-around",
+        paddingHorizontal: 10,
+        zIndex: 3,
+      }}>
+        <TouchableWithoutFeedback 
+          onPress={handleMainButtonTouch}>
+            <Icon
+              name={!paused ? "pause" : "play"}
+              size={20} color={!paused ? "transparent" : "#FFF"}
+            />
+        </TouchableWithoutFeedback>
+      </View>
+      {!paused && <View style={styles.controls}>
+              <TouchableWithoutFeedback 
+              onPress={handleMainButtonTouch}>
+                <Icon
+                  name={!paused ? "pause" : "play"}
+                  size={20} color="#FFF"
                 />
-              </View>
-            </TouchableWithoutFeedback>
-            <Text 
-              style={styles.duration}
-            >
-              {secondToTime(Math.floor(progress * duration))}
-            </Text>
-            <TouchableWithoutFeedback 
-            onPress={handleMuteButtonTouch}>
-              <Icon
-                name={!mute ? "volume-down" : "volume-off"}
-                size={20} color="#FFF"
-              />
-            </TouchableWithoutFeedback>
-            <TouchableWithoutFeedback
-              onPress={handleFullScreen}>
-              <Icon
-              //style={{marginLeft: 6,}}
-                name={"arrows-alt"}
-                size={20} color="#FFF"
-              />
-            </TouchableWithoutFeedback>
-        </View>
+              </TouchableWithoutFeedback>
+              <TouchableWithoutFeedback
+                onPress={handleProgressPress}
+              >
+                <View>
+                  <ProgressBar 
+                    progress={progress}
+                    color="#FFF"
+                    unfilledColor="rgba(255,255,255,.5)"
+                    borderColor="#FFF"
+                    width={fullWidth-160}
+                    height={2}
+                  />
+                </View>
+              </TouchableWithoutFeedback>
+              <Text 
+                style={styles.duration}
+              >
+                {secondToTime(Math.floor(progress * duration))}
+              </Text>
+              <TouchableWithoutFeedback 
+              onPress={handleMuteButtonTouch}>
+                <Icon
+                  name={!mute ? "volume-down" : "volume-off"}
+                  size={20} color="#FFF"
+                />
+              </TouchableWithoutFeedback>
+              <TouchableWithoutFeedback
+                onPress={handleFullScreen}
+                >
+                <Icon
+                //style={{marginLeft: 10,}}
+                  name={"arrows-alt"}
+                  size={20} color="#FFF"
+                />
+              </TouchableWithoutFeedback>
+        </View>}
     </View>
     <View style={{ width: fullWidth, height: 'auto',
     //backgroundColor: "#563df4",
@@ -208,6 +239,7 @@ const styles = StyleSheet.create({
     height: fullWidth,
     width: fullWidth,
     backgroundColor: "transparent",
+    zIndex: 2,
   },
   duration: {
     color: "#FFF",
@@ -227,6 +259,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-around",
     paddingHorizontal: 10,
+    zIndex: 3,
   }
 });
 

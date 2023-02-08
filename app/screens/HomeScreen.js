@@ -16,6 +16,7 @@ import * as Notifications from 'expo-notifications';
 import AStorage from "@react-native-async-storage/async-storage";
 import { useCallDataSharing } from "../context/CallDataSharingContext";
 import { useCommentsSharing } from "../context/CommentsSharingContext";
+import { useRoute } from '@react-navigation/native';
 
 const HomeScreen = ({ routes, navigation }) => {
   const {user, setUser} = useUserAuth();
@@ -28,6 +29,7 @@ const HomeScreen = ({ routes, navigation }) => {
   const [lastDocRef, setLastDocRef] = useState(null)
   const [notfCount, setNotfCount] = useState(0);
   let pageSize = 3;
+  const route = useRoute();
 
   const loadPosts = useCallback(() => {
     setIsLoading(true);
@@ -63,6 +65,7 @@ const HomeScreen = ({ routes, navigation }) => {
   }, [isFinished, isLoading])
 
   useEffect(() => {
+    console.log(route.name);
     setSharedData({});
     loadPosts();
     firestore().collection('Busy').where('user','==',user.id).where('joined','==',false).onSnapshot((snapshot)=>{
@@ -177,12 +180,17 @@ const HomeScreen = ({ routes, navigation }) => {
       }
     })
   },[]
-        // navigation.addListener('beforeRemove', (e) => {
-        //     e.preventDefault();
-        //     return
-        // }),
-        // [navigation]
-    );
+  // [navigation]
+  );
+  useEffect(()=>{
+    navigation.addListener('beforeRemove', (e) => {
+        if(route.name == 'HomeScreen'){
+          e.preventDefault();
+          return
+        }
+    })
+    
+  },[navigation])
 
   return (
     <Screen>

@@ -260,6 +260,7 @@ const PostVideo = ({ imageUrl, index, length, navigation,thumb }) => {
   const [duration, setDuration] = useState(0);
   const {videoData, setVideoData} = useVideoData();
   const handleFullScreen = () => {
+    setPaused(true);
     setVideoData({url: imageUrl});
     navigation.navigate("PostsFullScreen");
   }
@@ -999,7 +1000,7 @@ const styles = StyleSheet.create({
   head_image: {
     width: 35,
     height: 35,
-    resizeMode: "contain",
+    resizeMode: "cover",
     borderRadius: 50,
     marginLeft: 6,
     borderWidth: 1.6,
@@ -1008,7 +1009,7 @@ const styles = StyleSheet.create({
   head_image_new: {
     width: 45,
     height: 45,
-    resizeMode: "contain",
+    resizeMode: "cover",
     borderRadius: 50,
     marginLeft: 6,
     borderWidth: 1.6,

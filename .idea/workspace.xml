@@ -6,7 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="1f188389-daea-4763-be31-dbd05e45032b" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/components/home/Post.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/components/home/Post.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/screens/HomeScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/screens/HomeScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/screens/PostsFullScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/screens/PostsFullScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/screens/ReelsFullScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/screens/ReelsFullScreen.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/screens/ReelsScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/screens/ReelsScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/screens/VideoScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/screens/VideoScreen.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
