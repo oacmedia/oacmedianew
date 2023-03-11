@@ -65,7 +65,7 @@ const HomeScreen = ({ routes, navigation }) => {
   }, [isFinished, isLoading])
 
   useEffect(() => {
-    console.log(route.name);
+    //console.log(route.name);
     setSharedData({});
     loadPosts();
     firestore().collection('Busy').where('user','==',user.id).where('joined','==',false).onSnapshot((snapshot)=>{

@@ -1,6 +1,6 @@
 {
   "cli": {
-    "version": ">= 2.4.1"
+    "version": ">= 3.5.1"
   },
   "build": {
     "development": {
@@ -9,7 +9,6 @@
         "gradleCommand": ":app:assembleDebug"
       },
       "ios": {
-
         "buildConfiguration": "Debug"
       }
     },
@@ -36,6 +35,12 @@
     "production": {}
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "oacdeveloper1@gmail.com",
+        "ascAppId": "6445843958",
+        "appleTeamId": "P7PT28HAZ9"
+      }
+    }
   }
 }

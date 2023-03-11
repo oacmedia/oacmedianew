@@ -1,4 +1,4 @@
-import { Image, ScrollView, StyleSheet, View, TouchableOpacity, Dimensions, ActivityIndicator, TouchableWithoutFeedback, SafeAreaView} from "react-native";
+import { Image, ScrollView, StyleSheet, View, TouchableOpacity, Dimensions, ActivityIndicator, TouchableWithoutFeedback, SafeAreaView, Platform} from "react-native";
 import React, { useEffect, useState } from "react";
 
 import BottomTabs from "../components/home/BottomTabs";
@@ -38,9 +38,20 @@ const VideoScreen = ({ navigation }) => {
   const handleMuteButtonTouch = () => {
     setMute(!mute);
   }
+  // const handleFullScreen = () => {
+  //   if(Platform.OS == "android"){
+  //     setPaused(true);
+  //     navigation.navigate("ReelsFullScreen");
+  //   }else if(Platform.OS == "ios"){
+  //     setToggleFullScreen(true);
+  //   }
+  // }
   const handleFullScreen = () => {
-    setPaused(true);
-    navigation.navigate("ReelsFullScreen");
+      setPaused(true);
+      navigation.navigate("ReelsFullScreen");
+  }
+  const handleFullScreenExit = () => {
+    setToggleFullScreen(false);
   }
   function secondToTime(time){
     return ~~(time / 60)+ ":" + (time % 60 < 10 ? "0" : "") + time % 60;
@@ -79,6 +90,7 @@ const VideoScreen = ({ navigation }) => {
             onLoad={handleLoad}
             onProgress={handleProgress}
             onEnd={handleEnd}
+            //onFullscreenPlayerDidDismiss={handleFullScreenExit}
             muted={mute}
             ref={(ref) => {
             Video.player = ref
@@ -88,7 +100,7 @@ const VideoScreen = ({ navigation }) => {
             // controls
             resizeMode={"cover"}
             //fullscreen={true}
-            fullscreen={toggleFullScreen}
+            //fullscreen={toggleFullScreen}
             fullscreenAutorotate={true}
             fullscreenOrientation={"landscape"}
             // onBuffer={Video.onBuffer}                // Callback when remote video is buffering

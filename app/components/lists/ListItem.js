@@ -39,7 +39,7 @@ function ListItem({
             )}
             {message && (
               <Text style={styles.msgStyle} numberOfLines={1}>
-                {message == 'Sent a Photo'? message : 'Sent you a message: '+'"'+message+'"'}
+                {message == "Requested You to Be Friends" ? message : message == 'Sent a Photo'? message : 'Sent you a message: '+'"'+message+'"'}
               </Text>
             )}
             {notification>0 && (

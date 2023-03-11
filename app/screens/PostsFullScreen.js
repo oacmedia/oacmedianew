@@ -38,7 +38,7 @@ function PostsFullScreen({ navigation }) {
       }
       const handleProgressPress = (e) =>{
         const position = e.nativeEvent.locationX;
-        const progress = (position / (height-200)) * duration;
+        const progress = (position / (Platform.OS == "ios" ? height-300: height-200)) * duration;
         Video.player.seek(progress);
       }
       const handleEnd = () =>{
@@ -83,7 +83,7 @@ function PostsFullScreen({ navigation }) {
             height: 75,
             width: 75,
             borderRadius: 38,
-            top: (height/2)-200,
+            top: Platform.OS == "ios" ? ((height/2)/2)/1.5 : (height/2)/2,
             left: (height/2)-24,
             bottom: 0,
             right: 0,
@@ -118,7 +118,7 @@ function PostsFullScreen({ navigation }) {
                     color="#FFF"
                     unfilledColor="rgba(255,255,255,.5)"
                     borderColor="#FFF"
-                    width={height-200}
+                    width={Platform.OS == "ios" ? height-300: height-200}
                     height={2}
                     />
                 </View>
@@ -183,6 +183,7 @@ const styles = StyleSheet.create({
   controls: {
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     height: 48,
+    width: Platform.OS == 'ios' ? height-118 : height-20,
     left: 0,
     bottom: Platform.OS == 'ios' ? width+20 : width,
     right: 0,
@@ -190,7 +191,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
-    paddingHorizontal: Platform.OS == 'ios' ? 60 : 10,
+    paddingHorizontal: Platform.OS == 'ios' ? 10 : 10,
+    paddingVertical: Platform.OS == 'ios' ? 10 : 10,
+    borderRadius: height/2,
+    marginLeft: Platform.OS == 'ios' ? 60 : 10,
   }
 });
 

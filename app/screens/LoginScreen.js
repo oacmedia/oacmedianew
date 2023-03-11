@@ -233,7 +233,7 @@ useEffect(() => {
                   })
                   .catch((e)=>{
                     setProcessInd(false);
-                    console.log(e);
+                    setEPError("Something Went Wrong!");
                   })
                   
                 }else{
