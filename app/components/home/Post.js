@@ -236,7 +236,7 @@ const PostHeader = ({ post, postUser, postID, DeleteButton, LoginnedUser, userDa
     </View>
     <TouchableOpacity hitSlop={10}>
       {!DeleteButton ? (
-        <TouchableIcon name={"alert-circle"} iconColor={colors.medium} size={35} onPress={()=>{Alert.alert("Is Something Wrong?","Tell us at: report@myoacmedia.co.za\nCall us at: +27-67987-1850")}} />
+        <TouchableIcon name={"alert-circle"} iconColor={colors.medium} size={35} onPress={()=>{Alert.alert("Is Something Wrong?","Use flag button on the top left of this post. Or\n"+"Tell us at: report@myoacmedia.co.za\nCall us at: +27-67987-1850")}} />
       ) : (
         <View></View>
       )}
@@ -252,13 +252,15 @@ const PostHeader = ({ post, postUser, postID, DeleteButton, LoginnedUser, userDa
   </View>)
 };
 
-const PostVideo = ({ imageUrl, index, length, navigation,thumb }) => {
+const PostVideo = ({ imageUrl, index, length, navigation,thumb, postID, user }) => {
   const fullWidth = Dimensions.get('window').width;
   const [mute, setMute] = useState(false);
   const [paused, setPaused] = useState(true);
+  const [hide, setHide] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const {videoData, setVideoData} = useVideoData();
+  const [modalVisible, setModalVisible] = useState(false);
   const handleFullScreen = () => {
     setPaused(true);
     setVideoData({url: imageUrl});
@@ -272,6 +274,10 @@ const PostVideo = ({ imageUrl, index, length, navigation,thumb }) => {
       Video.player.seek(0);
     }
     setPaused(!paused);
+  }
+  const handleHide = () => {
+    setHide(!hide);
+    Alert.alert("Sorry for inconvenience!","You will never see this post again.");
   }
   const handleMuteButtonTouch = () => {
     setMute(!mute);
@@ -292,121 +298,384 @@ const PostVideo = ({ imageUrl, index, length, navigation,thumb }) => {
   }
 return (
   <View style={{ marginTop: 0, width: fullWidth }}>
-    {!paused && <ActivityIndicator style={{alignSelf:"center",height: "100%", width: fullWidth, justifyContent: "center"}} size={100} color="white"/>} 
-      <Video source={{uri: imageUrl}}   // Can be a URL or a local file.
-          paused={paused}
-          onLoad={handleLoad}
-          onProgress={handleProgress}
-          onEnd={handleEnd}
-          muted={mute}
-          ref={(ref) => {
-            Video.player = ref
-          }}    
-          resizeMode={"cover"}
-          poster={thumb}
-          posterResizeMode={"cover"}
-          // controls                                // Store reference
-          // paused
-          // onBuffer={Video.onBuffer}                // Callback when remote video is buffering
-          // onError={Video.videoError}               // Callback when video cannot be loaded
-          style={styles.backgroundVideo}
-      />
-      <Text style={styles.page}>{(index+1)+"/"+length}</Text>
-      {paused && <Image
-        style={{height: "100%",
-        width: "100%",position: "absolute",zIndex: 1,resizeMode: 'cover',}}
-        source={{uri: thumb}}
-      />} 
-      <View style={{
-        backgroundColor: !paused ? "transparent" : "rgba(0, 0, 0, 0.5)",
-        height: 48,
-        width: 48,
-        borderRadius: 24,
-        top: fullWidth/2,
-        left: (fullWidth/2)-24,
-        bottom: 0,
-        right: 0,
-        position: "absolute",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-around",
-        paddingHorizontal: 10,
-        zIndex: 3,
-      }}>
-        <TouchableWithoutFeedback 
-          onPress={handleMainButtonTouch}>
-            <Icon
-              name={!paused ? "pause" : "play"}
-              size={20} color={!paused ? "transparent" : "#FFF"}
-            />
-        </TouchableWithoutFeedback>
-      </View>
-      {!paused && <View style={styles.controls}>
-              <TouchableWithoutFeedback 
-              onPress={handleMainButtonTouch}>
-                <Icon
-                  name={!paused ? "pause" : "play"}
-                  size={20} color="#FFF"
-                />
-              </TouchableWithoutFeedback>
-              <TouchableWithoutFeedback
-                onPress={handleProgressPress}
-              >
-                <View>
-                  <ProgressBar 
-                    progress={progress}
-                    color="#FFF"
-                    unfilledColor="rgba(255,255,255,.5)"
-                    borderColor="#FFF"
-                    width={fullWidth-160}
-                    height={2}
+    {!hide && <View style={{ marginTop: 0, width: fullWidth }}>
+      {!paused && <ActivityIndicator style={{alignSelf:"center",height: "100%", width: fullWidth, justifyContent: "center"}} size={100} color="white"/>} 
+        <Video source={{uri: imageUrl}}   // Can be a URL or a local file.
+            paused={paused}
+            onLoad={handleLoad}
+            onProgress={handleProgress}
+            onEnd={handleEnd}
+            muted={mute}
+            ref={(ref) => {
+              Video.player = ref
+            }}    
+            resizeMode={"cover"}
+            poster={thumb}
+            posterResizeMode={"cover"}
+            // controls                                // Store reference
+            // paused
+            // onBuffer={Video.onBuffer}                // Callback when remote video is buffering
+            // onError={Video.videoError}               // Callback when video cannot be loaded
+            style={styles.backgroundVideo}
+        />
+        <Text style={styles.page}>{(index+1)+"/"+length}</Text>
+        {paused && <Image
+          style={{
+            height: fullWidth,
+          width: fullWidth,position: "absolute",top:0,zIndex: 1,resizeMode: 'cover',}}
+          source={{uri: thumb}}
+        />}
+        <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          //Alert.alert('Modal has been closed.');
+          setModalVisible(!modalVisible);
+        }}>
+        <View style={styles.centeredView}
+        >
+          <View style={styles.modalView}
+          >
+            {/* <Text style={styles.modalText_New}>Deleting Account</Text> */}
+            <Text style={styles.modalText}
+            >{"Found something wrong about this post?"}</Text>
+            <Pressable
+               style={[styles.buttonNew, styles.buttonClose_New]}
+              onPress={() => {
+                setModalVisible(!modalVisible)
+                handleHide();
+                firestore().collection('HiddenPosts').doc().set({
+                  userID: user.id,
+                  postID: postID
+                })
+                }}>
+                {/* <Icon
+                    name={"close"}
+                    size={24} color={colors.white}
+                  /> */}
+              <Text style={styles.textStyle}
+              >Hide</Text>
+            </Pressable>
+            <Pressable
+               style={[styles.buttonNew, styles.buttonClose_New]}
+              onPress={() => {
+                setModalVisible(!modalVisible)
+                handleHide();
+                firestore().collection('HiddenPosts').doc().set({
+                  userID: user.id,
+                  postID: postID
+                })
+                firestore().collection('ReportedPosts').doc().set({
+                  userID: user.id,
+                  postID: postID
+                })
+                }}>
+                {/* <Icon
+                    name={"close"}
+                    size={24} color={colors.white}
+                  /> */}
+              <Text style={styles.textStyle}
+              >Hide & Report</Text>
+            </Pressable>
+            <Pressable
+               style={[styles.buttonNew, styles.buttonClose]}
+              onPress={() => 
+                {setModalVisible(!modalVisible)
+                }
+              }>
+                {/* <Icon
+                    name={"close"}
+                    size={24} color={colors.white}
+                  /> */}
+              <Text style={styles.textStyle}
+              >Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+        <View style={{
+          //backgroundColor: !paused ? "transparent" : "rgba(0, 0, 0, 0.5)",
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
+          height: 44,
+          width: 44,
+          borderRadius: 22,
+          top: 10,
+          left: 10,
+          bottom: 0,
+          right: 0,
+          position: "absolute",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-around",
+          paddingHorizontal: 10,
+          zIndex: 4,
+        }}>
+          <TouchableWithoutFeedback 
+            onPress={()=>{setModalVisible(!modalVisible)}}>
+              <Icon
+                name={!hide ? "flag-o" : "eye-slash"}
+                size={20} color={!hide ? "#FFF" : "red"}
+              />
+          </TouchableWithoutFeedback>
+        </View> 
+        <View style={{
+          backgroundColor: !paused ? "transparent" : "rgba(0, 0, 0, 0.5)",
+          height: 48,
+          width: 48,
+          borderRadius: 24,
+          top: fullWidth/2,
+          left: (fullWidth/2)-24,
+          bottom: 0,
+          right: 0,
+          position: "absolute",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-around",
+          paddingHorizontal: 10,
+          zIndex: 3,
+        }}>
+          <TouchableWithoutFeedback 
+            onPress={handleMainButtonTouch}>
+              <Icon
+                name={!paused ? "pause" : "play"}
+                size={20} color={!paused ? "transparent" : "#FFF"}
+              />
+          </TouchableWithoutFeedback>
+        </View>
+        {!paused && <View style={styles.controls}>
+                <TouchableWithoutFeedback 
+                onPress={handleMainButtonTouch}>
+                  <Icon
+                    name={!paused ? "pause" : "play"}
+                    size={20} color="#FFF"
                   />
-                </View>
-              </TouchableWithoutFeedback>
-              <Text 
-                style={styles.duration}
-              >
-                {secondToTime(Math.floor(progress * duration))}
-              </Text>
-              <TouchableWithoutFeedback 
-              onPress={handleMuteButtonTouch}>
-                <Icon
-                  name={!mute ? "volume-down" : "volume-off"}
-                  size={20} color="#FFF"
-                />
-              </TouchableWithoutFeedback>
-              <TouchableWithoutFeedback
-                onPress={handleFullScreen}
+                </TouchableWithoutFeedback>
+                <TouchableWithoutFeedback
+                  onPress={handleProgressPress}
                 >
-                <Icon
-                //style={{marginLeft: 10,}}
-                  name={"arrows-alt"}
-                  size={20} color="#FFF"
-                />
-              </TouchableWithoutFeedback>
-        </View>}
+                  <View>
+                    <ProgressBar 
+                      progress={progress}
+                      color="#FFF"
+                      unfilledColor="rgba(255,255,255,.5)"
+                      borderColor="#FFF"
+                      width={fullWidth-160}
+                      height={2}
+                    />
+                  </View>
+                </TouchableWithoutFeedback>
+                <Text 
+                  style={styles.duration}
+                >
+                  {secondToTime(Math.floor(progress * duration))}
+                </Text>
+                <TouchableWithoutFeedback 
+                onPress={handleMuteButtonTouch}>
+                  <Icon
+                    name={!mute ? "volume-down" : "volume-off"}
+                    size={20} color="#FFF"
+                  />
+                </TouchableWithoutFeedback>
+                <TouchableWithoutFeedback
+                  onPress={handleFullScreen}
+                  >
+                  <Icon
+                  //style={{marginLeft: 10,}}
+                    name={"arrows-alt"}
+                    size={20} color="#FFF"
+                  />
+                </TouchableWithoutFeedback>
+          </View>}
+    </View>}
+    {hide && <View style={{ marginTop: 0, width: fullWidth }}>
+    <View style={{
+          backgroundColor: "white", 
+          //"rgba(0, 0, 0, 0.5)",
+          height: 60,
+          width: 60,
+          borderRadius: 30,
+          top: fullWidth/2-30,
+          left: (fullWidth/2)-30,
+          bottom: 0,
+          right: 0,
+          position: "absolute",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-around",
+          paddingHorizontal: 10,
+          zIndex: 3,
+        }}>
+
+          <Icon
+            name={"eye-slash"}
+            size={20} color={"red"}
+          />
+        </View>
+        <View>
+          <Image
+            style={{height: fullWidth,
+            width: fullWidth,position: "absolute",zIndex: 1,resizeMode: 'cover',}}
+            source={{uri: "https://firebasestorage.googleapis.com/v0/b/oacmedia-app-8464c.appspot.com/o/thumbnail.jpg?alt=media&token=1d69f50c-8546-4cbe-9fcc-a42f170ff31d"}}
+          />
+        </View>
+    </View>}
   </View>
 )};
-const PostImage = ({ imageUrl, index, length, navigation }) => {
+const PostImage = ({ imageUrl, index, length, navigation, postID, user }) => {
   const fullWidth = Dimensions.get('window').width;
   const {videoData, setVideoData} = useVideoData();
+  const [hide, setHide] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
   const handleFullScreen = () => {
     setVideoData({url: imageUrl});
     navigation.navigate("ImageFullScreen");
   }
+  const handleHide = () => {
+    setHide(!hide);
+    Alert.alert("Sorry for inconvenience!","You will never see this post again.");
+  }
   return (
-    <View style={{ marginTop: 0 }}>
-      <TouchableOpacity onPress={handleFullScreen}>
-        <Image source={{ uri: imageUrl, width: fullWidth }}
-          style={{ height: "100%", resizeMode: "cover" }}></Image>
-      </TouchableOpacity>
-      <Text style={styles.page}>{(index+1)+"/"+length}</Text>
+    <View>
+      {!hide && <View style={{ marginTop: 0 }}>
+        <TouchableOpacity onPress={handleFullScreen}>
+          <Image source={{ uri: imageUrl, width: fullWidth }}
+            style={{ height: fullWidth, resizeMode: "cover" }}></Image>
+        </TouchableOpacity>
+        <Text style={styles.page}>{(index+1)+"/"+length}</Text>
+      </View>}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          //Alert.alert('Modal has been closed.');
+          setModalVisible(!modalVisible);
+        }}>
+        <View style={styles.centeredView}
+        >
+          <View style={styles.modalView}
+          >
+            {/* <Text style={styles.modalText_New}>Deleting Account</Text> */}
+            <Text style={styles.modalText}
+            >{"Found something wrong about this post?"}</Text>
+            <Pressable
+               style={[styles.buttonNew, styles.buttonClose_New]}
+              onPress={() => {
+                setModalVisible(!modalVisible)
+                handleHide();
+                firestore().collection('HiddenPosts').doc().set({
+                  userID: user.id,
+                  postID: postID
+                })
+                }}>
+                {/* <Icon
+                    name={"close"}
+                    size={24} color={colors.white}
+                  /> */}
+              <Text style={styles.textStyle}
+              >Hide</Text>
+            </Pressable>
+            <Pressable
+               style={[styles.buttonNew, styles.buttonClose_New]}
+              onPress={() => {
+                setModalVisible(!modalVisible)
+                handleHide();
+                firestore().collection('HiddenPosts').doc().set({
+                  userID: user.id,
+                  postID: postID
+                })
+                firestore().collection('ReportedPosts').doc().set({
+                  userID: user.id,
+                  postID: postID
+                })
+                }}>
+                {/* <Icon
+                    name={"close"}
+                    size={24} color={colors.white}
+                  /> */}
+              <Text style={styles.textStyle}
+              >Hide & Report</Text>
+            </Pressable>
+            <Pressable
+               style={[styles.buttonNew, styles.buttonClose]}
+              onPress={() => 
+                {setModalVisible(!modalVisible)
+                }
+              }>
+                {/* <Icon
+                    name={"close"}
+                    size={24} color={colors.white}
+                  /> */}
+              <Text style={styles.textStyle}
+              >Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+        <View style={{
+          //backgroundColor: !paused ? "transparent" : "rgba(0, 0, 0, 0.5)",
+          backgroundColor: !hide ? "rgba(0, 0, 0, 0.5)" : "transparent",
+          height: 44,
+          width: 44,
+          borderRadius: 22,
+          top: 10,
+          left: 10,
+          bottom: 0,
+          right: 0,
+          position: "absolute",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-around",
+          paddingHorizontal: 10,
+          zIndex: 2,
+        }}>
+          <TouchableWithoutFeedback 
+            onPress={()=>{setModalVisible(!modalVisible)}}>
+              <Icon
+                name={!hide ? "flag-o" : "flag-checkered"}
+                size={20} color={!hide ? "#FFF" : "transparent"}
+              />
+          </TouchableWithoutFeedback>
+        </View>
+      {hide && <View style={{ marginTop: 0, width: fullWidth }}>
+      <View style={{
+            backgroundColor: "white", 
+            //"rgba(0, 0, 0, 0.5)",
+            height: 60,
+            width: 60,
+            borderRadius: 30,
+            top: fullWidth/2-30,
+            left: (fullWidth/2)-30,
+            bottom: 0,
+            right: 0,
+            position: "absolute",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-around",
+            paddingHorizontal: 10,
+            zIndex: 3,
+          }}>
+            <Icon
+              name={"eye-slash"}
+              size={20} color={"red"}
+            />
+          </View>
+          <View>
+            <Image
+              style={{height: fullWidth,
+              width: fullWidth,position: "absolute",zIndex: 1,resizeMode: 'cover',}}
+              source={{uri: "https://firebasestorage.googleapis.com/v0/b/oacmedia-app-8464c.appspot.com/o/thumbnail.jpg?alt=media&token=1d69f50c-8546-4cbe-9fcc-a42f170ff31d"}}
+            />
+          </View>
+      </View>}
     </View>
   )};
 
-const PostContent = ({ post, navigation }) => {
+const PostContent = ({ post, navigation, postID, user }) => {
 
   //const [video, setVideo] = useState(true);
+  const fullWidth = Dimensions.get('window').width;
   const [postsLength, setPostsLength] = useState(0);
   useEffect(()=>{
     if(post.contents){
@@ -427,7 +696,7 @@ const PostContent = ({ post, navigation }) => {
   return (
     
   <View style={{ width: "100%",
-  height: imageUrls[0].type == "text" ? "auto" : 450,
+  height: imageUrls[0].type == "text" ? "auto" : fullWidth,
   backgroundColor: imageUrls[0].type == "text" ? colors.light : "transparent",
   padding: imageUrls[0].type == "text" ? 20 : 0,
   
@@ -447,9 +716,9 @@ const PostContent = ({ post, navigation }) => {
         let index = item.index;
         //console.log(imageUrl[0]);
         return imageUrl.type == "video/mp4" ?
-          <PostVideo imageUrl={imageUrl.url} thumb={imageUrl.thumbnail?imageUrl.thumbnail:"https://firebasestorage.googleapis.com/v0/b/oacmedia-app-8464c.appspot.com/o/thumbnail.jpg?alt=media&token=1d69f50c-8546-4cbe-9fcc-a42f170ff31d"} index={index} length={postsLength} navigation={navigation}/>
+          <PostVideo imageUrl={imageUrl.url} postID={postID} user={user} thumb={imageUrl.thumbnail?imageUrl.thumbnail:"https://firebasestorage.googleapis.com/v0/b/oacmedia-app-8464c.appspot.com/o/thumbnail.jpg?alt=media&token=1d69f50c-8546-4cbe-9fcc-a42f170ff31d"} index={index} length={postsLength} navigation={navigation}/>
           :
-          <PostImage imageUrl={imageUrl.url} index={index} length={postsLength} navigation={navigation}/>
+          <PostImage imageUrl={imageUrl.url} postID={postID} user={user} index={index} length={postsLength} navigation={navigation}/>
       }} 
       pagingEnabled
       horizontal
@@ -908,6 +1177,7 @@ const Post = ({
   deletePost,
 }) => {
   const [userData, setUserData] = useState('');
+  const [hidden, setHidden] = useState(false);
   let btnAccess = withDeleteButton ? withDeleteButton : user.isAdmin;
   //console.log(post);
   
@@ -921,6 +1191,11 @@ const Post = ({
       let mainData = data._data;
       //console.log(mainData);
       setUserData(mainData);
+    })
+    firestore().collection('HiddenPosts').where('userID','==',user.id).where('postID','==',postID).get().then((snapshot)=>{
+      if(!snapshot.empty){
+        setHidden(true);
+      }
     })
 
     // firestore().collection('Likes').where('postID','==',postID).get()
@@ -938,25 +1213,27 @@ const Post = ({
     // })
   },[])
   return (
-    <View style={{ marginBottom: 30 }}>
-      <Divider width={1} orientation="vertical" />
-      {withHeader && (
-        <PostHeader userData={userData}
-          LoginnedUser={user}
-          post={post}
-          DeleteButton={btnAccess}
-          deletePost={deletePost}
-          postID={postID} postUser={postUser}
-          navigation={navigation}
-        />
-      )}
-      {withImage && <PostContent post={post} navigation={navigation} />}
-      {withFooter && <PostFooter user={user} post={post} postID={postID} postUser={postUser} navigation={navigation}/>}
-      <View style={{ marginHorizontal: 10, marginTop: 5 }}>
-        {withLikes && <PostLikes post={post} postID={postID} />}
-        {withComments && <PostCaption userData={userData} post={post} />}
-        <PostCommentsSection user={user} post={post} postID={postID} postUser={postUser} CommentSection={withCommentSection} navigation={navigation} />
-      </View>
+    <View>
+      {!hidden && <View style={{ marginBottom: 30 }}>
+        <Divider width={1} orientation="vertical" />
+        {withHeader && (
+          <PostHeader userData={userData}
+            LoginnedUser={user}
+            post={post}
+            DeleteButton={btnAccess}
+            deletePost={deletePost}
+            postID={postID} postUser={postUser}
+            navigation={navigation}
+          />
+        )}
+        {withImage && <PostContent post={post} navigation={navigation} postID={postID} user={user}/>}
+        {withFooter && <PostFooter user={user} post={post} postID={postID} postUser={postUser} navigation={navigation}/>}
+        <View style={{ marginHorizontal: 10, marginTop: 5 }}>
+          {withLikes && <PostLikes post={post} postID={postID} />}
+          {withComments && <PostCaption userData={userData} post={post} />}
+          <PostCommentsSection user={user} post={post} postID={postID} postUser={postUser} CommentSection={withCommentSection} navigation={navigation} />
+        </View>
+      </View>}
     </View>
   );
 };
